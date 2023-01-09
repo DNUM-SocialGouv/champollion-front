@@ -209,6 +209,13 @@
     "@babel/helper-validator-identifier" "^7.19.1"
     to-fast-properties "^2.0.0"
 
+"@codegouvfr/react-dsfr@^0.22.3":
+  version "0.22.3"
+  resolved "https://registry.yarnpkg.com/@codegouvfr/react-dsfr/-/react-dsfr-0.22.3.tgz#a9e75c7f4603296bb121307b93d3f6c105f01573"
+  integrity sha512-3Wmiihw0zy0k8gPCNeHZDC5K07zNb6POlD8lsiZzolrOWyuVc4WEE32Eh4SV+bYHV09NgNl4WXwbu3MXgM9TrA==
+  dependencies:
+    tsafe "^1.4.0"
+
 "@esbuild/android-arm64@0.16.16":
   version "0.16.16"
   resolved "https://registry.yarnpkg.com/@esbuild/android-arm64/-/android-arm64-0.16.16.tgz#833184b8a0a96f9c85105c53d0a67e6d3c5c3f07"
@@ -677,6 +684,11 @@ to-fast-properties@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/to-fast-properties/-/to-fast-properties-2.0.0.tgz#dc5e698cbd079265bc73e0377681a4e4e83f616e"
   integrity sha512-/OaKK0xYrs3DmxRYqL/yDc+FxFUVYhDlXMhRmv3z915w2HF1tnN1omB354j8VUGO/hbRzyD6Y3sA7v7GS/ceog==
+
+tsafe@^1.4.0:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/tsafe/-/tsafe-1.4.1.tgz#59cdad8ac41babf88e56dcd1a683ae2fb145d059"
+  integrity sha512-3IDBalvf6SyvHFS14UiwCWzqdSdo+Q0k2J7DZyJYaHW/iraW9DJpaBKDJpry3yQs3o/t/A+oGaRW3iVt2lKxzA==
 
 typescript@^4.9.3:
   version "4.9.4"
