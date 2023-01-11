@@ -1,35 +1,31 @@
 import { useState } from "react"
 import { MuiDsfrThemeProvider } from "@codegouvfr/react-dsfr/mui"
 import { Button } from "@codegouvfr/react-dsfr/Button"
-import reactLogo from "./assets/react.svg"
-import "./App.css"
+import { StyledEngineProvider } from "@mui/material/styles"
+
+import { AppHeader } from "./components/AppHeader"
+import AppFooter from "./components/AppFooter"
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
-    <MuiDsfrThemeProvider>
-      <div className="App">
-        <div>
-          <a href="https://vitejs.dev" target="_blank">
-            <img src="/vite.svg" className="logo" alt="Vite logo" />
-          </a>
-          <a href="https://reactjs.org" target="_blank">
-            <img src={reactLogo} className="logo react" alt="React logo" />
-          </a>
+    <StyledEngineProvider injectFirst>
+      <MuiDsfrThemeProvider>
+        <div className="App flex min-h-screen flex-col">
+          <AppHeader />
+          <div className="flex flex-auto">
+            <div className="flex w-full flex-col items-center">
+              <h1 className={"fr-m-10v"}>Champollion - Précarité</h1>
+              <Button onClick={() => setCount((count) => count + 1)}>
+                Compteur {count}
+              </Button>
+            </div>
+          </div>
+          <AppFooter />
         </div>
-        <h1>Vite + React</h1>
-        <div className="card">
-          <Button onClick={() => setCount((count) => count + 1)}>
-            Count is {count}!
-          </Button>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test HMR
-          </p>
-        </div>
-        <p className="read-the-docs">Click on the Vite and React logos to learn more</p>
-      </div>
-    </MuiDsfrThemeProvider>
+      </MuiDsfrThemeProvider>
+    </StyledEngineProvider>
   )
 }
 
