@@ -54,7 +54,7 @@ export default function AppError() {
   }
 
   return (
-    <div className="fr-mt-10v flex flex-col items-center justify-center">
+    <div className="fr-mt-10v mx-auto flex flex-col items-center justify-center">
       <h1>Oups!</h1>
       <p>Désolé, une erreur est survenue.</p>
       {message && <p className="italic">{message}</p>}

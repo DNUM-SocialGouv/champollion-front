@@ -13,6 +13,9 @@ module.exports = {
       lg: "992px",
       xl: "1248px",
     },
+    colors: {
+      "contrast-info": "var(--background-contrast-info)",
+    },
     extend: {},
   },
 }
