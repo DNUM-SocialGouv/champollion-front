@@ -7,6 +7,12 @@ module.exports = {
   important: "#root",
   plugins: [],
   theme: {
+    screens: {
+      sm: "576px",
+      md: "768px",
+      lg: "992px",
+      xl: "1248px",
+    },
     extend: {},
   },
 }
