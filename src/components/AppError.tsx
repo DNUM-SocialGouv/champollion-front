@@ -1,9 +1,9 @@
 import { useRouteError } from "react-router-dom"
+import { Button } from "@codegouvfr/react-dsfr/Button"
 
 export default function AppError() {
   const error: unknown = useRouteError()
   console.error(error)
-  console.log("type: ", typeof error)
   const message = getErrorMessage(error)
 
   // All TypeScript error handling comes from:
@@ -57,7 +57,8 @@ export default function AppError() {
     <div className="fr-mt-10v flex flex-col items-center justify-center">
       <h1>Oups!</h1>
       <p>Désolé, une erreur est survenue.</p>
-      {message && <p>{message}</p>}
+      {message && <p className="italic">{message}</p>}
+      <Button linkProps={{ to: "/" }}>Retourner à la page d'accueil</Button>
     </div>
   )
 }

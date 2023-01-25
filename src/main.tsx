@@ -7,7 +7,6 @@ import { Link } from "react-router-dom"
 
 import Root from "./routes/root"
 import Index from "./routes/index"
-
 import AppError from "./components/AppError"
 
 startReactDsfr({

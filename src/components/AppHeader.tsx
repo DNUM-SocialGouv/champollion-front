@@ -18,7 +18,7 @@ const brandTop = (
 )
 
 const homeLinkProps = {
-  href: "/",
+  to: "/",
   title: "Accueil Champollion - Ministère du travail, du plein emploi et de l'insertion",
 }
 

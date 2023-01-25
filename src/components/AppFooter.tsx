@@ -9,7 +9,7 @@ const contentDescription =
   "Champollion est un projet développé par les équipes de la Direction du numérique des ministères sociaux, en collaboration avec la Direction Générale du Travail (DGT)."
 
 const homeLinkProps = {
-  href: "/",
+  to: "/",
   title: "Accueil Champollion - Ministère du travail, du plein emploi et de l'insertion",
 }
 export default class AppFooter extends Component<Props, State> {
