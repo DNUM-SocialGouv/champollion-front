@@ -6,8 +6,11 @@ import "./index.css"
 import { Link } from "react-router-dom"
 
 import Root from "./routes/root"
-import Index from "./routes/index"
+import Index, { action as homeAction } from "./routes/index"
 import AppError from "./components/AppError"
+import EtabBanner, { loader as etabBannerLoader } from "./routes/etablissement"
+import EtabSynthese from "./routes/etablissement/synthese"
+import EtabPostes from "./routes/etablissement/postes"
 
 startReactDsfr({
   defaultColorScheme: "system",
@@ -27,7 +30,28 @@ const router = createBrowserRouter([
     children: [
       {
         errorElement: <AppError />,
-        children: [{ index: true, element: <Index /> }],
+        children: [
+          {
+            index: true,
+            element: <Index />,
+            action: homeAction,
+          },
+        ],
+      },
+      {
+        path: "etablissement/:etabId",
+        element: <EtabBanner />,
+        loader: etabBannerLoader,
+        children: [
+          {
+            index: true,
+            element: <EtabSynthese />,
+          },
+          {
+            path: "postes",
+            element: <EtabPostes />,
+          },
+        ],
       },
     ],
   },

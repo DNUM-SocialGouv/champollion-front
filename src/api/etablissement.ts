@@ -1,11 +1,11 @@
 import api from "./config"
 import { AxiosError } from "axios"
-import { EtablissementInfo } from "./types"
+import { EtablissementType, ResponseError } from "./types"
 
 export const getEtablissementType = async (input: string) => {
   try {
     const response = await api.get(`/get-etablissement-type?siret=${input}`)
-    return response.data?.data as EtablissementInfo
+    return response.data?.data as EtablissementType
   } catch (err) {
     let status
     if (err instanceof AxiosError) status = err?.request?.status
@@ -16,6 +16,6 @@ export const getEtablissementType = async (input: string) => {
     return Promise.reject({
       status,
       message,
-    })
+    } as ResponseError)
   }
 }
