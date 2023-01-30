@@ -15,6 +15,7 @@ module.exports = {
     },
     colors: {
       "contrast-info": "var(--background-contrast-info)",
+      "mention-grey": "var(--text-mention-grey)",
     },
     extend: {},
   },
