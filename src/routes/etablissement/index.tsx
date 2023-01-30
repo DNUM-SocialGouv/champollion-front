@@ -51,7 +51,7 @@ export default function EtabBanner() {
           Chercher un autre établissement
         </Button>
       </div>
-      <div className="fr-p-4w w-full bg-contrast-info">
+      <div className="fr-py-4w w-full bg-contrast-info">
         <div className="fr-container mx-auto">
           <h1 className="fr-h3">Etablissement : MonEtab</h1>
           <p>{`SIRET : ${siret}`}</p>

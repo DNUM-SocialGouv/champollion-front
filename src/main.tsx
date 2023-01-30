@@ -9,7 +9,9 @@ import Root from "./routes/root"
 import Index, { action as homeAction } from "./routes/index"
 import AppError from "./components/AppError"
 import EtabBanner, { loader as etabBannerLoader } from "./routes/etablissement"
-import EtabSynthese from "./routes/etablissement/synthese"
+import EtabSynthese, {
+  loader as etabSyntheseLoader,
+} from "./routes/etablissement/synthese"
 import EtabPostes from "./routes/etablissement/postes"
 
 startReactDsfr({
@@ -40,11 +42,13 @@ const router = createBrowserRouter([
       },
       {
         path: "etablissement/:etabId",
+        errorElement: <AppError />,
         element: <EtabBanner />,
         loader: etabBannerLoader,
         children: [
           {
             index: true,
+            loader: etabSyntheseLoader,
             element: <EtabSynthese />,
           },
           {

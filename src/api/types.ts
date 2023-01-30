@@ -3,6 +3,16 @@ export type EtablissementType = {
   ett: boolean
 }
 
+export type EtablissementInfo = {
+  adresse: string
+  codeConventionCollective: string
+  codeNaf: string
+  codePostal: string
+  commune: string
+  complementAdresse?: string
+  libelleConventionCollective?: string
+}
+
 export type ResponseError = {
   message: string
   status?: number
