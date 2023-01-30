@@ -8,11 +8,12 @@ import { Link } from "react-router-dom"
 import Root from "./routes/root"
 import Index, { action as homeAction } from "./routes/index"
 import AppError from "./components/AppError"
-import EtabBanner, { loader as etabBannerLoader } from "./routes/etablissement"
+import Etab, { loader as etabLoader } from "./routes/etablissement"
 import EtabSynthese, {
   loader as etabSyntheseLoader,
 } from "./routes/etablissement/synthese"
 import EtabPostes from "./routes/etablissement/postes"
+import ETT, { loader as ettLoader } from "./routes/ett"
 
 startReactDsfr({
   defaultColorScheme: "system",
@@ -41,10 +42,10 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: "etablissement/:etabId",
+        path: "etablissement/:siret",
         errorElement: <AppError />,
-        element: <EtabBanner />,
-        loader: etabBannerLoader,
+        element: <Etab />,
+        loader: etabLoader,
         children: [
           {
             index: true,
@@ -56,6 +57,11 @@ const router = createBrowserRouter([
             element: <EtabPostes />,
           },
         ],
+      },
+      {
+        path: "ett/:siret",
+        element: <ETT />,
+        loader: ettLoader,
       },
     ],
   },

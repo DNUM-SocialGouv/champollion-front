@@ -9,8 +9,9 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     const formData = await request.formData()
     const siret = formData.get("input") ? String(formData.get("input")) : ""
-    await getEtablissementType(siret)
-    return redirect(`/etablissement/${siret}`)
+    const { ett } = await getEtablissementType(siret)
+    const redirectTo = ett ? `/ett/${siret}` : `/etablissement/${siret}`
+    return redirect(redirectTo)
   } catch (error) {
     return error
   }

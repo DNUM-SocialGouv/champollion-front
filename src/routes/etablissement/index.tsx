@@ -1,20 +1,34 @@
 import { useState } from "react"
-import { LoaderFunctionArgs, Outlet, useLoaderData, useNavigate } from "react-router-dom"
+import {
+  LoaderFunctionArgs,
+  Outlet,
+  redirect,
+  useLoaderData,
+  useNavigate,
+} from "react-router-dom"
+import { getEtablissementType } from "../../api/etablissement"
 
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs"
-import { Button } from "@codegouvfr/react-dsfr/Button"
+import EtabBanner from "../../components/EtabBanner"
 
-type EtabBannerLoader = {
+type EtabLoader = {
   siret: string
   pathname: string
 }
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const url = new URL(request.url)
+  const siret = params.siret ? String(params.siret) : ""
+  const { ett } = await getEtablissementType(siret)
+
+  if (ett) {
+    return redirect(`/ett/${siret}`)
+  }
+
   return {
-    siret: params.etabId,
+    siret,
     pathname: url.pathname,
-  } as EtabBannerLoader
+  } as EtabLoader
 }
 
 const tabs = [
@@ -26,8 +40,8 @@ const tabIndex = {
   tab2: 1,
 } as Record<string, number>
 
-export default function EtabBanner() {
-  const { siret, pathname } = useLoaderData() as EtabBannerLoader
+export default function Etab() {
+  const { siret, pathname } = useLoaderData() as EtabLoader
   const navigate = useNavigate()
 
   const initialTab: string = pathname.includes("postes") ? "tab2" : "tab1"
@@ -40,28 +54,16 @@ export default function EtabBanner() {
   }
 
   return (
-    <div className="flex w-full flex-col items-center">
-      <div className="fr-container fr-my-2w">
-        <Button
-          iconId="fr-icon-arrow-left-line"
-          priority="secondary"
-          size="small"
-          linkProps={{ to: ".." }}
-        >
-          Chercher un autre établissement
-        </Button>
-      </div>
-      <div className="fr-py-4w w-full bg-contrast-info">
-        <div className="fr-container mx-auto">
-          <h1 className="fr-h3">Etablissement : MonEtab</h1>
-          <p>{`SIRET : ${siret}`}</p>
+    <>
+      <div className="flex w-full flex-col items-center">
+        <EtabBanner etabName={"MonEtab"} isEtt={false} siret={siret} />
+
+        <div className="fr-mt-2w fr-container">
+          <Tabs selectedTabId={selectedTabId} tabs={tabs} onTabChange={handleTabChange}>
+            <Outlet />
+          </Tabs>
         </div>
       </div>
-      <div className="fr-mt-2w fr-container">
-        <Tabs selectedTabId={selectedTabId} tabs={tabs} onTabChange={handleTabChange}>
-          <Outlet />
-        </Tabs>
-      </div>
-    </div>
+    </>
   )
 }
