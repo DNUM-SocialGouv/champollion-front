@@ -2,6 +2,7 @@ import { getEtablissementType } from "../api/etablissement"
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Input } from "@codegouvfr/react-dsfr/Input"
+import { Notice } from "@codegouvfr/react-dsfr/Notice"
 import { Form, redirect, useActionData } from "react-router-dom"
 import { ActionFunctionArgs } from "react-router-dom"
 
@@ -28,7 +29,7 @@ export default function Index() {
         <Form className="fr-pt-1w flex items-end justify-center" method="post">
           <Input
             className="w-3/4"
-            hintText="Format attendu : 14 chiffres, e.g. 00542012000015."
+            hintText="Format attendu : 14 chiffres"
             label="Entrez un SIRET"
             nativeInputProps={{
               name: "input",
@@ -44,8 +45,17 @@ export default function Index() {
           </Button>
         </Form>
         {!!error && (
-          <Alert description={error?.message} severity="error" title="Erreur" />
+          <Alert
+            className="fr-mb-2w"
+            description={error?.message}
+            severity="error"
+            title="Erreur"
+          />
         )}
+        <Notice
+          isClosable
+          title="Exemples de SIRET : ETT 00542012000015, établissement 21620393500012."
+        />
       </div>
     </div>
   )

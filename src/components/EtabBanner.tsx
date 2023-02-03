@@ -20,11 +20,11 @@ export default function EtabBanner({ isEtt = false, etabName, siret }: EtabBanne
           Chercher un autre établissement
         </Button>
       </div>
-      <div className="fr-py-4w w-full bg-contrast-info">
+      <div className="fr-py-4w w-full bg-bg-contrast-info">
         <div className="fr-container mx-auto">
           <h1 className="fr-h3">{`${etabType} : ${etabName}`}</h1>
           <p className="fr-mb-1v">
-            <span className="bold">SIRET : </span>
+            <span className="font-bold">SIRET : </span>
             {siret}
           </p>
         </div>

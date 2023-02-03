@@ -1,4 +1,21 @@
 /** @type {import('tailwindcss').Config} */
+
+// **********Colors************
+// In DSFR, $border-default-grey and $background-default-grey are different colors
+// => We create color names based on those color decisions, not the color code itself
+// It's a bit redundant in tailwind class, e.g. "bg-bg-default-grey", but easier to match with DSFR color
+
+const createColorObject = (colorNames, decisionPrefix) =>
+  Object.fromEntries(colorNames.map((name) => [name, `var(--${decisionPrefix}-${name})`]))
+
+const background = createColorObject(
+  ["alt-grey", "contrast-info", "default-grey"],
+  "background"
+)
+const border = createColorObject(["default-grey"], "border")
+const text = createColorObject(["mention-grey"], "text")
+const artwork = createColorObject([], "artwork")
+
 module.exports = {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   corePlugins: {
@@ -14,8 +31,13 @@ module.exports = {
       xl: "1248px",
     },
     colors: {
-      "contrast-info": "var(--background-contrast-info)",
-      "mention-grey": "var(--text-mention-grey)",
+      bg: background,
+      bd: border,
+      tx: text,
+      aw: artwork,
+    },
+    boxShadow: {
+      overlap: "var(--overlap-shadow)",
     },
     extend: {},
   },

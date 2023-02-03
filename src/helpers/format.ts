@@ -30,4 +30,6 @@ const keysToCamel = (input: any): any => {
   return input
 }
 
-export { isObject, toCamel, keysToCamel }
+const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
+
+export { capitalize, isObject, toCamel, keysToCamel }
