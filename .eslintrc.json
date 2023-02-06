@@ -8,5 +8,8 @@
   "globals": { "module": false },
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
-  "root": true
+  "root": true,
+  "rules": {
+    "@typescript-eslint/ban-ts-comment": [{ "ts-ignore": "allow-with-description" }]
+  }
 }
