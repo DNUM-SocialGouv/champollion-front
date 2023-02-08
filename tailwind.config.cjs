@@ -9,11 +9,11 @@ const createColorObject = (colorNames, decisionPrefix) =>
   Object.fromEntries(colorNames.map((name) => [name, `var(--${decisionPrefix}-${name})`]))
 
 const background = createColorObject(
-  ["alt-grey", "contrast-info", "default-grey"],
+  ["alt-grey", "contrast-grey", "contrast-info", "default-grey"],
   "background"
 )
 const border = createColorObject(["default-grey"], "border")
-const text = createColorObject(["mention-grey"], "text")
+const text = createColorObject(["mention-grey", "active-grey", "disabled-grey"], "text")
 const artwork = createColorObject([], "artwork")
 
 module.exports = {
@@ -35,9 +35,11 @@ module.exports = {
       bd: border,
       tx: text,
       aw: artwork,
+      outline: "#0a76f6",
     },
     boxShadow: {
       overlap: "var(--overlap-shadow)",
+      input: "inset 0 -2px 0 0 var(--border-plain-grey)",
     },
     extend: {},
   },
