@@ -33,7 +33,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 const tabs = [
   { tabId: "tab1", label: "Fiche synthèse", to: "" },
-  { tabId: "tab2", label: "Détail des postes", to: "postes" },
+  { tabId: "tab2", label: "Détail des contrats par poste", to: "postes" },
 ]
 const tabIndex = {
   tab1: 0,
