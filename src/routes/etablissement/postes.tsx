@@ -1,10 +1,86 @@
-import { useState } from "react"
-import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
+import { ReactNode, useState } from "react"
+import * as dayjs from "dayjs"
+
+import { Link } from "react-router-dom"
 import Button from "@codegouvfr/react-dsfr/Button"
+import Pagination from "@codegouvfr/react-dsfr/Pagination"
+import AppTable from "../../components/AppTable"
+import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
+
+type ApiPoste = {
+  id: number
+  employee: string
+  contratType: "cdd" | "ctt" | "cdi" | null
+  ettName: string | null
+  ettSiret: string | null
+  startDate: string
+  expectedEndDate: string | null
+  endDate: string | null
+  motiveLabel: string | null
+  motiveCode: string | null
+  conventionCode: string
+}
+
+type FormattedPoste = {
+  id: number
+  employee: string
+  contratType: string
+  ett: ReactNode
+  startDate: string
+  expectedEndDate: string | null
+  endDate: string | null
+  motive: string | null
+  conventionCode: string | null
+}
+
+type Column =
+  | "employee"
+  | "contratType"
+  | "ett"
+  | "startDate"
+  | "expectedEndDate"
+  | "endDate"
+  | "motive"
+  | "conventionCode"
+
+type PostesHeader = {
+  key: Column
+  label: string
+  width: string
+}
+
+const headers = [
+  { key: "employee", label: "Salarié", width: "15%" },
+  { key: "contratType", label: "Type de contrat", width: "9%" },
+  { key: "ett", label: "ETT", width: "10%" },
+  { key: "startDate", label: "Date de début", width: "10%" },
+  { key: "expectedEndDate", label: "Date de fin prévisionnelle", width: "10%" },
+  { key: "endDate", label: "Date de fin réelle", width: "10%" },
+  { key: "motive", label: "Motif de recours", width: "20%" },
+  { key: "conventionCode", label: "Conv. collective", width: "6%" },
+] as PostesHeader[]
 
 export default function EtabPostes() {
   const [selectedOptions, setSelectedOptions] = useState([] as Option[]) // updated live when Select changes
   const [selectedPostes, setSelectedPostes] = useState([] as Option[]) // updated only when validation button is clicked
+
+  const formatDate = (date: string | null) =>
+    dayjs(date).isValid() ? dayjs(date).format("DD/MM/YYYY") : ""
+
+  const formattedPostes: FormattedPoste[] = items.map((poste: ApiPoste) => {
+    const ett = <Link to={`/ett/${poste.ettSiret}`}>{poste.ettName}</Link>
+    return {
+      id: poste.id,
+      employee: poste.employee,
+      contratType: poste.contratType?.toUpperCase() || "",
+      ett,
+      startDate: formatDate(poste.startDate),
+      expectedEndDate: formatDate(poste.expectedEndDate),
+      endDate: formatDate(poste.endDate),
+      motive: poste.motiveLabel,
+      conventionCode: poste.conventionCode,
+    }
+  })
 
   return (
     <>
@@ -45,7 +121,18 @@ export default function EtabPostes() {
         </h2>
         <hr />
         {selectedPostes.length > 0 ? (
-          <p>Fonctionnalité à venir</p>
+          <>
+            <AppTable headers={headers} items={formattedPostes} />
+            <Pagination
+              count={5}
+              defaultPage={1}
+              getPageLinkProps={() => ({ to: "#" })}
+              showFirstLast
+              classes={{
+                list: "justify-center",
+              }}
+            />
+          </>
         ) : (
           <p className="italic text-tx-disabled-grey">
             Veuillez sélectionner un ou plusieurs postes.
@@ -190,3 +277,59 @@ const btpJobs = [
 const options = btpJobs.map(
   (job, index) => ({ value: index, label: job.title } as Option)
 )
+
+const items: ApiPoste[] = [
+  {
+    id: 1,
+    employee: "John Doe",
+    contratType: "cdd",
+    ettName: "",
+    ettSiret: "",
+    startDate: "2022-06-01",
+    expectedEndDate: "2022-09-15",
+    endDate: null,
+    motiveLabel: "Remplacement de salarié absent",
+    motiveCode: "3",
+    conventionCode: "2034",
+  },
+
+  {
+    id: 2,
+    employee: "John Doe",
+    contratType: "ctt",
+    ettName: "Adecco",
+    ettSiret: "00542012000015",
+    startDate: "2022-07-01",
+    expectedEndDate: "2022-09-15",
+    endDate: "2022-09-15",
+    motiveLabel: "Accroissement temporaire d'activité",
+    motiveCode: "2",
+    conventionCode: "2034",
+  },
+  {
+    id: 3,
+    employee: "Marco Polo",
+    contratType: "ctt",
+    ettName: "Manpower",
+    ettSiret: "00542012000015",
+    startDate: "2022-07-01",
+    expectedEndDate: "2022-09-15",
+    endDate: "2022-09-15",
+    motiveLabel: "Accroissement temporaire d'activité",
+    motiveCode: "2",
+    conventionCode: "2034",
+  },
+  {
+    id: 4,
+    employee: "Jeanne Dupont",
+    contratType: "cdi",
+    ettName: null,
+    ettSiret: null,
+    startDate: "2021-11-23",
+    expectedEndDate: null,
+    endDate: null,
+    motiveLabel: null,
+    motiveCode: null,
+    conventionCode: "2034",
+  },
+]
