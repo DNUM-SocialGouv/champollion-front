@@ -8,22 +8,32 @@ import EtabInfo from "../components/EtabInfo"
 export async function loader({ params }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
 
-  const { etablissementId: etabId, ett } = await getEtablissementType(siret)
+  const {
+    etablissementId: etabId,
+    ett,
+    raisonSociale,
+  } = await getEtablissementType(siret)
 
   if (!ett) {
     return redirect(`/etablissement/${siret}`)
   }
 
   const info = await getEtablissementInfo(etabId)
-  return { info, siret }
+  return { info, raisonSociale, siret }
+}
+
+type ETTLoader = {
+  raisonSociale: string
+  siret: string
+  info: EtablissementInfo
 }
 
 export default function ETT() {
-  const { info, siret } = useLoaderData() as { siret: string; info: EtablissementInfo }
+  const { info, raisonSociale, siret } = useLoaderData() as ETTLoader
 
   return (
     <div className="flex w-full flex-col">
-      <EtabBanner etabName={"MonETT"} isEtt={true} siret={siret} />
+      <EtabBanner etabName={raisonSociale} isEtt={true} siret={siret} />
       <div className="fr-container">
         <EtabInfo info={info} siret={siret} />
       </div>

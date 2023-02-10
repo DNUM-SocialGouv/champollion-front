@@ -1,6 +1,7 @@
 export type EtablissementType = {
   etablissementId: number
   ett: boolean
+  raisonSociale: string
 }
 
 export type EtablissementInfo = {

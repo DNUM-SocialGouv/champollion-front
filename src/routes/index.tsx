@@ -54,7 +54,7 @@ export default function Index() {
         )}
         <Notice
           isClosable
-          title="Exemples de SIRET : ETT 00542012000015, établissement 21620393500012."
+          title="Exemples de SIRET : ETT 33708054301162, établissement 21620393500012."
         />
       </div>
     </div>
