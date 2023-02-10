@@ -12,7 +12,7 @@ import Etab, { loader as etabLoader } from "./routes/etablissement"
 import EtabSynthese, {
   loader as etabSyntheseLoader,
 } from "./routes/etablissement/synthese"
-import EtabPostes from "./routes/etablissement/postes"
+import EtabPostes, { loader as etabPostesLoader } from "./routes/etablissement/postes"
 import ETT, { loader as ettLoader } from "./routes/ett"
 
 startReactDsfr({
@@ -54,6 +54,7 @@ const router = createBrowserRouter([
           },
           {
             path: "postes",
+            loader: etabPostesLoader,
             element: <EtabPostes />,
           },
         ],
