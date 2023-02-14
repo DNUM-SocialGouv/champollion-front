@@ -3,7 +3,7 @@ import { AxiosError } from "axios"
 import {
   EtablissementInfo,
   EtablissementType,
-  EtablissementPostesList,
+  EtablissementPoste,
   ResponseError,
 } from "./types"
 
@@ -48,7 +48,7 @@ export const getEtablissementPostesList = async (id: number) => {
     const response = await api.get(
       `/get-etablissement-postes-list?etablissement_id=${id}`
     )
-    return response.data?.data as EtablissementPostesList
+    return response.data?.data as EtablissementPoste[]
   } catch (err) {
     let status
     if (err instanceof AxiosError) status = err?.request?.status
