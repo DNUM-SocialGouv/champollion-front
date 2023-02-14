@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react"
+import { ReactNode, useState, useEffect } from "react"
 import * as dayjs from "dayjs"
 import { LoaderFunctionArgs, useLoaderData } from "react-router-dom"
 
@@ -8,8 +8,12 @@ import Pagination from "@codegouvfr/react-dsfr/Pagination"
 import AppTable from "../../components/AppTable"
 import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
 
-import { getEtablissementType, getEtablissementPostesList } from "../../api/etablissement"
-import { EtablissementPoste } from "../../api/types"
+import {
+  getEtablissementType,
+  getEtablissementPostesList,
+  getEtablissementContratsList,
+} from "../../api/etablissement"
+import { EtablissementPoste, EtablissementContrat } from "../../api/types"
 
 type ApiContrat = {
   id: number
@@ -70,39 +74,67 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const { id: etabId } = await getEtablissementType(siret)
 
   const postes = await getEtablissementPostesList(etabId)
-  return { postes }
+  return { etabId, postes }
 }
 
 type EtabPostesLoader = {
+  etabId: number
   postes: EtablissementPoste[]
 }
 
 export default function EtabPostes() {
-  const { postes } = useLoaderData() as EtabPostesLoader
-  const options = postes.map(
-    (poste, index) => ({ value: index, label: poste.libelle } as Option)
-  )
+  const { etabId, postes } = useLoaderData() as EtabPostesLoader
 
   const [selectedOptions, setSelectedOptions] = useState([] as Option[]) // updated live when Select changes
   const [selectedPostes, setSelectedPostes] = useState([] as Option[]) // updated only when validation button is clicked
+  const [formattedContrats, setFormattedContrats] = useState([] as FormattedContrat[]) // updated only when validation button is clicked
+  const [nbResults, setNbResults] = useState(0) // updated only when validation button is clicked
+  const [totalPages, setTotalPages] = useState(1) // updated only when validation button is clicked
 
+  const options = postes.map(
+    (poste, index) => ({ value: index, label: poste.libelle } as Option)
+  )
   const formatDate = (date: string | null) =>
     dayjs(date).isValid() ? dayjs(date).format("DD/MM/YYYY") : ""
 
-  const formattedContrats: FormattedContrat[] = items.map((contrat: ApiContrat) => {
-    const ett = <Link to={`/ett/${contrat.ettSiret}`}>{contrat.ettName}</Link>
-    return {
-      id: contrat.id,
-      employee: contrat.employee,
-      contratType: contrat.contratType?.toUpperCase() || "",
-      ett,
-      startDate: formatDate(contrat.startDate),
-      expectedEndDate: formatDate(contrat.expectedEndDate),
-      endDate: formatDate(contrat.endDate),
-      motive: contrat.motiveLabel,
-      conventionCode: contrat.conventionCode,
-    }
-  })
+  const contratTypeShort = [
+    { code: "01", label: "CDI" },
+    { code: "02", label: "CDD" },
+    { code: "03", label: "CTT" },
+  ]
+
+  const formatContrats = (items: EtablissementContrat[]) =>
+    items.map((contrat) => {
+      const ett = <Link to={`/ett/${contrat.ettSiret}`}>{contrat.ettRaisonSociale}</Link>
+      return {
+        id: contrat.id,
+        employee: `${contrat.prenoms} ${contrat.nomFamille}`,
+        contratType:
+          contratTypeShort.find((item) => item.code === contrat.codeNatureContrat)
+            ?.label || "Autre",
+        ett,
+        startDate: formatDate(contrat.dateDebut),
+        expectedEndDate: formatDate(contrat.dateFinPrevisionnelle),
+        endDate: formatDate(contrat.dateFin),
+        motive: "",
+        conventionCode: contrat.codeConventionCollective,
+      }
+    })
+
+  const getContrats = async (page = 1) => {
+    // should use selectedPostes but I don't have time to get into reactivity today
+    const postes = selectedOptions.map((option) => option.label)
+    const { data: contrats, meta } = await getEtablissementContratsList({
+      id: etabId,
+      startMonth: "2022-01-01",
+      endMonth: "2022-12-01",
+      postes,
+      page,
+    })
+    setFormattedContrats(formatContrats(contrats))
+    setNbResults(meta.totalCount)
+    setTotalPages(meta.totalPages)
+  }
 
   return (
     <>
@@ -118,8 +150,8 @@ export default function EtabPostes() {
         <Button
           disabled={selectedOptions.length == 0 && selectedPostes.length == 0}
           onClick={() => {
-            console.log("clicked!", selectedOptions)
             setSelectedPostes([...selectedOptions])
+            getContrats()
           }}
           type="button"
         >
@@ -144,10 +176,10 @@ export default function EtabPostes() {
         <hr />
         {selectedPostes.length > 0 ? (
           <>
+            <p>{nbResults} résultats</p>
             <AppTable headers={headers} items={formattedContrats} />
             <Pagination
-              count={5}
-              defaultPage={1}
+              count={totalPages}
               getPageLinkProps={() => ({ to: "#" })}
               showFirstLast
               classes={{
@@ -164,59 +196,3 @@ export default function EtabPostes() {
     </>
   )
 }
-
-const items: ApiContrat[] = [
-  {
-    id: 1,
-    employee: "John Doe",
-    contratType: "cdd",
-    ettName: "",
-    ettSiret: "",
-    startDate: "2022-06-01",
-    expectedEndDate: "2022-09-15",
-    endDate: null,
-    motiveLabel: "Remplacement de salarié absent",
-    motiveCode: "3",
-    conventionCode: "2034",
-  },
-
-  {
-    id: 2,
-    employee: "John Doe",
-    contratType: "ctt",
-    ettName: "Adecco",
-    ettSiret: "00542012000015",
-    startDate: "2022-07-01",
-    expectedEndDate: "2022-09-15",
-    endDate: "2022-09-15",
-    motiveLabel: "Accroissement temporaire d'activité",
-    motiveCode: "2",
-    conventionCode: "2034",
-  },
-  {
-    id: 3,
-    employee: "Marco Polo",
-    contratType: "ctt",
-    ettName: "Manpower",
-    ettSiret: "00542012000015",
-    startDate: "2022-07-01",
-    expectedEndDate: "2022-09-15",
-    endDate: "2022-09-15",
-    motiveLabel: "Accroissement temporaire d'activité",
-    motiveCode: "2",
-    conventionCode: "2034",
-  },
-  {
-    id: 4,
-    employee: "Jeanne Dupont",
-    contratType: "cdi",
-    ettName: null,
-    ettSiret: null,
-    startDate: "2021-11-23",
-    expectedEndDate: null,
-    endDate: null,
-    motiveLabel: null,
-    motiveCode: null,
-    conventionCode: "2034",
-  },
-]
