@@ -16,7 +16,7 @@ dayjs.locale("fr")
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
-  const { etablissementId: etabId } = await getEtablissementType(siret)
+  const { id: etabId } = await getEtablissementType(siret)
   const info = await getEtablissementInfo(etabId)
 
   return { info, siret }

@@ -1,5 +1,5 @@
 export type EtablissementType = {
-  etablissementId: number
+  id: number
   ett: boolean
   raisonSociale: string
 }
@@ -19,4 +19,7 @@ export type ResponseError = {
   status?: number
 }
 
-export type EtablissementPostesList = string[]
+export type EtablissementPoste = {
+  id: number
+  libelle: string
+}

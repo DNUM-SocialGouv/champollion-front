@@ -8,11 +8,7 @@ import EtabInfo from "../components/EtabInfo"
 export async function loader({ params }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
 
-  const {
-    etablissementId: etabId,
-    ett,
-    raisonSociale,
-  } = await getEtablissementType(siret)
+  const { id: etabId, ett, raisonSociale } = await getEtablissementType(siret)
 
   if (!ett) {
     return redirect(`/etablissement/${siret}`)

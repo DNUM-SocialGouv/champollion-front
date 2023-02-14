@@ -9,7 +9,7 @@ import AppTable from "../../components/AppTable"
 import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
 
 import { getEtablissementType, getEtablissementPostesList } from "../../api/etablissement"
-import { EtablissementPostesList } from "../../api/types"
+import { EtablissementPoste } from "../../api/types"
 
 type ApiContrat = {
   id: number
@@ -67,19 +67,21 @@ const headers = [
 export async function loader({ params }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
 
-  const { etablissementId: etabId } = await getEtablissementType(siret)
+  const { id: etabId } = await getEtablissementType(siret)
 
   const postes = await getEtablissementPostesList(etabId)
   return { postes }
 }
 
 type EtabPostesLoader = {
-  postes: EtablissementPostesList
+  postes: EtablissementPoste[]
 }
 
 export default function EtabPostes() {
   const { postes } = useLoaderData() as EtabPostesLoader
-  const options = postes.map((poste, index) => ({ value: index, label: poste } as Option))
+  const options = postes.map(
+    (poste, index) => ({ value: index, label: poste.libelle } as Option)
+  )
 
   const [selectedOptions, setSelectedOptions] = useState([] as Option[]) // updated live when Select changes
   const [selectedPostes, setSelectedPostes] = useState([] as Option[]) // updated only when validation button is clicked
@@ -114,7 +116,7 @@ export default function EtabPostes() {
           onChange={(newValue: readonly Option[]) => setSelectedOptions([...newValue])}
         />
         <Button
-          disabled={selectedOptions.length == 0}
+          disabled={selectedOptions.length == 0 && selectedPostes.length == 0}
           onClick={() => {
             console.log("clicked!", selectedOptions)
             setSelectedPostes([...selectedOptions])
