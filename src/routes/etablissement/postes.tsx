@@ -5,13 +5,22 @@ import { LoaderFunctionArgs, useLoaderData } from "react-router-dom"
 import { Link } from "react-router-dom"
 import Button from "@codegouvfr/react-dsfr/Button"
 import Pagination from "@codegouvfr/react-dsfr/Pagination"
-import AppTable from "../../components/AppTable"
+import ToggleSwitch from "@codegouvfr/react-dsfr/ToggleSwitch"
+import Select from "@codegouvfr/react-dsfr/Select"
 import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
+import EffectifBarChart, { MonthData } from "../../components/EffectifBarChart"
+import AppTable from "../../components/AppTable"
+import {
+  formatEffectifs,
+  unitsOptions,
+  getUnitOptionFromKey,
+} from "../../helpers/effectifs"
 
 import {
-  getEtablissementType,
-  getEtablissementPostesList,
+  getEffectifs,
   getEtablissementContratsList,
+  getEtablissementPostesList,
+  getEtablissementType,
 } from "../../api/etablissement"
 import { EtablissementPoste, EtablissementContrat } from "../../api/types"
 
@@ -77,6 +86,27 @@ export default function EtabPostes() {
   const [nbResults, setNbResults] = useState(0) // updated only when validation button is clicked
   const [totalPages, setTotalPages] = useState(1) // updated only when validation button is clicked
 
+  const [areTempContractsStacked, setAreTempContractsStacked] = useState(false)
+  const [unit, setUnit] = useState({ key: 1, option: getUnitOptionFromKey(1) })
+  const [data, setData] = useState([] as MonthData[])
+
+  const handleUnitSelected = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newKey = Number(event.target.value)
+    const newUnitOption = getUnitOptionFromKey(newKey)
+
+    setUnit({ key: newKey, option: newUnitOption })
+    const postes = selectedPostes.map((poste) => poste.label)
+
+    const newData = await getEffectifs({
+      id: etabId,
+      startMonth: "2022-01-01",
+      endMonth: "2022-12-01",
+      unit: newUnitOption?.value || "tot",
+      postes,
+    })
+    setData(formatEffectifs(newData))
+  }
+
   const options = postes.map(
     (poste, index) => ({ value: index, label: poste.libelle } as Option)
   )
@@ -107,15 +137,25 @@ export default function EtabPostes() {
       }
     })
 
-  const getContrats = async (page = 1) => {
-    // should use selectedPostes but I don't have time to get into reactivity today
+  const handlePostesValidated = async () => {
+    setSelectedPostes([...selectedOptions])
     const postes = selectedOptions.map((option) => option.label)
+
+    const effectifs = await getEffectifs({
+      id: etabId,
+      startMonth: "2022-01-01",
+      endMonth: "2022-12-01",
+      unit: unit.option?.value || "tot",
+      postes,
+    })
+    setData(formatEffectifs(effectifs))
+
     const { data: contrats, meta } = await getEtablissementContratsList({
       id: etabId,
       startMonth: "2022-01-01",
       endMonth: "2022-12-01",
       postes,
-      page,
+      page: 1,
     })
     setFormattedContrats(formatContrats(contrats))
     setNbResults(meta.totalCount)
@@ -135,10 +175,7 @@ export default function EtabPostes() {
         />
         <Button
           disabled={selectedOptions.length == 0 && selectedPostes.length == 0}
-          onClick={() => {
-            setSelectedPostes([...selectedOptions])
-            getContrats()
-          }}
+          onClick={handlePostesValidated}
           type="button"
         >
           Valider la sélection
@@ -148,7 +185,36 @@ export default function EtabPostes() {
         <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Évolution du nombre de salariés</h2>
         <hr />
         {selectedPostes.length > 0 ? (
-          <p>Fonctionnalité à venir</p>
+          <>
+            <div className="fr-mb-2w lg:columns-2">
+              <Select
+                className="md:w-3/4"
+                label="Unité des effectifs mensuels"
+                nativeSelectProps={{
+                  onChange: handleUnitSelected,
+                  value: unit.key,
+                }}
+              >
+                {unitsOptions.map(({ key, label, attr }) => (
+                  <option {...attr} key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </Select>
+              <ToggleSwitch
+                label="Empiler les barres des CDD et CTT"
+                checked={areTempContractsStacked}
+                onChange={(checked) => setAreTempContractsStacked(checked)}
+              />
+            </div>
+            <div className="h-[500px]">
+              <EffectifBarChart
+                isStacked={areTempContractsStacked}
+                unit="contrats"
+                data={data}
+              />
+            </div>
+          </>
         ) : (
           <p className="italic text-tx-disabled-grey">
             Veuillez sélectionner un ou plusieurs postes.
