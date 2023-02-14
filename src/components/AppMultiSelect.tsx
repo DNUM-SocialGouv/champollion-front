@@ -49,7 +49,6 @@ const MultiValue = (props: MultiValueProps<Option>) => {
   const removeProps = props.removeProps as {
     onClick: () => {}
     onTouchEnd: () => {}
-    onMouseDown: () => {}
   }
   return (
     <>
@@ -58,7 +57,6 @@ const MultiValue = (props: MultiValueProps<Option>) => {
         aria-label={`Retirer ${selectedData.label}`}
         onClick={() => removeProps?.onClick && removeProps.onClick()}
         onTouchEnd={() => removeProps?.onTouchEnd && removeProps.onTouchEnd()}
-        onMouseDown={() => removeProps?.onMouseDown && removeProps.onMouseDown()}
       >
         {selectedData.label}
       </button>
