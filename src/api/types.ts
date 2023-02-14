@@ -1,3 +1,17 @@
+export type ResponseError = {
+  message: string
+  status?: number
+}
+
+export type MetaData = {
+  currentPage: number | null
+  nextPage: number | null
+  perPage: number | null
+  prevPage: number | null
+  totalPages: number
+  totalCount: number
+}
+
 export type EtablissementType = {
   id: number
   ett: boolean
@@ -12,11 +26,6 @@ export type EtablissementInfo = {
   commune: string
   complementAdresse?: string
   libelleConventionCollective?: string
-}
-
-export type ResponseError = {
-  message: string
-  status?: number
 }
 
 export type EtablissementPoste = {
@@ -47,11 +56,11 @@ export type EtablissementContrat = {
   etuRaisonSociale: string | null
 }
 
-export type MetaData = {
-  currentPage: number | null
-  nextPage: number | null
-  perPage: number | null
-  prevPage: number | null
-  totalPages: number
-  totalCount: number
+export type Effectif = {
+  month: string
+  nbCdi: number
+  nbCdd: number
+  nbCtt: number
 }
+
+export type EffectifUnit = "etp" | "tot" | "ldm" | "avg"

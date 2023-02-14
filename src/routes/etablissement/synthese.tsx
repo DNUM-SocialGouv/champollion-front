@@ -1,14 +1,16 @@
+import { useState } from "react"
 import { LoaderFunctionArgs, useLoaderData } from "react-router-dom"
-import { getEtablissementInfo, getEtablissementType } from "../../api/etablissement"
-import { EtablissementInfo } from "../../api/types"
+import {
+  getEtablissementInfo,
+  getEtablissementType,
+  getEffectifs,
+} from "../../api/etablissement"
+import { EtablissementInfo, Effectif, EffectifUnit } from "../../api/types"
 
 import EtabInfo from "../../components/EtabInfo"
-
-import AppBarChart from "../../components/AppBarChart"
-import { Button } from "@codegouvfr/react-dsfr/Button"
+import EffectifBarChart, { MonthData } from "../../components/EffectifBarChart"
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
-import { useState } from "react"
-import { MonthData } from "../../components/AppBarChart"
+import { Select } from "@codegouvfr/react-dsfr/Select"
 
 import * as dayjs from "dayjs"
 import "dayjs/locale/fr"
@@ -18,55 +20,76 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
   const { id: etabId } = await getEtablissementType(siret)
   const info = await getEtablissementInfo(etabId)
+  const effectifs = await getEffectifs({
+    id: etabId,
+    startMonth: "2022-01-01",
+    endMonth: "2022-12-01",
+    unit: "tot",
+  })
+  return { effectifs, etabId, info, siret }
+}
 
-  return { info, siret }
+type EtabSyntheseLoader = {
+  effectifs: Effectif[]
+  etabId: number
+  info: EtablissementInfo
+  siret: string
 }
 
 export default function EtabSynthese() {
-  const { info, siret } = useLoaderData() as { info: EtablissementInfo; siret: string }
+  const formatNumber = (nb: number) => (Number.isInteger(nb) ? nb : nb.toFixed(2))
+  const formatEffectifs = (effectifs: Effectif[]) =>
+    effectifs.map(({ month, nbCdi, nbCdd, nbCtt }) => {
+      const date = dayjs(month)
+
+      return {
+        date: date.format("YYYY-MM-DD"),
+        label: dayjs(date).format("MMM YY"),
+        name: dayjs(date).format("MMM YY"),
+        cdd: formatNumber(nbCdd),
+        cdi: formatNumber(nbCdi),
+        ctt: formatNumber(nbCtt),
+      } as MonthData
+    })
+
+  const unitsOptions: {
+    key: number
+    value: EffectifUnit | null
+    label: string
+    attr?: {}
+  }[] = [
+    {
+      key: 0,
+      value: null,
+      label: "Sélectionnez l'unité des effectifs à afficher",
+      attr: { disabled: true },
+    },
+    { key: 1, value: "tot", label: "Nombre total de contrats" },
+    { key: 2, value: "avg", label: "Nombre moyen mensuel de contrats" },
+    { key: 3, value: "ldm", label: "Nombre de contrats au dernier jour du mois" },
+    // { key: 4, value: "etp", label: "ETP (équivalent temps plein)" }, // etp not available yet from api
+  ]
+
+  const getUnitOptionFromKey = (key: number | string) =>
+    unitsOptions.find((option) => String(option.key) == String(key))
+
+  const { effectifs, etabId, info, siret } = useLoaderData() as EtabSyntheseLoader
   const [areTempContractsStacked, setAreTempContractsStacked] = useState(false)
-  const [isETP, setIsETP] = useState(false)
+  const [unit, setUnit] = useState({ key: 1, option: getUnitOptionFromKey(1) })
+  const [data, setData] = useState(formatEffectifs(effectifs))
 
-  const startDate = "2021-01-01"
-  function getRandomInt(max: number, min = 0) {
-    return Math.floor(Math.random() * max + min)
-  }
+  const handleUnitSelected = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newKey = Number(event.target.value)
+    const newUnitOption = getUnitOptionFromKey(newKey)
 
-  const createFakeData = (length = 12) => {
-    const fakeData: MonthData[] = []
-    const addMonth = (index: number, arr: MonthData[]) => {
-      const date = dayjs(startDate).add(index, "month")
-
-      arr.push({
-        date: date.format("YYYY-MM-DD"),
-        label: dayjs(date).format("MMM YY"),
-        name: dayjs(date).format("MMM YY"),
-        cdd: getRandomInt(20),
-        cdi: getRandomInt(50, 10),
-        ctt: getRandomInt(30),
-      })
-    }
-    for (let index = 0; index < length; index++) {
-      addMonth(index, fakeData)
-    }
-    return fakeData
-  }
-  const [data, setData] = useState(createFakeData)
-
-  const handleClick = () => {
-    const date = dayjs(startDate).add(data.length, "month")
-
-    setData([
-      ...data,
-      {
-        date: date.format("YYYY-MM-DD"),
-        label: dayjs(date).format("MMM YY"),
-        name: dayjs(date).format("MMM YY"),
-        cdd: getRandomInt(20),
-        cdi: getRandomInt(50, 10),
-        ctt: getRandomInt(30),
-      },
-    ])
+    setUnit({ key: newKey, option: newUnitOption })
+    const newData = await getEffectifs({
+      id: etabId,
+      startMonth: "2022-01-01",
+      endMonth: "2022-12-01",
+      unit: newUnitOption?.value || "tot",
+    })
+    setData(formatEffectifs(newData))
   }
 
   return (
@@ -75,38 +98,31 @@ export default function EtabSynthese() {
       <div className="fr-py-3w flex w-full flex-col">
         <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Vue globale des contrats</h2>
         <hr />
-        <div className="fr-mb-2w flex flex-wrap">
+        <div className="fr-mb-2w lg:columns-2">
+          <Select
+            className="md:w-3/4"
+            label="Unité des effectifs mensuels"
+            nativeSelectProps={{
+              onChange: handleUnitSelected,
+              value: unit.key,
+            }}
+          >
+            {unitsOptions.map(({ key, label, attr }) => (
+              <option {...attr} key={key} value={key}>
+                {label}
+              </option>
+            ))}
+          </Select>
           <ToggleSwitch
-            className="w-1/2"
             label="Empiler les barres des CDD et CTT"
             checked={areTempContractsStacked}
             onChange={(checked) => setAreTempContractsStacked(checked)}
           />
-          <ToggleSwitch
-            className="w-1/2"
-            label="En ETP"
-            checked={isETP}
-            onChange={(checked) => {
-              setIsETP(checked)
-              const dataLength = data.length
-              setData(createFakeData(dataLength))
-            }}
-          />
-          <div className="w-1/2">
-            <Button
-              priority="secondary"
-              size="medium"
-              type="submit"
-              onClick={handleClick}
-            >
-              Ajouter un mois
-            </Button>
-          </div>
         </div>
         <div className="h-[500px]">
-          <AppBarChart
+          <EffectifBarChart
             isStacked={areTempContractsStacked}
-            unit={isETP ? "ETP" : "contrats"}
+            unit="contrats"
             data={data}
           />
         </div>

@@ -20,7 +20,7 @@ import { capitalize } from "../helpers/format"
 
 dayjs.locale("fr")
 
-type AppBarChartType = {
+type EffectifBarChartType = {
   isStacked: boolean
   unit: string
   data: MonthData[]
@@ -34,7 +34,11 @@ export type MonthData = {
   ctt: number
 }
 
-export default function AppBarChart({ isStacked = false, unit, data }: AppBarChartType) {
+export default function EffectifBarChart({
+  isStacked = false,
+  unit,
+  data,
+}: EffectifBarChartType) {
   const [brushIndexes, setBrushIndexes] = useState({
     startIndex: 0,
     endIndex: data.length - 1,
