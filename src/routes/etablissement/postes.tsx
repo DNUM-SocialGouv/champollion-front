@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect } from "react"
+import { ReactNode, useState } from "react"
 import * as dayjs from "dayjs"
 import { LoaderFunctionArgs, useLoaderData } from "react-router-dom"
 
@@ -14,20 +14,6 @@ import {
   getEtablissementContratsList,
 } from "../../api/etablissement"
 import { EtablissementPoste, EtablissementContrat } from "../../api/types"
-
-type ApiContrat = {
-  id: number
-  employee: string
-  contratType: "cdd" | "ctt" | "cdi" | null
-  ettName: string | null
-  ettSiret: string | null
-  startDate: string
-  expectedEndDate: string | null
-  endDate: string | null
-  motiveLabel: string | null
-  motiveCode: string | null
-  conventionCode: string
-}
 
 type FormattedContrat = {
   id: number

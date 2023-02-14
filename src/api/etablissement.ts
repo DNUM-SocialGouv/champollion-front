@@ -1,6 +1,8 @@
 import api from "./config"
 import { AxiosError } from "axios"
 import {
+  Effectif,
+  EffectifUnit,
   EtablissementContrat,
   EtablissementInfo,
   EtablissementPoste,
@@ -100,6 +102,46 @@ export const getEtablissementContratsList = async ({
       data,
       meta,
     }
+  } catch (err) {
+    let status
+    if (err instanceof AxiosError) status = err?.request?.status
+    let message = String(err)
+    if (err instanceof AxiosError && status && String(status).startsWith("4")) {
+      message = err?.response?.data[0]?.message
+    }
+    return Promise.reject({
+      status,
+      message,
+    } as ResponseError)
+  }
+}
+
+type EffectifsParams = {
+  id: number
+  startMonth: string
+  endMonth: string
+  unit: EffectifUnit
+  postes?: string[]
+}
+
+export const getEffectifs = async ({
+  id,
+  startMonth,
+  endMonth,
+  unit,
+  postes,
+}: EffectifsParams) => {
+  try {
+    let params = `etablissement_id=${id}&start_month=${startMonth}&end_month=${endMonth}&unit=${unit}`
+
+    if (postes && postes.length > 0) {
+      const postesParam = postes.map((poste) => `postes=${poste}`).join("&")
+      params += `&${postesParam}`
+    }
+
+    const response = await api.get(`/get-effectifs?${params}`)
+
+    return response.data?.data as Effectif[]
   } catch (err) {
     let status
     if (err instanceof AxiosError) status = err?.request?.status
