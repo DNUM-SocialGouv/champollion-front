@@ -6,14 +6,17 @@ import { Effectif, EffectifUnit } from "../api/types"
 import { MonthData } from "../components/EffectifBarChart"
 
 const formatNumber = (nb: number) => (Number.isInteger(nb) ? nb : nb.toFixed(2))
+const formatDateToShortMonth = (date: string) => dayjs(date).format("MMM YY")
+const formatDateToFullMonth = (date: string) => dayjs(date).format("MMMM YYYY")
+
 const formatEffectifs = (effectifs: Effectif[]) =>
   effectifs.map(({ month, nbCdi, nbCdd, nbCtt }) => {
     const date = dayjs(month)
 
     return {
-      date: date.format("YYYY-MM-DD"),
-      label: dayjs(date).format("MMM YY"),
-      name: dayjs(date).format("MMM YY"),
+      date: month,
+      label: formatDateToShortMonth(month),
+      name: formatDateToFullMonth(month),
       cdd: formatNumber(nbCdd),
       cdi: formatNumber(nbCdi),
       ctt: formatNumber(nbCtt),
@@ -41,4 +44,10 @@ const unitsOptions: {
 const getUnitOptionFromKey = (key: number | string) =>
   unitsOptions.find((option) => String(option.key) == String(key))
 
-export { formatEffectifs, unitsOptions, getUnitOptionFromKey }
+export {
+  formatDateToShortMonth,
+  formatDateToFullMonth,
+  formatEffectifs,
+  unitsOptions,
+  getUnitOptionFromKey,
+}
