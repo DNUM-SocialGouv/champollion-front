@@ -33,7 +33,7 @@ export type EtablissementPoste = {
   libelle: string
 }
 
-export type EtablissementContrat = {
+export type EtuContrat = {
   id: number
   nomFamille: string | null
   nomUsage: string | null
@@ -47,13 +47,10 @@ export type EtablissementContrat = {
   dateFin: string | null
   codeConventionCollective: string
   libelleConventionCollective: string
-  ettEtablissementId: number | null
+  codeMotifRecours: string | null
+  libelleMotifRecours: string | null
   ettSiret: string | null
   ettRaisonSociale: string | null
-  etuEtablissementId: number | null
-  etuSiret: string | null
-  etuCodePostal: string | null
-  etuRaisonSociale: string | null
 }
 
 export type Effectif = {

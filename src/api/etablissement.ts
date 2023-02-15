@@ -3,10 +3,10 @@ import { AxiosError } from "axios"
 import {
   Effectif,
   EffectifUnit,
-  EtablissementContrat,
   EtablissementInfo,
   EtablissementPoste,
   EtablissementType,
+  EtuContrat,
   MetaData,
   ResponseError,
 } from "./types"
@@ -67,7 +67,7 @@ export const getEtablissementPostesList = async (id: number) => {
   }
 }
 
-type EtablissementContratsListParams = {
+type EtuContratsListParams = {
   id: number
   startMonth: string
   endMonth: string
@@ -76,14 +76,14 @@ type EtablissementContratsListParams = {
   per?: number
 }
 
-export const getEtablissementContratsList = async ({
+export const getEtuContratsList = async ({
   id,
   startMonth,
   endMonth,
   postes,
   page,
   per,
-}: EtablissementContratsListParams) => {
+}: EtuContratsListParams) => {
   try {
     let params = `etablissement_id=${id}&date_begin=${startMonth}&date_end=${endMonth}`
 
@@ -95,8 +95,8 @@ export const getEtablissementContratsList = async ({
     if (page) params += `&page=${page}`
     if (per) params += `&per_page=${per}`
 
-    const response = await api.get(`/get-etablissement-contrats-list?${params}`)
-    const data = response.data?.data as EtablissementContrat[]
+    const response = await api.get(`/get-etu-contrats?${params}`)
+    const data = response.data?.data as EtuContrat[]
     const meta = response.data?.meta as MetaData
     return {
       data,
