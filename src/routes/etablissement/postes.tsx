@@ -18,11 +18,11 @@ import {
 
 import {
   getEffectifs,
-  getEtablissementContratsList,
+  getEtuContratsList,
   getEtablissementPostesList,
   getEtablissementType,
 } from "../../api/etablissement"
-import { EtablissementPoste, EtablissementContrat } from "../../api/types"
+import { EtablissementPoste, EtuContrat } from "../../api/types"
 
 type FormattedContrat = {
   id: number
@@ -119,7 +119,7 @@ export default function EtabPostes() {
     { code: "03", label: "CTT" },
   ]
 
-  const formatContrats = (items: EtablissementContrat[]) =>
+  const formatContrats = (items: EtuContrat[]) =>
     items.map((contrat) => {
       const ett = <Link to={`/ett/${contrat.ettSiret}`}>{contrat.ettRaisonSociale}</Link>
       return {
@@ -132,7 +132,7 @@ export default function EtabPostes() {
         startDate: formatDate(contrat.dateDebut),
         expectedEndDate: formatDate(contrat.dateFinPrevisionnelle),
         endDate: formatDate(contrat.dateFin),
-        motive: "",
+        motive: contrat.libelleMotifRecours,
         conventionCode: contrat.codeConventionCollective,
       }
     })
@@ -150,7 +150,7 @@ export default function EtabPostes() {
     })
     setData(formatEffectifs(effectifs))
 
-    const { data: contrats, meta } = await getEtablissementContratsList({
+    const { data: contrats, meta } = await getEtuContratsList({
       id: etabId,
       startMonth: "2022-01-01",
       endMonth: "2022-12-01",
