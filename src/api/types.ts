@@ -61,3 +61,8 @@ export type Effectif = {
 }
 
 export type EffectifUnit = "etp" | "tot" | "ldm" | "avg"
+
+export type LastEffectif = {
+  lastEffectif: number
+  month: string
+}

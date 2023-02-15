@@ -1,6 +1,10 @@
 import { LoaderFunctionArgs, redirect, useLoaderData } from "react-router-dom"
-import { getEtablissementInfo, getEtablissementType } from "../api/etablissement"
-import { EtablissementInfo } from "../api/types"
+import {
+  getEtablissementInfo,
+  getEtablissementType,
+  getLastEffectif,
+} from "../api/etablissement"
+import { EtablissementInfo, LastEffectif } from "../api/types"
 
 import EtabBanner from "../components/EtabBanner"
 import EtabInfo from "../components/EtabInfo"
@@ -14,24 +18,28 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return redirect(`/etablissement/${siret}`)
   }
 
-  const info = await getEtablissementInfo(etabId)
-  return { info, raisonSociale, siret }
+  const [info, lastEffectif] = await Promise.all([
+    getEtablissementInfo(etabId),
+    getLastEffectif(etabId),
+  ])
+  return { info, lastEffectif, raisonSociale, siret }
 }
 
 type ETTLoader = {
+  info: EtablissementInfo
+  lastEffectif: LastEffectif
   raisonSociale: string
   siret: string
-  info: EtablissementInfo
 }
 
 export default function ETT() {
-  const { info, raisonSociale, siret } = useLoaderData() as ETTLoader
+  const { info, lastEffectif, raisonSociale, siret } = useLoaderData() as ETTLoader
 
   return (
     <div className="flex w-full flex-col">
       <EtabBanner etabName={raisonSociale} isEtt={true} siret={siret} />
       <div className="fr-container">
-        <EtabInfo info={info} siret={siret} />
+        <EtabInfo info={info} siret={siret} lastEffectif={lastEffectif} />
       </div>
     </div>
   )

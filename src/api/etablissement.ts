@@ -7,6 +7,7 @@ import {
   EtablissementPoste,
   EtablissementType,
   EtuContrat,
+  LastEffectif,
   MetaData,
   ResponseError,
 } from "./types"
@@ -142,6 +143,24 @@ export const getEffectifs = async ({
     const response = await api.get(`/get-effectifs?${params}`)
 
     return response.data?.data as Effectif[]
+  } catch (err) {
+    let status
+    if (err instanceof AxiosError) status = err?.request?.status
+    let message = String(err)
+    if (err instanceof AxiosError && status && String(status).startsWith("4")) {
+      message = err?.response?.data[0]?.message
+    }
+    return Promise.reject({
+      status,
+      message,
+    } as ResponseError)
+  }
+}
+
+export const getLastEffectif = async (id: number) => {
+  try {
+    const response = await api.get(`/get-last-effectif?etablissement_id=${id}`)
+    return response.data?.data as LastEffectif
   } catch (err) {
     let status
     if (err instanceof AxiosError) status = err?.request?.status

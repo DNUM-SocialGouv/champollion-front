@@ -1,11 +1,13 @@
-import { EtablissementInfo } from "../api/types"
+import { EtablissementInfo, LastEffectif } from "../api/types"
+import { formatDateToShortMonth } from "../helpers/effectifs"
 
 type EtabInfoProps = {
   info: EtablissementInfo
+  lastEffectif: LastEffectif
   siret: string
 }
 
-export default function EtabInfo({ info, siret }: EtabInfoProps) {
+export default function EtabInfo({ info, lastEffectif, siret }: EtabInfoProps) {
   const address = (
     <>
       {info.adresse}
@@ -31,6 +33,12 @@ export default function EtabInfo({ info, siret }: EtabInfoProps) {
     {
       label: "Convention collective",
       value: `${info.codeConventionCollective} - ${info.libelleConventionCollective}`,
+    },
+    {
+      label: "Dernier effectif déclaré (CDD et CDI)",
+      value: `${lastEffectif.lastEffectif} contrats (DSN ${formatDateToShortMonth(
+        lastEffectif.month
+      )})`,
     },
   ]
 

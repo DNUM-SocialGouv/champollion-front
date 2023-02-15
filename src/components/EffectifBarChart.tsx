@@ -1,6 +1,4 @@
 import { useMemo, useState } from "react"
-import * as dayjs from "dayjs"
-import "dayjs/locale/fr"
 import {
   Bar,
   BarChart,
@@ -18,15 +16,13 @@ import { ValueType, NameType } from "recharts/types/component/DefaultTooltipCont
 import { DataKey } from "recharts/types/util/types"
 import { capitalize } from "../helpers/format"
 
-dayjs.locale("fr")
-
 type EffectifBarChartType = {
   isStacked: boolean
   unit: string
   data: MonthData[]
 }
 export type MonthData = {
-  name?: string
+  name: string
   date: string
   label: string
   cdd: number
@@ -67,12 +63,12 @@ export default function EffectifBarChart({
     label,
   }: TooltipProps<ValueType, NameType>) => {
     if (active && payload && payload?.length > 0) {
-      const date = payload?.[0]?.payload.date
-      const formattedDate = capitalize(dayjs(date).format("MMMM YYYY"))
+      const data = payload?.[0]?.payload
+      const formattedDate = capitalize(data.name)
 
       return (
         <div className="fr-p-2w border border-solid border-bd-default-grey bg-bg-default-grey shadow-overlap">
-          <p className="fr-mb-1w font-bold">{date ? formattedDate : label}</p>
+          <p className="fr-mb-1w font-bold">{formattedDate || label}</p>
           <hr className="fr-pb-1v" />
           <ul className="fr-p-0 list-outside list-none">
             {payload.map(({ value, name, unit, color, stroke }) => {

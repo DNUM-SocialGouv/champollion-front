@@ -4,8 +4,9 @@ import {
   getEtablissementInfo,
   getEtablissementType,
   getEffectifs,
+  getLastEffectif,
 } from "../../api/etablissement"
-import { EtablissementInfo, Effectif } from "../../api/types"
+import { EtablissementInfo, Effectif, LastEffectif } from "../../api/types"
 
 import {
   formatEffectifs,
@@ -20,25 +21,30 @@ import { Select } from "@codegouvfr/react-dsfr/Select"
 export async function loader({ params }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
   const { id: etabId } = await getEtablissementType(siret)
-  const info = await getEtablissementInfo(etabId)
-  const effectifs = await getEffectifs({
-    id: etabId,
-    startMonth: "2022-01-01",
-    endMonth: "2022-12-01",
-    unit: "tot",
-  })
-  return { effectifs, etabId, info, siret }
+  const [info, lastEffectif, effectifs] = await Promise.all([
+    getEtablissementInfo(etabId),
+    getLastEffectif(etabId),
+    getEffectifs({
+      id: etabId,
+      startMonth: "2022-01-01",
+      endMonth: "2022-12-01",
+      unit: "tot",
+    }),
+  ])
+  return { effectifs, etabId, info, lastEffectif, siret }
 }
 
 type EtabSyntheseLoader = {
   effectifs: Effectif[]
   etabId: number
   info: EtablissementInfo
+  lastEffectif: LastEffectif
   siret: string
 }
 
 export default function EtabSynthese() {
-  const { effectifs, etabId, info, siret } = useLoaderData() as EtabSyntheseLoader
+  const { effectifs, etabId, info, lastEffectif, siret } =
+    useLoaderData() as EtabSyntheseLoader
   const [areTempContractsStacked, setAreTempContractsStacked] = useState(false)
   const [unit, setUnit] = useState({ key: 1, option: getUnitOptionFromKey(1) })
   const [data, setData] = useState(formatEffectifs(effectifs))
@@ -59,7 +65,7 @@ export default function EtabSynthese() {
 
   return (
     <>
-      <EtabInfo info={info} siret={siret} />
+      <EtabInfo info={info} siret={siret} lastEffectif={lastEffectif} />
       <div className="fr-py-3w flex w-full flex-col">
         <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Vue globale des contrats</h2>
         <hr />
