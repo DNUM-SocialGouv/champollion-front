@@ -1,5 +1,5 @@
 import { EtablissementInfo, LastEffectif } from "../api/types"
-import { formatDateToShortMonth } from "../helpers/effectifs"
+import { formatDate } from "../helpers/effectifs"
 
 type EtabInfoProps = {
   info: EtablissementInfo
@@ -27,18 +27,19 @@ export default function EtabInfo({ info, lastEffectif, siret }: EtabInfoProps) {
       value: address,
     },
     {
-      label: "Code NAF",
-      value: info.codeNaf,
+      label: "Dernier effectif déclaré (CDD et CDI)",
+      value: `${lastEffectif.lastEffectif} contrats (DSN ${formatDate(
+        lastEffectif.month,
+        "MMM YYYY"
+      )})`,
     },
     {
       label: "Convention collective",
       value: `${info.codeConventionCollective} - ${info.libelleConventionCollective}`,
     },
     {
-      label: "Dernier effectif déclaré (CDD et CDI)",
-      value: `${lastEffectif.lastEffectif} contrats (DSN ${formatDateToShortMonth(
-        lastEffectif.month
-      )})`,
+      label: "Code NAF",
+      value: info.codeNaf,
     },
   ]
 
