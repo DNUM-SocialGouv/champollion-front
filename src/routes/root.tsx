@@ -1,6 +1,7 @@
 import { MuiDsfrThemeProvider } from "@codegouvfr/react-dsfr/mui"
 import { StyledEngineProvider } from "@mui/material/styles"
 import { Outlet } from "react-router-dom"
+import { ScrollRestoration } from "react-router-dom"
 
 import { Display, headerFooterDisplayItem } from "@codegouvfr/react-dsfr/Display"
 import { Footer } from "@codegouvfr/react-dsfr/Footer"
@@ -50,6 +51,7 @@ export default function Root() {
             bottomItems={[headerFooterDisplayItem]}
           />
           <Display />
+          <ScrollRestoration />
         </div>
       </MuiDsfrThemeProvider>
     </StyledEngineProvider>

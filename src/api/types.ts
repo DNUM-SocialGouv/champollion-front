@@ -53,6 +53,27 @@ export type EtuContrat = {
   ettRaisonSociale: string | null
 }
 
+export type EttContrat = {
+  id: number
+  nomFamille: string | null
+  nomUsage: string | null
+  prenoms: string
+  posteId: string | null
+  libellePoste: string | null
+  codeNatureContrat: string
+  libelleNatureContrat: string
+  dateDebut: string
+  dateFinPrevisionnelle: string | null
+  dateFin: string | null
+  codeConventionCollective: string
+  libelleConventionCollective: string
+  codeMotifRecours: string | null
+  libelleMotifRecours: string | null
+  etuSiret: string | null
+  etuRaisonSociale: string | null
+  etuCodePostal: string | null
+}
+
 export type Effectif = {
   month: string
   nbCdi: number
