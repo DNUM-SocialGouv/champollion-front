@@ -45,7 +45,7 @@ export default function EtabInfo({ info, lastEffectif, siret }: EtabInfoProps) {
 
   return (
     <>
-      <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Informations sur l'établissement</h2>
+      <h2 className="fr-text--xl fr-mb-1w">Informations sur l'établissement</h2>
       <hr />
       <div className="fr-p-2w border border-solid border-bd-default-grey bg-bg-alt-grey">
         <div className="lg:columns-2">

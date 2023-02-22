@@ -22,10 +22,10 @@ export default function Index() {
   const error = useActionData()
 
   return (
-    <div className="fr-container fr-py-4w flex w-full flex-col">
+    <div className="fr-container fr-py-4w flex flex-col items-center lg:w-3/5">
       <h1 className="fr-h2 fr-pt-4w">Rechercher un établissement</h1>
-      <hr />
-      <div className="flex flex-col lg:w-1/2">
+      <hr className="w-full" />
+      <div className="flex w-full flex-col ">
         <Form className="fr-pt-1w flex items-end justify-center" method="post">
           <Input
             className="w-3/4"

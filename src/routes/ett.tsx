@@ -116,7 +116,7 @@ export default function ETT() {
   return (
     <div className="flex w-full flex-col">
       <EtabBanner etabName={raisonSociale} isEtt={true} siret={siret} />
-      <div className="fr-container">
+      <div className="fr-container fr-mt-3w">
         <EtabInfo info={info} siret={siret} lastEffectif={lastEffectif} />
         <h2 className="fr-text--xl fr-mt-3w fr-mb-1w">
           Liste des contrats de mission déclarés
