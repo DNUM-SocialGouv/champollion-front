@@ -85,7 +85,7 @@ export default function EtabSynthese() {
             ))}
           </Select>
           <ToggleSwitch
-            label="Empiler les barres des CDD et CTT"
+            label="Superposer les barres des CDD et CTT"
             checked={areTempContractsStacked}
             onChange={(checked) => setAreTempContractsStacked(checked)}
           />

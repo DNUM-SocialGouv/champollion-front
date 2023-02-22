@@ -35,9 +35,18 @@ export default function Root() {
           <Header
             brandTop={brandTop}
             homeLinkProps={homeLinkProps}
-            serviceTagline="Outil d'aide au contrôle précarité à destination de l'inspection du travail"
+            serviceTagline="L'outil d'aide au contrôle précarité"
             serviceTitle="Champollion"
-            quickAccessItems={[headerFooterDisplayItem]}
+            quickAccessItems={[
+              {
+                iconId: "fr-icon-search-line",
+                linkProps: {
+                  to: "/",
+                },
+                text: "Rechercher un établissement",
+              },
+              headerFooterDisplayItem,
+            ]}
           />
           <div className="flex flex-auto">
             <Outlet />

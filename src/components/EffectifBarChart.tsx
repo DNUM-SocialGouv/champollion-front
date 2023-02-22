@@ -72,9 +72,14 @@ export default function EffectifBarChart({
           <hr className="fr-pb-1v" />
           <ul className="fr-p-0 list-outside list-none">
             {payload.map(({ value, name, unit, color, stroke }) => {
+              const formattedValue =
+                value && Number(value)
+                  ? value.toLocaleString("fr-FR", { maximumFractionDigits: 2 })
+                  : value
               return (
                 <li style={{ color: stroke || color }} key={name}>
-                  <span className="font-bold">{value} </span> {unit ? `${unit} en ` : ""}
+                  <span className="font-bold">{formattedValue} </span>{" "}
+                  {unit ? `${unit} en ` : ""}
                   {name}
                 </li>
               )

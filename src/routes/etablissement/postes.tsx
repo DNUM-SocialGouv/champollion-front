@@ -165,7 +165,7 @@ export default function EtabPostes() {
   return (
     <>
       <div className="fr-mb-3w">
-        <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Sélection du poste</h2>
+        <h2 className="fr-text--xl fr-mb-1w">Sélection du poste</h2>
         <hr />
         <AppMultiSelect
           options={options}
@@ -202,7 +202,7 @@ export default function EtabPostes() {
                 ))}
               </Select>
               <ToggleSwitch
-                label="Empiler les barres des CDD et CTT"
+                label="Superposer les barres des CDD et CTT"
                 checked={areTempContractsStacked}
                 onChange={(checked) => setAreTempContractsStacked(checked)}
               />
