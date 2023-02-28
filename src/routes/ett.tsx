@@ -111,7 +111,7 @@ export default function ETT() {
         motive: contrat.libelleMotifRecours,
       } as FormattedContrat
     })
-  const formattedContrats = formatContrats(contrats)
+  const formattedContrats = contrats.length > 0 ? formatContrats(contrats) : []
 
   return (
     <div className="flex w-full flex-col">
@@ -122,17 +122,23 @@ export default function ETT() {
           Liste des contrats de mission déclarés
         </h2>
         <hr />
-        <p>{meta.totalCount} résultats</p>
-        <AppTable headers={headers} items={formattedContrats} />
-        <Pagination
-          count={meta.totalPages}
-          defaultPage={page}
-          getPageLinkProps={(page) => ({ to: `/ett/${siret}/${page}` })}
-          showFirstLast
-          classes={{
-            list: "justify-center",
-          }}
-        />
+        {meta?.totalCount && formatContrats.length > 0 ? (
+          <>
+            <p>{meta.totalCount} résultats</p>
+            <AppTable headers={headers} items={formattedContrats} />
+            <Pagination
+              count={meta.totalPages}
+              defaultPage={page}
+              getPageLinkProps={(page) => ({ to: `/ett/${siret}/${page}` })}
+              showFirstLast
+              classes={{
+                list: "justify-center",
+              }}
+            />
+          </>
+        ) : (
+          <p>Aucun résultat</p>
+        )}
       </div>
     </div>
   )

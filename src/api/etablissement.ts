@@ -151,6 +151,7 @@ export const getEttContratsList = async ({
     if (err instanceof AxiosError && status && String(status).startsWith("4")) {
       message = err?.response?.data[0]?.message
     }
+    if (message === "data not found") return { data: {}, meta: {} }
     return Promise.reject({
       status,
       message,
