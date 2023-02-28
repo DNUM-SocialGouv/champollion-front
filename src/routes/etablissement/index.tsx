@@ -5,6 +5,7 @@ import {
   redirect,
   useLoaderData,
   useNavigate,
+  useOutletContext,
 } from "react-router-dom"
 import { getEtablissementType } from "../../api/etablissement"
 
@@ -12,6 +13,7 @@ import { Tabs } from "@codegouvfr/react-dsfr/Tabs"
 import EtabBanner from "../../components/EtabBanner"
 
 type EtabLoader = {
+  etabId: number
   siret: string
   pathname: string
   raisonSociale: string
@@ -20,13 +22,14 @@ type EtabLoader = {
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const url = new URL(request.url)
   const siret = params.siret ? String(params.siret) : ""
-  const { ett, raisonSociale } = await getEtablissementType(siret)
+  const { id, ett, raisonSociale } = await getEtablissementType(siret)
 
   if (ett) {
     return redirect(`/ett/${siret}`)
   }
 
   return {
+    etabId: id,
     pathname: url.pathname,
     raisonSociale,
     siret,
@@ -42,8 +45,10 @@ const tabIndex = {
   tab2: 1,
 } as Record<string, number>
 
+type ContextType = { etabId: number }
+
 export default function Etab() {
-  const { pathname, raisonSociale, siret } = useLoaderData() as EtabLoader
+  const { etabId, pathname, raisonSociale, siret } = useLoaderData() as EtabLoader
   const navigate = useNavigate()
 
   const initialTab: string = pathname.includes("postes") ? "tab2" : "tab1"
@@ -62,10 +67,14 @@ export default function Etab() {
 
         <div className="fr-mt-2w fr-container">
           <Tabs selectedTabId={selectedTabId} tabs={tabs} onTabChange={handleTabChange}>
-            <Outlet />
+            <Outlet context={{ etabId }} />
           </Tabs>
         </div>
       </div>
     </>
   )
+}
+
+export function useEtabId() {
+  return useOutletContext<ContextType>()
 }

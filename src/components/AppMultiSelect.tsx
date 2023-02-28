@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react"
 import Select, { ClearIndicatorProps, MultiValueProps, ThemeConfig } from "react-select"
 import { CSSProperties } from "react"
 
@@ -7,6 +8,7 @@ export type Option = {
 }
 
 type AppMultiSelectProps = {
+  value: Option | Option[]
   options: Option[]
   label: string
   hintText?: string
@@ -80,11 +82,18 @@ const ClearIndicator = (props: ClearIndicatorProps<Option>) => {
 }
 
 export default function AppMultiSelect({
+  value: valueProp,
   hintText,
   label,
   onChange,
   options,
 }: AppMultiSelectProps) {
+  const [value, setValue] = useState(valueProp)
+
+  useEffect(() => {
+    setValue(valueProp)
+  }, [valueProp])
+
   return (
     <div className="fr-mb-3w">
       <label className="fr-label" htmlFor="select-postes">
@@ -117,6 +126,7 @@ export default function AppMultiSelect({
         onChange={onChange}
         placeholder=""
         theme={selectTheme}
+        value={value}
       />
     </div>
   )
