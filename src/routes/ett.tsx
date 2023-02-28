@@ -127,9 +127,7 @@ export default function ETT() {
         <Pagination
           count={meta.totalPages}
           defaultPage={page}
-          getPageLinkProps={(page) => {
-            return { to: `/ett/${siret}/${page}` }
-          }}
+          getPageLinkProps={(page) => ({ to: `/ett/${siret}/${page}` })}
           showFirstLast
           classes={{
             list: "justify-center",
