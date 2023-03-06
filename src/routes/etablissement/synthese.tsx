@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { LoaderFunctionArgs, useLoaderData } from "react-router-dom"
 import {
-  getEtablissementInfo,
-  getEtablissementType,
+  getEtablissementsInfo,
+  getEtablissementsType,
   getEffectifs,
-  getLastEffectif,
-} from "../../api/etablissement"
+  getEffectifsLast,
+} from "../../api"
 import { EtablissementInfo, Effectif, LastEffectif } from "../../api/types"
 
 import {
@@ -20,10 +20,10 @@ import { Select } from "@codegouvfr/react-dsfr/Select"
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
-  const { id: etabId } = await getEtablissementType(siret)
+  const { id: etabId } = await getEtablissementsType(siret)
   const [info, lastEffectif, effectifs] = await Promise.all([
-    getEtablissementInfo(etabId),
-    getLastEffectif(etabId),
+    getEtablissementsInfo(etabId),
+    getEffectifsLast(etabId),
     getEffectifs({
       id: etabId,
       startMonth: "2022-01-01",

@@ -1,4 +1,4 @@
-import { getEtablissementType } from "../api/etablissement"
+import { getEtablissementsType } from "../api"
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Input } from "@codegouvfr/react-dsfr/Input"
@@ -10,7 +10,7 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     const formData = await request.formData()
     const siret = formData.get("input") ? String(formData.get("input")) : ""
-    const { ett } = await getEtablissementType(siret)
+    const { ett } = await getEtablissementsType(siret)
     const redirectTo = ett ? `/ett/${siret}` : `/etablissement/${siret}`
     return redirect(redirectTo)
   } catch (error) {
