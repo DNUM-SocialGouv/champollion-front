@@ -10,14 +10,14 @@ const formatDateToFullMonth = (date: string) => dayjs(date).format("MMMM YYYY")
 const formatDate = (date: string, format: string) => dayjs(date).format(format)
 
 const formatEffectifs = (effectifs: Effectif[]) =>
-  effectifs.map(({ month, nbCdi, nbCdd, nbCtt }) => {
+  effectifs.map(({ date, cdiCount, cddCount, cttCount }) => {
     return {
-      date: month,
-      label: formatDateToShortMonth(month),
-      name: formatDateToFullMonth(month),
-      cdd: nbCdd,
-      cdi: nbCdi,
-      ctt: nbCtt,
+      date,
+      label: formatDateToShortMonth(date),
+      name: formatDateToFullMonth(date),
+      cdd: cddCount,
+      cdi: cdiCount,
+      ctt: cttCount,
     } as MonthData
   })
 

@@ -7,7 +7,7 @@ import {
   useNavigate,
   useOutletContext,
 } from "react-router-dom"
-import { getEtablissementType } from "../../api/etablissement"
+import { getEtablissementsType } from "../../api"
 
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs"
 import EtabBanner from "../../components/EtabBanner"
@@ -22,7 +22,7 @@ type EtabLoader = {
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const url = new URL(request.url)
   const siret = params.siret ? String(params.siret) : ""
-  const { id, ett, raisonSociale } = await getEtablissementType(siret)
+  const { id, ett, raisonSociale } = await getEtablissementsType(siret)
 
   if (ett) {
     return redirect(`/ett/${siret}`)

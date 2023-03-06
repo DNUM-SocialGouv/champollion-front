@@ -1,11 +1,11 @@
 import { LoaderFunctionArgs, redirect, useLoaderData } from "react-router-dom"
 import * as dayjs from "dayjs"
 import {
-  getEtablissementInfo,
-  getEtablissementType,
-  getEttContratsList,
-  getLastEffectif,
-} from "../api/etablissement"
+  getEtablissementsInfo,
+  getEtablissementsType,
+  getContratsEtt,
+  getEffectifsLast,
+} from "../api"
 import { EtablissementInfo, EttContrat, LastEffectif, MetaData } from "../api/types"
 
 import { Link } from "react-router-dom"
@@ -19,16 +19,16 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
   const page = params.page && Number(params.page) ? Number(params.page) : 1
 
-  const { id: etabId, ett, raisonSociale } = await getEtablissementType(siret)
+  const { id: etabId, ett, raisonSociale } = await getEtablissementsType(siret)
 
   if (!ett) {
     return redirect(`/etablissement/${siret}`)
   }
 
   const [info, lastEffectif, { data: contrats, meta }] = await Promise.all([
-    getEtablissementInfo(etabId),
-    getLastEffectif(etabId),
-    getEttContratsList({
+    getEtablissementsInfo(etabId),
+    getEffectifsLast(etabId),
+    getContratsEtt({
       id: etabId,
       startMonth: "2022-01-01",
       endMonth: "2022-12-01",

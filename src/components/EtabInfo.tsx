@@ -28,8 +28,8 @@ export default function EtabInfo({ info, lastEffectif, siret }: EtabInfoProps) {
     },
     {
       label: "Dernier effectif déclaré (CDD et CDI)",
-      value: `${lastEffectif.lastEffectif} contrats (DSN ${formatDate(
-        lastEffectif.month,
+      value: `${lastEffectif.value} contrats (DSN ${formatDate(
+        lastEffectif.date,
         "MMM YYYY"
       )})`,
     },

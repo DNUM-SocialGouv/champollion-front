@@ -75,15 +75,15 @@ export type EttContrat = {
 }
 
 export type Effectif = {
-  month: string
-  nbCdi: number
-  nbCdd: number
-  nbCtt: number
+  date: string
+  cdiCount: number
+  cddCount: number
+  cttCount: number
 }
 
 export type EffectifUnit = "etp" | "tot" | "ldm" | "avg"
 
 export type LastEffectif = {
-  lastEffectif: number
-  month: string
+  value: number
+  date: string
 }

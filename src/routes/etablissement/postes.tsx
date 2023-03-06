@@ -25,12 +25,7 @@ import {
   getQueryPostes,
   headers,
 } from "../../helpers/contrats"
-import {
-  getEffectifs,
-  getEtuContratsList,
-  getEtablissementPostesList,
-  getEtablissementType,
-} from "../../api/etablissement"
+import { getEffectifs, getContratsEtu, getPostes, getEtablissementsType } from "../../api"
 import { EtuContrat, MetaData } from "../../api/types"
 import { useEtabId } from "."
 
@@ -40,8 +35,8 @@ export async function loader({
 }: LoaderFunctionArgs): Promise<EtabPostesLoader> {
   // fetch etablissement postes
   const siret = params.siret ? String(params.siret) : ""
-  const { id: etabId } = await getEtablissementType(siret)
-  const etabPostes = await getEtablissementPostesList(etabId)
+  const { id: etabId } = await getEtablissementsType(siret)
+  const etabPostes = await getPostes(etabId)
   const options = etabPostes.map(
     (poste, index) => ({ value: index, label: poste.libelle } as Option)
   )
@@ -60,7 +55,7 @@ export async function loader({
     const page = getQueryPage(searchParams)
 
     try {
-      const { data, meta } = await getEtuContratsList({
+      const { data, meta } = await getContratsEtu({
         id: etabId,
         startMonth: "2022-01-01",
         endMonth: "2022-12-01",
