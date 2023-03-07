@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom"
 import { startReactDsfr } from "@codegouvfr/react-dsfr/spa"
 import "./index.css"
 import { Link } from "react-router-dom"
+import ls from "localstorage-slim"
 
 import Root from "./routes/root"
 import Index, { action as homeAction } from "./routes/index"
@@ -14,6 +15,15 @@ import EtabSynthese, {
 } from "./routes/etablissement/synthese"
 import EtabPostes, { loader as etabPostesLoader } from "./routes/etablissement/postes"
 import ETT, { loader as ettLoader } from "./routes/ett"
+import CarenceParametres, {
+  action as carenceParamAction,
+  loader as carenceParamLoader,
+} from "./routes/etablissement/carence/parametres"
+import CarencePostes from "./routes/etablissement/carence/postes"
+import { loader as carenceLoader } from "./routes/etablissement/carence"
+
+// set localStorage expiration to 2 weeks (in seconds)
+ls.config.ttl = 1209600
 
 startReactDsfr({
   defaultColorScheme: "system",
@@ -56,6 +66,25 @@ const router = createBrowserRouter([
             path: "postes",
             loader: etabPostesLoader,
             element: <EtabPostes />,
+          },
+          {
+            path: "carence",
+            children: [
+              {
+                index: true,
+                loader: carenceLoader,
+              },
+              {
+                path: "parametres",
+                action: carenceParamAction,
+                element: <CarenceParametres />,
+                loader: carenceParamLoader,
+              },
+              {
+                path: "postes",
+                element: <CarencePostes />,
+              },
+            ],
           },
         ],
       },

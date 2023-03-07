@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Show native browser calendar */
+input[type="date"].fr-input::-webkit-inner-spin-button,
+input[type="date"].fr-input::-webkit-calendar-picker-indicator {
+  display: block;
+  margin-right: auto;
+  opacity: 1;
+}
+input[type="date"].fr-input {
+  background-image: none;
+  padding-right: 1rem;
+}
+.fr-input-wrap.ri-calendar-line::before {
+  content: none;
+}
