@@ -39,23 +39,23 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 const tabs = [
   { tabId: "tab1", label: "Fiche synthèse", to: "" },
   { tabId: "tab2", label: "Détail des contrats par poste", to: "postes" },
+  { tabId: "tab3", label: "Infraction délai de carence", to: "carence" },
 ]
-const tabIndex = {
-  tab1: 0,
-  tab2: 1,
-} as Record<string, number>
 
 type ContextType = { etabId: number }
 
 export default function Etab() {
   const { etabId, pathname, raisonSociale, siret } = useLoaderData() as EtabLoader
   const navigate = useNavigate()
+  const tabPathregex = /\/etablissement\/\d{14}\/([\w]+)/
+  const tabPath = tabPathregex.exec(pathname)?.[1]
 
-  const initialTab: string = pathname.includes("postes") ? "tab2" : "tab1"
+  const initialTab = tabs.find((tab) => tab.to === tabPath)?.tabId ?? "tab1"
+
   const [selectedTabId, setSelectedTabId] = useState(initialTab)
 
   const handleTabChange = (clickedTab: string) => {
-    const clickedTabPath = tabs[tabIndex[clickedTab]].to
+    const clickedTabPath = tabs.find((tab) => tab.tabId === clickedTab)?.to || ""
     navigate(clickedTabPath)
     setSelectedTabId(clickedTab)
   }

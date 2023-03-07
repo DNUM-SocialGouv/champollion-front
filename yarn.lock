@@ -2378,6 +2378,11 @@ lines-and-columns@^1.1.6:
   resolved "https://registry.yarnpkg.com/lines-and-columns/-/lines-and-columns-1.2.4.tgz#eca284f75d2965079309dc0ad9255abb2ebc1632"
   integrity sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==
 
+localstorage-slim@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/localstorage-slim/-/localstorage-slim-2.4.0.tgz#85becbf80f53487b01db5b2d504a7af08310dba5"
+  integrity sha512-ILe6kS+TYRzpzEAHYKzGxSgtUOFlMyvnG6vu6TW+F6gV4TQI8wP67rmEB6TMZHmQayOQ9iicpcYEFV1Y68V2fA==
+
 locate-path@^6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/locate-path/-/locate-path-6.0.0.tgz#55321eb309febbc59c4801d931a72452a681d286"
