@@ -26,7 +26,7 @@ import {
   headers,
 } from "../../helpers/contrats"
 import { getEffectifs, getContratsEtu, getPostes, getEtablissementsType } from "../../api"
-import { EtuContrat, MetaData } from "../../api/types"
+import { EtuContrat } from "../../api/types"
 import { useEtabId } from "."
 
 export async function loader({

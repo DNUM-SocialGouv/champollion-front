@@ -19,7 +19,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function Index() {
-  const error = useActionData()
+  const error = useActionData() as { message: string }
 
   return (
     <div className="fr-container fr-py-4w flex flex-col items-center lg:w-3/5">

@@ -109,6 +109,7 @@ export default function CarenceParametres() {
               name: "start-date",
               value: dates.startDate,
               onChange: handleDateChange,
+              required: true,
             }}
           />
           <Input
@@ -118,6 +119,7 @@ export default function CarenceParametres() {
               name: "end-date",
               value: dates.endDate,
               onChange: handleDateChange,
+              required: true,
             }}
           />
         </div>
