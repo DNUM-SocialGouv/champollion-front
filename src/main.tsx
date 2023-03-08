@@ -19,11 +19,16 @@ import CarenceParametres, {
   action as carenceParamAction,
   loader as carenceParamLoader,
 } from "./routes/etablissement/carence/parametres"
-import CarencePostes from "./routes/etablissement/carence/postes"
+import CarencePostes, {
+  action as carencePostesAction,
+  loader as carencePostesLoader,
+} from "./routes/etablissement/carence/postes"
+import CarenceContrats from "./routes/etablissement/carence/contrats"
 import { loader as carenceLoader } from "./routes/etablissement/carence"
 
 // set localStorage expiration to 2 weeks (in seconds)
 ls.config.ttl = 1209600
+ls.config.encrypt = true
 
 startReactDsfr({
   defaultColorScheme: "system",
@@ -59,13 +64,13 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            loader: etabSyntheseLoader,
             element: <EtabSynthese />,
+            loader: etabSyntheseLoader,
           },
           {
             path: "postes",
-            loader: etabPostesLoader,
             element: <EtabPostes />,
+            loader: etabPostesLoader,
           },
           {
             path: "carence",
@@ -76,13 +81,19 @@ const router = createBrowserRouter([
               },
               {
                 path: "parametres",
-                action: carenceParamAction,
                 element: <CarenceParametres />,
+                action: carenceParamAction,
                 loader: carenceParamLoader,
               },
               {
                 path: "postes",
                 element: <CarencePostes />,
+                action: carencePostesAction,
+                loader: carencePostesLoader,
+              },
+              {
+                path: "contrats",
+                element: <CarenceContrats />,
               },
             ],
           },

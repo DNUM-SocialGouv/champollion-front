@@ -8,11 +8,12 @@ export type Option = {
 }
 
 type AppMultiSelectProps = {
-  value: Option | Option[]
-  options: Option[]
-  label: string
+  className?: string
   hintText?: string
+  label: string
   onChange: (option: readonly Option[]) => void
+  options: Option[]
+  value: Option | Option[]
 }
 
 const selectTheme = () => {
@@ -59,6 +60,7 @@ const MultiValue = (props: MultiValueProps<Option>) => {
         aria-label={`Retirer ${selectedData.label}`}
         onClick={() => removeProps?.onClick && removeProps.onClick()}
         onTouchEnd={() => removeProps?.onTouchEnd && removeProps.onTouchEnd()}
+        type="button"
       >
         {selectedData.label}
       </button>
@@ -82,11 +84,12 @@ const ClearIndicator = (props: ClearIndicatorProps<Option>) => {
 }
 
 export default function AppMultiSelect({
-  value: valueProp,
+  className,
   hintText,
   label,
   onChange,
   options,
+  value: valueProp,
 }: AppMultiSelectProps) {
   const [value, setValue] = useState(valueProp)
 
@@ -95,7 +98,7 @@ export default function AppMultiSelect({
   }, [valueProp])
 
   return (
-    <div className="fr-mb-3w">
+    <div className={`fr-mb-3w ${className}`}>
       <label className="fr-label" htmlFor="select-postes">
         {label}
         {hintText && <span className="fr-hint-text">{hintText}</span>}
@@ -110,6 +113,7 @@ export default function AppMultiSelect({
                 : ""
             }`,
           input: () => "fr-m-1v fr-py-0",
+          menu: () => "z-10 shadow-overlap",
           placeholder: () => "fr-ml-1v",
           valueContainer: () => "fr-py-1v fr-px-3v",
         }}
