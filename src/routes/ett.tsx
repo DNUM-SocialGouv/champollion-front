@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs, redirect, useLoaderData } from "react-router-dom"
-import * as dayjs from "dayjs"
+import dayjs from "dayjs"
 import {
   getEtablissementsInfo,
   getEtablissementsType,

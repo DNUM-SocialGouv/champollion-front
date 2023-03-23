@@ -1,4 +1,4 @@
-import * as dayjs from "dayjs"
+import dayjs from "dayjs"
 import { Link } from "react-router-dom"
 import { ReactNode } from "react"
 
