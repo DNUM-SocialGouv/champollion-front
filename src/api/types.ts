@@ -1,8 +1,3 @@
-export type ResponseError = {
-  message: string
-  status?: number
-}
-
 export type MetaData = {
   currentPage: number | null
   nextPage: number | null

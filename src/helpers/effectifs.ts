@@ -25,7 +25,7 @@ const unitsOptions: {
   key: number
   value: EffectifUnit | null
   label: string
-  attr?: {}
+  attr?: object
 }[] = [
   {
     key: 0,
@@ -40,7 +40,7 @@ const unitsOptions: {
 ]
 
 const getUnitOptionFromKey = (key: number | string) =>
-  unitsOptions.find((option) => String(option.key) == String(key))
+  unitsOptions.find((option) => String(option.key) == String(key)) ?? unitsOptions[0]
 
 export {
   formatDate,

@@ -11,6 +11,7 @@ import { getEtablissementsType } from "../../api"
 
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs"
 import EtabBanner from "../../components/EtabBanner"
+import { errorWording, isAppError } from "../../helpers/errors"
 
 type EtabLoader = {
   etabId: number
@@ -19,21 +20,33 @@ type EtabLoader = {
   raisonSociale: string
 }
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
+export async function loader({
+  params,
+  request,
+}: LoaderFunctionArgs): Promise<Response | EtabLoader> {
   const url = new URL(request.url)
   const siret = params.siret ? String(params.siret) : ""
-  const { id, ett, raisonSociale } = await getEtablissementsType(siret)
+  const etabType = await getEtablissementsType(siret)
 
-  if (ett) {
+  if (isAppError(etabType)) {
+    const responseParams: ResponseInit = {
+      statusText: errorWording.etab,
+    }
+    if (etabType.status) responseParams.status = etabType.status
+    if (etabType.status == 404) responseParams.statusText = "SIRET introuvable."
+    throw new Response("", responseParams)
+  }
+
+  if (etabType.ett) {
     return redirect(`/ett/${siret}`)
   }
 
   return {
-    etabId: id,
+    etabId: etabType.id,
     pathname: url.pathname,
-    raisonSociale,
+    raisonSociale: etabType.raisonSociale,
     siret,
-  } as EtabLoader
+  }
 }
 
 const tabs = [

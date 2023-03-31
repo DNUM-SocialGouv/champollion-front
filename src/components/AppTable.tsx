@@ -33,7 +33,7 @@ export default function AppTable<T extends { id: number }>({
                   {headers.map(({ key }) => {
                     return (
                       <td key={`row-${item.id}-col-${String(key)}`}>
-                        {<>{Boolean(item[key]) ? item[key] : ""}</>}
+                        {<>{item[key] ? item[key] : ""}</>}
                       </td>
                     )
                   })}

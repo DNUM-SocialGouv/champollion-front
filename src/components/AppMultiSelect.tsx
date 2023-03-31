@@ -50,8 +50,8 @@ const selectTheme = () => {
 const MultiValue = (props: MultiValueProps<Option>) => {
   const selectedData = props.data as Option
   const removeProps = props.removeProps as {
-    onClick: () => {}
-    onTouchEnd: () => {}
+    onClick: () => void
+    onTouchEnd: () => void
   }
   return (
     <>
@@ -122,9 +122,7 @@ export default function AppMultiSelect({
         hideSelectedOptions={false}
         isMulti
         noOptionsMessage={({ inputValue }) =>
-          !!inputValue
-            ? `Aucun résultat pour "${inputValue}"`
-            : "Aucune option disponible"
+          inputValue ? `Aucun résultat pour "${inputValue}"` : "Aucune option disponible"
         }
         options={options}
         onChange={onChange}

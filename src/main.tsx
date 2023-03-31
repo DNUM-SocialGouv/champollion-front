@@ -8,7 +8,7 @@ import ls from "localstorage-slim"
 
 import Root from "./routes/root"
 import Index, { action as homeAction } from "./routes/index"
-import AppError from "./components/AppError"
+import Error from "./components/Error"
 import Etab, { loader as etabLoader } from "./routes/etablissement"
 import EtabSynthese, {
   loader as etabSyntheseLoader,
@@ -44,10 +44,10 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Root />,
-    errorElement: <AppError />,
+    errorElement: <Error />,
     children: [
       {
-        errorElement: <AppError />,
+        errorElement: <Error />,
         children: [
           {
             index: true,
@@ -58,7 +58,7 @@ const router = createBrowserRouter([
       },
       {
         path: "etablissement/:siret",
-        errorElement: <AppError />,
+        errorElement: <Error />,
         element: <Etab />,
         loader: etabLoader,
         children: [

@@ -1,22 +1,15 @@
 import api from "../config"
-import { AxiosError } from "axios"
-import { EtablissementPoste, ResponseError } from "../types"
+import { EtablissementPoste } from "../types"
+import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 
 export const getPostes = async (id: number) => {
   try {
     const response = await api.get(`/postes/?etablissement_id=${id}`)
-    return response.data?.data as EtablissementPoste[]
+    return (
+      (response.data?.data as EtablissementPoste[]) ?? handleUndefinedData("/postes/")
+    )
   } catch (err) {
-    let status
-    if (err instanceof AxiosError) status = err?.request?.status
-    let message = String(err)
-    if (err instanceof AxiosError && status && String(status).startsWith("4")) {
-      message = err?.response?.data[0]?.message
-    }
-    return Promise.reject({
-      status,
-      message,
-    } as ResponseError)
+    return handleEndpointError(err)
   }
 }
 
@@ -24,17 +17,10 @@ export const getPostes = async (id: number) => {
 export const getPostesAta = async (id: number) => {
   try {
     const response = await api.get(`/postes/ata?etablissement_id=${id}`)
-    return response.data?.data as EtablissementPoste[]
+    return (
+      (response.data?.data as EtablissementPoste[]) ?? handleUndefinedData("/postes/ata")
+    )
   } catch (err) {
-    let status
-    if (err instanceof AxiosError) status = err?.request?.status
-    let message = String(err)
-    if (err instanceof AxiosError && status && String(status).startsWith("4")) {
-      message = err?.response?.data[0]?.message
-    }
-    return Promise.reject({
-      status,
-      message,
-    } as ResponseError)
+    return handleEndpointError(err)
   }
 }

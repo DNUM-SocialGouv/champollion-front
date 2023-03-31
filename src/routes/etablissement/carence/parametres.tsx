@@ -40,7 +40,7 @@ export function loader({ params }: LoaderFunctionArgs) {
     startDate: localDates?.startDate || "",
     endDate: localDates?.endDate || "",
   }
-  let savedOpenDays: string[] = Array.isArray(localOpenDays) ? localOpenDays : []
+  const savedOpenDays: string[] = Array.isArray(localOpenDays) ? localOpenDays : []
   return {
     savedDates,
     savedOpenDays,
