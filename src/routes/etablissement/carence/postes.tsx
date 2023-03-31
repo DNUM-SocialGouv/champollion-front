@@ -16,6 +16,7 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Stepper } from "@codegouvfr/react-dsfr/Stepper"
 import AppMultiSelect, { Option } from "../../../components/AppMultiSelect"
+import { errorWording, isAppError } from "../../../helpers/errors"
 
 type CarencePostesLoader = {
   options: Option[]
@@ -46,8 +47,25 @@ export async function loader({
   params,
 }: LoaderFunctionArgs): Promise<CarencePostesLoader> {
   const siret = params.siret ? String(params.siret) : ""
-  const { id: etabId } = await getEtablissementsType(siret)
-  const etabPostes = await getPostesAta(etabId)
+  const etabType = await getEtablissementsType(siret)
+
+  if (isAppError(etabType)) {
+    throw new Response("", {
+      statusText: errorWording.etab,
+    })
+  }
+
+  const etabPostes = await getPostesAta(etabType.id)
+
+  if (isAppError(etabPostes)) {
+    const responseParams: ResponseInit = {
+      statusText: errorWording.etab,
+    }
+    if (etabPostes.status) responseParams.status = etabPostes.status
+    if (etabPostes.status == 404) responseParams.statusText = "Postes introuvables."
+    throw new Response("", responseParams)
+  }
+
   const options = etabPostes.map(
     (poste, index) => ({ value: index, label: poste.libelle } as Option)
   )
@@ -104,7 +122,7 @@ export default function CarencePostes() {
                   options={options}
                   value={fusions[index]}
                   label="Fusionner les postes suivants :"
-                  onChange={(newValue: readonly Option[]) => {
+                  onChange={(newValue) => {
                     const newFusions = fusions.map((fusion, idx) =>
                       idx === index ? [...newValue] : fusion
                     )

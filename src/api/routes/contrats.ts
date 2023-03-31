@@ -1,8 +1,8 @@
 import api from "../config"
-import { AxiosError } from "axios"
-import { EttContrat, EtuContrat, MetaData, ResponseError } from "../types"
+import { EttContrat, EtuContrat, MetaData } from "../types"
+import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 
-type EtabContratsListParams = {
+type ContratsParams = {
   id: number
   startMonth: string
   endMonth: string
@@ -18,7 +18,7 @@ export const getContratsEtu = async ({
   postes,
   page,
   per,
-}: EtabContratsListParams) => {
+}: ContratsParams) => {
   try {
     let params = `etablissement_id=${id}&start_date=${startMonth}&end_date=${endMonth}`
 
@@ -31,23 +31,17 @@ export const getContratsEtu = async ({
     if (per) params += `&per_page=${per}`
 
     const response = await api.get(`/contrats/etu?${params}`)
-    const data = response.data?.data as EtuContrat[]
+    const contrats = response.data?.data as EtuContrat[]
     const meta = response.data?.meta as MetaData
-    return {
-      data,
-      meta,
-    }
+
+    if (contrats && meta) {
+      return {
+        contrats,
+        meta,
+      }
+    } else return handleUndefinedData("/contrats/ett")
   } catch (err) {
-    let status
-    if (err instanceof AxiosError) status = err?.request?.status
-    let message = String(err)
-    if (err instanceof AxiosError && status && String(status).startsWith("4")) {
-      message = err?.response?.data[0]?.message
-    }
-    return Promise.reject({
-      status,
-      message,
-    } as ResponseError)
+    return handleEndpointError(err)
   }
 }
 
@@ -58,7 +52,7 @@ export const getContratsEtt = async ({
   postes,
   page,
   per,
-}: EtabContratsListParams) => {
+}: ContratsParams) => {
   try {
     let params = `etablissement_id=${id}&start_date=${startMonth}&end_date=${endMonth}`
 
@@ -71,23 +65,16 @@ export const getContratsEtt = async ({
     if (per) params += `&per_page=${per}`
 
     const response = await api.get(`/contrats/ett?${params}`)
-    const data = response.data?.data as EttContrat[]
+    const contrats = response.data?.data as EttContrat[]
     const meta = response.data?.meta as MetaData
-    return {
-      data,
-      meta,
-    }
+
+    if (contrats && meta) {
+      return {
+        contrats,
+        meta,
+      }
+    } else return handleUndefinedData("/contrats/ett")
   } catch (err) {
-    let status
-    if (err instanceof AxiosError) status = err?.request?.status
-    let message = String(err)
-    if (err instanceof AxiosError && status && String(status).startsWith("4")) {
-      message = err?.response?.data[0]?.message
-    }
-    if (message === "data not found") return { data: {}, meta: {} }
-    return Promise.reject({
-      status,
-      message,
-    } as ResponseError)
+    return handleEndpointError(err)
   }
 }

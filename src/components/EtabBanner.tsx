@@ -1,5 +1,3 @@
-import { Button } from "@codegouvfr/react-dsfr/Button"
-
 type EtabBannerProps = {
   isEtt: boolean
   etabName: string

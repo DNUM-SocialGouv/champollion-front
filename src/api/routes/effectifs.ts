@@ -1,6 +1,6 @@
 import api from "../config"
-import { AxiosError } from "axios"
-import { Effectif, EffectifUnit, LastEffectif, ResponseError } from "../types"
+import { Effectif, EffectifUnit, LastEffectif } from "../types"
+import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 
 type EffectifsParams = {
   id: number
@@ -24,39 +24,18 @@ export const getEffectifs = async ({
       const postesParam = postes.map((poste) => `postes=${poste}`).join("&")
       params += `&${postesParam}`
     }
-
     const response = await api.get(`/effectifs/?${params}`)
-
-    return response.data?.data as Effectif[]
+    return (response.data.data as Effectif[]) ?? handleUndefinedData("/effectifs")
   } catch (err) {
-    let status
-    if (err instanceof AxiosError) status = err?.request?.status
-    let message = String(err)
-    if (err instanceof AxiosError && status && String(status).startsWith("4")) {
-      message = err?.response?.data[0]?.message
-    }
-    return Promise.reject({
-      status,
-      message,
-    } as ResponseError)
+    return handleEndpointError(err)
   }
 }
 
 export const getEffectifsLast = async (id: number) => {
   try {
     const response = await api.get(`/effectifs/last?etablissement_id=${id}`)
-    return response.data?.data as LastEffectif
+    return (response.data?.data as LastEffectif) ?? handleUndefinedData("/effectifs/last")
   } catch (err) {
-    let status
-    if (err instanceof AxiosError) status = err?.request?.status
-    let message = String(err)
-    if (err instanceof AxiosError && status && String(status).startsWith("4")) {
-      message = err?.response?.data[0]?.message
-    }
-
-    return Promise.reject({
-      status,
-      message,
-    } as ResponseError)
+    return handleEndpointError(err)
   }
 }

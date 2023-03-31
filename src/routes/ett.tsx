@@ -12,40 +12,64 @@ import { Link } from "react-router-dom"
 import EtabBanner from "../components/EtabBanner"
 import EtabInfo from "../components/EtabInfo"
 import AppTable from "../components/AppTable"
-import Pagination from "@codegouvfr/react-dsfr/Pagination"
+import { Alert } from "@codegouvfr/react-dsfr/Alert"
+import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
 import { ReactNode } from "react"
+import { AppError, errorWording, isAppError } from "../helpers/errors"
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({
+  params,
+}: LoaderFunctionArgs): Promise<Response | ETTLoader> {
   const siret = params.siret ? String(params.siret) : ""
   const page = params.page && Number(params.page) ? Number(params.page) : 1
 
-  const { id: etabId, ett, raisonSociale } = await getEtablissementsType(siret)
+  const etabType = await getEtablissementsType(siret)
 
-  if (!ett) {
+  if (isAppError(etabType)) {
+    const responseParams: ResponseInit = {
+      statusText: errorWording.etab,
+    }
+    if (etabType.status) responseParams.status = etabType.status
+    if (etabType.status == 404) responseParams.statusText = "SIRET introuvable."
+    throw new Response("", responseParams)
+  }
+
+  if (!etabType.ett) {
     return redirect(`/etablissement/${siret}`)
   }
 
-  const [info, lastEffectif, { data: contrats, meta }] = await Promise.all([
-    getEtablissementsInfo(etabId),
-    getEffectifsLast(etabId),
+  const [info, lastEffectif, data] = await Promise.all([
+    getEtablissementsInfo(etabType.id),
+    getEffectifsLast(etabType.id),
     getContratsEtt({
-      id: etabId,
+      id: etabType.id,
       startMonth: "2022-01-01",
       endMonth: "2022-12-01",
       page,
     }),
   ])
-  return { contrats, info, lastEffectif, meta, page, raisonSociale, siret }
+  return {
+    info,
+    lastEffectif,
+    page,
+    raisonSociale: etabType.raisonSociale,
+    siret,
+    data,
+  }
 }
 
 type ETTLoader = {
-  contrats: EttContrat[]
-  info: EtablissementInfo
-  lastEffectif: LastEffectif
-  meta: MetaData
+  info: EtablissementInfo | AppError
+  lastEffectif: LastEffectif | AppError
   page: number
   raisonSociale: string
   siret: string
+  data:
+    | AppError
+    | {
+        contrats: EttContrat[]
+        meta: MetaData
+      }
 }
 
 type Column =
@@ -85,8 +109,53 @@ type FormattedContrat = {
 }
 
 export default function ETT() {
-  const { contrats, info, lastEffectif, page, meta, raisonSociale, siret } =
-    useLoaderData() as ETTLoader
+  const { data, info, lastEffectif, raisonSociale, siret } = useLoaderData() as ETTLoader
+
+  return (
+    <div className="flex w-full flex-col">
+      <EtabBanner etabName={raisonSociale} isEtt={true} siret={siret} />
+      <div className="fr-container fr-mt-3w">
+        <h2 className="fr-text--xl fr-mb-1w">Informations sur l'établissement</h2>
+        <hr />
+        {isAppError(info) ? (
+          <>
+            <Alert
+              className="fr-mb-2w"
+              description="Pas de données disponibles"
+              severity="error"
+              title="Erreur"
+            />
+          </>
+        ) : (
+          <EtabInfo
+            info={info}
+            siret={siret}
+            lastEffectif={(!isAppError(lastEffectif) && lastEffectif) || null}
+          />
+        )}
+        <h2 className="fr-text--xl fr-mt-3w fr-mb-1w">
+          Liste des contrats de mission déclarés
+        </h2>
+        <hr />
+        {isAppError(data) ? (
+          <>
+            <Alert
+              className="fr-mb-2w"
+              description={errorWording.etab}
+              severity="error"
+              title="Erreur"
+            />
+          </>
+        ) : (
+          <ETTContrats contrats={data.contrats} meta={data.meta} />
+        )}
+      </div>
+    </div>
+  )
+}
+
+function ETTContrats({ contrats, meta }: { contrats: EttContrat[]; meta: MetaData }) {
+  const { page, siret } = useLoaderData() as ETTLoader
 
   const formatDate = (date: string | null) =>
     dayjs(date).isValid() ? dayjs(date).format("DD/MM/YYYY") : ""
@@ -114,32 +183,24 @@ export default function ETT() {
   const formattedContrats = contrats.length > 0 ? formatContrats(contrats) : []
 
   return (
-    <div className="flex w-full flex-col">
-      <EtabBanner etabName={raisonSociale} isEtt={true} siret={siret} />
-      <div className="fr-container fr-mt-3w">
-        <EtabInfo info={info} siret={siret} lastEffectif={lastEffectif} />
-        <h2 className="fr-text--xl fr-mt-3w fr-mb-1w">
-          Liste des contrats de mission déclarés
-        </h2>
-        <hr />
-        {meta?.totalCount && formatContrats.length > 0 ? (
-          <>
-            <p>{meta.totalCount} résultats</p>
-            <AppTable headers={headers} items={formattedContrats} />
-            <Pagination
-              count={meta.totalPages}
-              defaultPage={page}
-              getPageLinkProps={(page) => ({ to: `/ett/${siret}/${page}` })}
-              showFirstLast
-              classes={{
-                list: "justify-center",
-              }}
-            />
-          </>
-        ) : (
-          <p>Aucun résultat</p>
-        )}
-      </div>
-    </div>
+    <>
+      {meta?.totalCount && formatContrats.length > 0 ? (
+        <>
+          <p>{meta.totalCount} résultats</p>
+          <AppTable headers={headers} items={formattedContrats} />
+          <Pagination
+            count={meta.totalPages}
+            defaultPage={page}
+            getPageLinkProps={(page) => ({ to: `/ett/${siret}/${page}` })}
+            showFirstLast
+            classes={{
+              list: "justify-center",
+            }}
+          />
+        </>
+      ) : (
+        <p>Aucun résultat</p>
+      )}
+    </>
   )
 }

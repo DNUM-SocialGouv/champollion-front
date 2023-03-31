@@ -5,14 +5,8 @@ import {
   useNavigation,
   useSearchParams,
 } from "react-router-dom"
+import { useEtabId } from "."
 
-import Button from "@codegouvfr/react-dsfr/Button"
-import Pagination from "@codegouvfr/react-dsfr/Pagination"
-import ToggleSwitch from "@codegouvfr/react-dsfr/ToggleSwitch"
-import Select from "@codegouvfr/react-dsfr/Select"
-import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
-import EffectifBarChart, { MonthData } from "../../components/EffectifBarChart"
-import AppTable from "../../components/AppTable"
 import {
   formatEffectifs,
   unitsOptions,
@@ -26,8 +20,17 @@ import {
   headers,
 } from "../../helpers/contrats"
 import { getEffectifs, getContratsEtu, getPostes, getEtablissementsType } from "../../api"
-import { EtuContrat } from "../../api/types"
-import { useEtabId } from "."
+import { Effectif, EffectifUnit, EtuContrat, MetaData } from "../../api/types"
+import { AppError, errorWording, isAppError } from "../../helpers/errors"
+
+import { Alert } from "@codegouvfr/react-dsfr/Alert"
+import { Button } from "@codegouvfr/react-dsfr/Button"
+import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
+import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
+import { Select } from "@codegouvfr/react-dsfr/Select"
+import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
+import EffectifBarChart from "../../components/EffectifBarChart"
+import AppTable from "../../components/AppTable"
 
 export async function loader({
   params,
@@ -35,8 +38,25 @@ export async function loader({
 }: LoaderFunctionArgs): Promise<EtabPostesLoader> {
   // fetch etablissement postes
   const siret = params.siret ? String(params.siret) : ""
-  const { id: etabId } = await getEtablissementsType(siret)
-  const etabPostes = await getPostes(etabId)
+  const etabType = await getEtablissementsType(siret)
+
+  if (isAppError(etabType)) {
+    throw new Response("", {
+      statusText: errorWording.etab,
+    })
+  }
+
+  const etabPostes = await getPostes(etabType.id)
+
+  if (isAppError(etabPostes)) {
+    const responseParams: ResponseInit = {
+      statusText: errorWording.etab,
+    }
+    if (etabPostes.status) responseParams.status = etabPostes.status
+    if (etabPostes.status == 404) responseParams.statusText = "Postes introuvables."
+    throw new Response("", responseParams)
+  }
+
   const options = etabPostes.map(
     (poste, index) => ({ value: index, label: poste.libelle } as Option)
   )
@@ -46,58 +66,51 @@ export async function loader({
   const queryPostes = getQueryPostes(searchParams)
   const postes = queryPostes ? queryPostes.split(",") : []
 
-  let contrats: EtuContrat[] = [],
-    nbContrats = 0,
-    totalContratsPages = 1,
-    isContratsError = false
+  let contratsData:
+    | AppError
+    | {
+        contrats: EtuContrat[]
+        meta: MetaData
+      }
+    | undefined = undefined
 
   if (postes.length > 0) {
     const page = getQueryPage(searchParams)
 
-    try {
-      const { data, meta } = await getContratsEtu({
-        id: etabId,
-        startMonth: "2022-01-01",
-        endMonth: "2022-12-01",
-        postes,
-        page,
-      })
-      contrats = data
-      nbContrats = meta.totalCount
-      totalContratsPages = meta.totalPages
-    } catch (err) {
-      isContratsError = true
-    }
+    contratsData = await getContratsEtu({
+      id: etabType.id,
+      startMonth: "2022-01-01",
+      endMonth: "2022-12-01",
+      postes,
+      page,
+    })
   }
   return {
-    contrats,
-    isContratsError,
-    nbContrats,
+    contratsData,
     options,
     queryPostes,
-    totalContratsPages,
   }
 }
 
 type EtabPostesLoader = {
-  contrats: EtuContrat[]
-  isContratsError: boolean
-  nbContrats: number
+  contratsData:
+    | AppError
+    | {
+        contrats: EtuContrat[]
+        meta: MetaData
+      }
+    | undefined
   options: Option[]
   queryPostes: string
-  totalContratsPages: number
 }
 
 export default function EtabPostes() {
   const { state } = useNavigation()
   const { etabId } = useEtabId()
   const {
-    contrats,
-    isContratsError,
-    nbContrats,
+    contratsData,
     options,
     queryPostes: initialQueryPostes,
-    totalContratsPages,
   } = useLoaderData() as EtabPostesLoader
   const [searchParams, setSearchParams] = useSearchParams()
 
@@ -106,28 +119,10 @@ export default function EtabPostes() {
   const [selectedOptions, setSelectedOptions] = useState(initialPosteOptions) // updated live when Select changes
   const [selectedPostes, setSelectedPostes] = useState(initialPosteOptions) // updated only when validation button is clicked
 
-  const [areTempContractsStacked, setAreTempContractsStacked] = useState(false)
-  const [unit, setUnit] = useState({ key: 1, option: getUnitOptionFromKey(1) })
-  const [effectifsData, setEffectifsData] = useState([] as MonthData[])
-
-  const formattedContrats = formatContrats(contrats)
-
-  const handleUnitSelected = async (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newKey = Number(event.target.value)
-    const newUnitOption = getUnitOptionFromKey(newKey)
-
-    setUnit({ key: newKey, option: newUnitOption })
-    const postes = selectedPostes.map((poste) => poste.label)
-
-    const newData = await getEffectifs({
-      id: etabId,
-      startMonth: "2022-01-01",
-      endMonth: "2022-12-01",
-      unit: newUnitOption?.value || "tot",
-      postes,
-    })
-    setEffectifsData(formatEffectifs(newData))
-  }
+  const [unitValue, setUnitValue] = useState("tot" as EffectifUnit)
+  const [effectifsData, setEffectifsData] = useState(
+    undefined as AppError | Effectif[] | undefined
+  )
 
   const handlePostesValidated = async () => {
     setSelectedPostes([...selectedOptions])
@@ -139,10 +134,10 @@ export default function EtabPostes() {
         id: etabId,
         startMonth: "2022-01-01",
         endMonth: "2022-12-01",
-        unit: unit.option?.value || "tot",
+        unit: unitValue,
         postes,
       })
-      setEffectifsData(formatEffectifs(effectifs))
+      setEffectifsData(effectifs)
 
       const encodedPostes = selectedOptions.map((option) =>
         encodeURIComponent(option.label)
@@ -165,7 +160,7 @@ export default function EtabPostes() {
     if (
       selectedPostes.length > 0 &&
       formatContrats.length > 0 &&
-      effectifsData.length === 0
+      effectifsData === undefined
     ) {
       const postes = selectedPostes.map((option) => option.label)
 
@@ -174,10 +169,10 @@ export default function EtabPostes() {
           id: etabId,
           startMonth: "2022-01-01",
           endMonth: "2022-12-01",
-          unit: unit.option?.value || "tot",
+          unit: unitValue,
           postes,
         })
-        setEffectifsData(formatEffectifs(effectifs))
+        setEffectifsData(effectifs)
       }
       fetchData()
     }
@@ -193,7 +188,7 @@ export default function EtabPostes() {
           value={selectedOptions}
           label="Poste(s)"
           hintText="Sélectionnez un ou plusieurs postes dans la liste"
-          onChange={(newValue: readonly Option[]) => setSelectedOptions([...newValue])}
+          onChange={(newValue) => setSelectedOptions([...newValue])}
         />
         <Button
           disabled={selectedOptions.length == 0 && selectedPostes.length == 0}
@@ -206,53 +201,35 @@ export default function EtabPostes() {
       <div className="fr-mb-3w">
         <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Évolution des effectifs</h2>
         <hr />
-        {selectedPostes.length > 0 ? (
-          <>
-            <div className="fr-mb-2w lg:columns-2">
-              <Select
-                className="md:w-3/4"
-                label="Unité des effectifs mensuels"
-                nativeSelectProps={{
-                  onChange: handleUnitSelected,
-                  value: unit.key,
-                }}
-              >
-                {unitsOptions.map(({ key, label, attr }) => (
-                  <option {...attr} key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
-              </Select>
-              <ToggleSwitch
-                label="Superposer les barres des CDD et CTT"
-                checked={areTempContractsStacked}
-                onChange={(checked) => setAreTempContractsStacked(checked)}
-              />
-            </div>
-            <div className="h-[500px]">
-              <EffectifBarChart
-                isStacked={areTempContractsStacked}
-                unit="contrats"
-                data={effectifsData}
-              />
-            </div>
-          </>
-        ) : (
+        {selectedPostes.length === 0 || effectifsData === undefined ? (
           <p className="italic text-tx-disabled-grey">
             Veuillez sélectionner un ou plusieurs postes.
           </p>
+        ) : isAppError(effectifsData) ? (
+          <Alert
+            className="fr-mb-2w"
+            description="Pas de données disponibles"
+            severity="error"
+            title="Erreur"
+          />
+        ) : (
+          <EtabPostesEffectifs
+            defaultData={effectifsData}
+            selectedPostes={selectedPostes}
+            onUnitChange={(unit) => setUnitValue(unit)}
+          />
         )}
       </div>
       <div>
         <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Liste des contrats déclarés</h2>
         <hr />
-        {selectedPostes.length === 0 ? (
+        {selectedPostes.length === 0 || contratsData === undefined ? (
           <p className="italic text-tx-disabled-grey">
             Veuillez sélectionner un ou plusieurs postes.
           </p>
         ) : state === "loading" ? (
           <p>En cours de chargement...</p>
-        ) : isContratsError ? (
+        ) : isAppError(contratsData) ? (
           <>
             <p className="text-tx-disabled-grey">
               Une erreur est survenue, aucun contrat n'a été trouvé pour les paramètres
@@ -262,30 +239,137 @@ export default function EtabPostes() {
               Réinitialiser les paramètres
             </Button>
           </>
-        ) : totalContratsPages && nbContrats ? (
-          <>
-            <p>{nbContrats} résultats</p>
-            <AppTable headers={headers} items={formattedContrats} />
-            {totalContratsPages && (
-              <Pagination
-                count={totalContratsPages}
-                defaultPage={getQueryPage(searchParams)}
-                getPageLinkProps={(page) => {
-                  return {
-                    to: { search: `?page=${page}&postes=${queryPostes}` },
-                  }
-                }}
-                showFirstLast
-                classes={{
-                  list: "justify-center",
-                }}
-              />
-            )}
-          </>
         ) : (
-          <p>Aucun résultat.</p>
+          <EtabPostesContrats
+            contrats={contratsData.contrats}
+            meta={contratsData.meta}
+            queryPostes={queryPostes}
+            defaultPage={getQueryPage(searchParams)}
+          />
         )}
       </div>
+    </>
+  )
+}
+
+function EtabPostesEffectifs({
+  defaultData,
+  selectedPostes,
+  onUnitChange,
+}: {
+  defaultData: Effectif[]
+  selectedPostes: Option[]
+  onUnitChange: (unitValue: EffectifUnit) => void
+}) {
+  const { etabId } = useEtabId()
+
+  const [areTempContractsStacked, setAreTempContractsStacked] = useState(false)
+  const [unit, setUnit] = useState({ key: 1, option: getUnitOptionFromKey(1) })
+  const [effectifsData, setEffectifsData] = useState(formatEffectifs(defaultData))
+  const [isEffectifError, setIsEffectifError] = useState(false)
+
+  const handleUnitSelected = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newKey = Number(event.target.value)
+    const newUnitOption = getUnitOptionFromKey(newKey)
+
+    setUnit({ key: newKey, option: newUnitOption })
+    onUnitChange(newUnitOption.value ?? "tot")
+    const postes = selectedPostes.map((poste) => poste.label)
+
+    const newData = await getEffectifs({
+      id: etabId,
+      startMonth: "2022-01-01",
+      endMonth: "2022-12-01",
+      unit: newUnitOption?.value || "tot",
+      postes,
+    })
+    if (!isAppError(newData)) {
+      setEffectifsData(formatEffectifs(newData))
+      setIsEffectifError(false)
+    } else setIsEffectifError(true)
+  }
+
+  return (
+    <>
+      <div className="fr-mb-2w lg:columns-2">
+        <Select
+          className="md:w-3/4"
+          label="Unité des effectifs mensuels"
+          nativeSelectProps={{
+            onChange: handleUnitSelected,
+            value: unit.key,
+          }}
+        >
+          {unitsOptions.map(({ key, label, attr }) => (
+            <option {...attr} key={key} value={key}>
+              {label}
+            </option>
+          ))}
+        </Select>
+        <ToggleSwitch
+          label="Superposer les barres des CDD et CTT"
+          checked={areTempContractsStacked}
+          onChange={(checked) => setAreTempContractsStacked(checked)}
+        />
+      </div>
+      {isEffectifError ? (
+        <Alert
+          className="fr-mb-2w"
+          description={errorWording.errorOccurred}
+          severity="error"
+          title="Erreur"
+        />
+      ) : (
+        <div className="h-[500px]">
+          <EffectifBarChart
+            isStacked={areTempContractsStacked}
+            unit="contrats"
+            data={effectifsData}
+          />
+        </div>
+      )}
+    </>
+  )
+}
+
+function EtabPostesContrats({
+  contrats,
+  meta,
+  queryPostes,
+  defaultPage,
+}: {
+  contrats: EtuContrat[]
+  meta: MetaData
+  queryPostes: string
+  defaultPage: number
+}) {
+  const formattedContrats = formatContrats(contrats)
+
+  return (
+    <>
+      {meta.totalCount > 0 ? (
+        <>
+          <p>{meta.totalCount} résultats</p>
+          <AppTable headers={headers} items={formattedContrats} />
+          {meta.totalPages > 1 && (
+            <Pagination
+              count={meta.totalPages}
+              defaultPage={defaultPage}
+              getPageLinkProps={(page) => {
+                return {
+                  to: { search: `?page=${page}&postes=${queryPostes}` },
+                }
+              }}
+              showFirstLast
+              classes={{
+                list: "justify-center",
+              }}
+            />
+          )}
+        </>
+      ) : (
+        <p>Aucun résultat.</p>
+      )}
     </>
   )
 }

@@ -5,21 +5,25 @@ import { Input } from "@codegouvfr/react-dsfr/Input"
 import { Notice } from "@codegouvfr/react-dsfr/Notice"
 import { Form, redirect, useActionData } from "react-router-dom"
 import { ActionFunctionArgs } from "react-router-dom"
+import { useState } from "react"
+import { AppError, isAppError } from "../helpers/errors"
 
 export async function action({ request }: ActionFunctionArgs) {
-  try {
-    const formData = await request.formData()
-    const siret = formData.get("input") ? String(formData.get("input")) : ""
-    const { ett } = await getEtablissementsType(siret)
-    const redirectTo = ett ? `/ett/${siret}` : `/etablissement/${siret}`
+  const formData = await request.formData()
+  const siret = formData.get("input") ? String(formData.get("input")) : ""
+  const etabType = await getEtablissementsType(siret)
+
+  if (!isAppError(etabType)) {
+    const redirectTo = etabType.ett ? `/ett/${siret}` : `/etablissement/${siret}`
     return redirect(redirectTo)
-  } catch (error) {
-    return error
+  } else {
+    return etabType
   }
 }
 
 export default function Index() {
-  const error = useActionData() as { message: string }
+  const error = useActionData() as AppError
+  const [input, setInput] = useState("")
 
   return (
     <div className="fr-container fr-py-4w flex flex-col items-center lg:w-3/5">
@@ -33,6 +37,9 @@ export default function Index() {
             label="Entrez un SIRET"
             nativeInputProps={{
               name: "input",
+              minLength: 14,
+              value: input,
+              onChange: (event) => setInput(event.target.value.replace(/\s/g, "")),
             }}
           />
           <Button
@@ -47,7 +54,7 @@ export default function Index() {
         {!!error && (
           <Alert
             className="fr-mb-2w"
-            description={error?.message}
+            description={error.messageFr}
             severity="error"
             title="Erreur"
           />

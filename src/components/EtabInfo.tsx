@@ -3,7 +3,7 @@ import { formatDate } from "../helpers/effectifs"
 
 type EtabInfoProps = {
   info: EtablissementInfo
-  lastEffectif: LastEffectif
+  lastEffectif: LastEffectif | null
   siret: string
 }
 
@@ -28,10 +28,13 @@ export default function EtabInfo({ info, lastEffectif, siret }: EtabInfoProps) {
     },
     {
       label: "Dernier effectif déclaré (CDD et CDI)",
-      value: `${lastEffectif.value} contrats (DSN ${formatDate(
-        lastEffectif.date,
-        "MMM YYYY"
-      )})`,
+      value:
+        lastEffectif !== null
+          ? `${lastEffectif.value} contrats (DSN ${formatDate(
+              lastEffectif.date,
+              "MMM YYYY"
+            )})`
+          : "Inconnu",
     },
     {
       label: "Convention collective",
@@ -48,8 +51,6 @@ export default function EtabInfo({ info, lastEffectif, siret }: EtabInfoProps) {
 
   return (
     <>
-      <h2 className="fr-text--xl fr-mb-1w">Informations sur l'établissement</h2>
-      <hr />
       <div className="fr-p-2w border border-solid border-bd-default-grey bg-bg-alt-grey">
         <div className="flex flex-col lg:flex-row">
           <div className="lg:w-1/2">
