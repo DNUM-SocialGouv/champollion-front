@@ -188,7 +188,7 @@ export default function EtabPostes() {
           value={selectedOptions}
           label="Poste(s)"
           hintText="Sélectionnez un ou plusieurs postes dans la liste"
-          onChange={(newValue) => setSelectedOptions([...newValue])}
+          onChange={(newValue) => setSelectedOptions([...(newValue as Option[])])}
         />
         <Button
           disabled={selectedOptions.length == 0 && selectedPostes.length == 0}

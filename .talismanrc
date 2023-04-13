@@ -1,3 +1,6 @@
+fileignoreconfig:
+- filename: src/routes/etablissement/carence/contrats.tsx
+  checksum: 1473be856e20e9e10f3aa6bbb499fcacb462eb06f3c7862ba9c80f17592b05c8
 scopeconfig:
-  - scope: node
+- scope: node
 version: "1.0"

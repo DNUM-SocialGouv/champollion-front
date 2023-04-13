@@ -1,4 +1,4 @@
-// types inspired by fromhttps://wanago.io/2020/03/09/functional-react-components-with-generic-props-in-typescript/
+// types inspired by https://wanago.io/2020/03/09/functional-react-components-with-generic-props-in-typescript/
 
 interface TableProps<ObjectType> {
   items: ObjectType[]

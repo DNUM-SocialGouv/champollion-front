@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react"
-import Select, { ClearIndicatorProps, MultiValueProps, ThemeConfig } from "react-select"
+import Select, {
+  ClearIndicatorProps,
+  InputActionMeta,
+  MultiValue as MultiValueOpt,
+  MultiValueProps,
+  SingleValue as SingleValueOpt,
+  ThemeConfig,
+} from "react-select"
 import { CSSProperties } from "react"
 
 export type Option = {
@@ -10,8 +17,9 @@ export type Option = {
 type AppMultiSelectProps = {
   className?: string
   hintText?: string
+  isMulti?: boolean
   label: string
-  onChange: (option: readonly Option[]) => void
+  onChange: (newValue: MultiValueOpt<Option> | SingleValueOpt<Option>) => void
   options: Option[]
   value: Option | Option[]
 }
@@ -86,6 +94,7 @@ const ClearIndicator = (props: ClearIndicatorProps<Option>) => {
 export default function AppMultiSelect({
   className,
   hintText,
+  isMulti = true,
   label,
   onChange,
   options,
@@ -96,6 +105,16 @@ export default function AppMultiSelect({
   useEffect(() => {
     setValue(valueProp)
   }, [valueProp])
+
+  const onInputChange = (
+    inputValue: string,
+    { action, prevInputValue }: InputActionMeta
+  ) => {
+    if (isMulti && action !== "input-change") {
+      return prevInputValue
+    }
+    return inputValue
+  }
 
   return (
     <div className={`fr-mb-3w ${className}`}>
@@ -118,14 +137,16 @@ export default function AppMultiSelect({
           valueContainer: () => "fr-py-1v fr-px-3v",
         }}
         components={{ ClearIndicator, DropdownIndicator, MultiValue }}
-        closeMenuOnSelect={false}
+        closeMenuOnSelect={!isMulti}
         hideSelectedOptions={false}
-        isMulti
+        isClearable
+        isMulti={isMulti}
         noOptionsMessage={({ inputValue }) =>
           inputValue ? `Aucun résultat pour "${inputValue}"` : "Aucune option disponible"
         }
         options={options}
         onChange={onChange}
+        onInputChange={onInputChange}
         placeholder=""
         theme={selectTheme}
         value={value}

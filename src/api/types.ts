@@ -82,3 +82,5 @@ export type LastEffectif = {
   value: number
   date: string
 }
+
+export type DateRange = { startDate: string; endDate: string }

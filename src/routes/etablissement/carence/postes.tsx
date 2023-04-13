@@ -6,7 +6,6 @@ import {
   redirect,
   useActionData,
   useLoaderData,
-  useNavigate,
 } from "react-router-dom"
 import ls from "localstorage-slim"
 
@@ -40,6 +39,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
     .map((fusion) => (typeof fusion === "string" && fusion.split(",")) || [])
     .filter((fusion) => Array.isArray(fusion) && fusion.length > 1)
   ls.set(`carence.${params.siret}.fusions`, fusionsLabels)
+  if (data.navigation === "previous") return redirect("../parametres")
   return redirect("../contrats")
 }
 
@@ -65,10 +65,10 @@ export async function loader({
     if (etabPostes.status == 404) responseParams.statusText = "Postes introuvables."
     throw new Response("", responseParams)
   }
-
   const options = etabPostes.map(
     (poste, index) => ({ value: index, label: poste.libelle } as Option)
   )
+
   const localFusionsLabels = ls.get(`carence.${params.siret}.fusions`) as
     | string[][]
     | null
@@ -85,7 +85,6 @@ export async function loader({
 }
 
 export default function CarencePostes() {
-  const navigate = useNavigate()
   const error = useActionData() as { message: string }
   const { options, savedFusions } = useLoaderData() as CarencePostesLoader
   const [fusions, setFusions] = useState(savedFusions)
@@ -124,7 +123,7 @@ export default function CarencePostes() {
                   label="Fusionner les postes suivants :"
                   onChange={(newValue) => {
                     const newFusions = fusions.map((fusion, idx) =>
-                      idx === index ? [...newValue] : fusion
+                      idx === index ? [...(newValue as Option[])] : fusion
                     )
                     setFusions(newFusions)
                   }}
@@ -172,13 +171,15 @@ export default function CarencePostes() {
         <div className="fr-mt-4w self-end">
           <Button
             className="fr-mr-2w"
-            onClick={() => navigate(-1)}
             priority="secondary"
-            type="button"
+            nativeButtonProps={{ name: "navigation", value: "previous" }}
+            type="submit"
           >
             Précédent
           </Button>
-          <Button type="submit">Suivant</Button>
+          <Button nativeButtonProps={{ name: "navigation", value: "next" }} type="submit">
+            Suivant
+          </Button>
         </div>
       </Form>
     </>

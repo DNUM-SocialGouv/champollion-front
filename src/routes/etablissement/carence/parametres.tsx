@@ -7,12 +7,11 @@ import {
   redirect,
   useLoaderData,
 } from "react-router-dom"
+import { DateRange } from "../../../api/types"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 import { Stepper } from "@codegouvfr/react-dsfr/Stepper"
 import { Input } from "@codegouvfr/react-dsfr/Input"
-
-type DateRange = { startDate: string; endDate: string }
 
 type CarenceParametresLoader = {
   savedDates: DateRange
