@@ -23,7 +23,11 @@ import CarencePostes, {
   action as carencePostesAction,
   loader as carencePostesLoader,
 } from "./routes/etablissement/carence/postes"
-import CarenceContrats from "./routes/etablissement/carence/contrats"
+import CarenceContrats, {
+  action as carenceContratsAction,
+  loader as carenceContratsLoader,
+} from "./routes/etablissement/carence/contrats"
+import CarenceInfractions from "./routes/etablissement/carence/infractions"
 import { loader as carenceLoader } from "./routes/etablissement/carence"
 
 // set localStorage expiration to 2 weeks (in seconds)
@@ -94,6 +98,12 @@ const router = createBrowserRouter([
               {
                 path: "contrats",
                 element: <CarenceContrats />,
+                action: carenceContratsAction,
+                loader: carenceContratsLoader,
+              },
+              {
+                path: "infractions",
+                element: <CarenceInfractions />,
               },
             ],
           },

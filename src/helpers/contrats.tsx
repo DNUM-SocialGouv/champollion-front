@@ -27,7 +27,7 @@ type Column =
   | "motive"
   | "conventionCode"
 
-type ContratsHeader = {
+export type ContratsHeader<Column> = {
   key: Column
   label: string
   width: string
@@ -42,7 +42,7 @@ const headers = [
   { key: "endDate", label: "Date de fin réelle", width: "10%" },
   { key: "motive", label: "Motif de recours", width: "20%" },
   { key: "conventionCode", label: "Conv. collective", width: "6%" },
-] as ContratsHeader[]
+] as ContratsHeader<Column>[]
 
 const formatDate = (date: string | null) =>
   dayjs(date).isValid() ? dayjs(date).format("DD/MM/YYYY") : ""
@@ -79,6 +79,8 @@ const formatContrats = (items: EtuContrat[]) =>
     } as FormattedContrat
   })
 
+const getQueryPoste = (searchParams: URLSearchParams) =>
+  decodeURIComponent(searchParams.get("poste") ?? "")
 const getQueryPostes = (searchParams: URLSearchParams) =>
   decodeURIComponent(searchParams.get("postes") ?? "")
 const getQueryPage = (searchParams: URLSearchParams) =>
@@ -91,9 +93,12 @@ const getPostesOptionsFromQuery = (queryPostes: string, options: Option[]) =>
     .filter((option) => Object.keys(option).length > 0)
 
 export {
+  contratTypeShort,
+  formatDate,
   formatContrats,
   getPostesOptionsFromQuery,
   getQueryPage,
+  getQueryPoste,
   getQueryPostes,
   headers,
 }

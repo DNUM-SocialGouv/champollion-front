@@ -64,7 +64,7 @@ const isAppError = (x: unknown): x is AppError => {
 
 const isApiError = (x: unknown): x is ApiError => {
   return Boolean(
-    (x as ApiError).message && (x as ApiError).type && (x as ApiError).context
+    (x as ApiError)?.message && (x as ApiError)?.type && (x as ApiError)?.context
   )
 }
 
