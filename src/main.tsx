@@ -12,23 +12,18 @@ import Error from "./components/Error"
 import Etab, { loader as etabLoader } from "./routes/etablissement"
 import EtabSynthese, {
   loader as etabSyntheseLoader,
+  action as etabSyntheseAction,
 } from "./routes/etablissement/synthese"
-import EtabPostes, { loader as etabPostesLoader } from "./routes/etablissement/postes"
+import EtabPostes, {
+  loader as etabPostesLoader,
+  action as etabPostesAction,
+} from "./routes/etablissement/postes"
+import EtabContrats, {
+  loader as etabContratsLoader,
+} from "./routes/etablissement/contrats"
+import EtabRecours, { loader as etabRecoursLoader } from "./routes/etablissement/recours"
+import EtabCarence, { loader as etabCarenceLoader } from "./routes/etablissement/carence"
 import ETT, { loader as ettLoader } from "./routes/ett"
-import CarenceParametres, {
-  action as carenceParamAction,
-  loader as carenceParamLoader,
-} from "./routes/etablissement/carence/parametres"
-import CarencePostes, {
-  action as carencePostesAction,
-  loader as carencePostesLoader,
-} from "./routes/etablissement/carence/postes"
-import CarenceContrats, {
-  action as carenceContratsAction,
-  loader as carenceContratsLoader,
-} from "./routes/etablissement/carence/contrats"
-import CarenceInfractions from "./routes/etablissement/carence/infractions"
-import { loader as carenceLoader } from "./routes/etablissement/carence"
 
 // set localStorage expiration to 2 weeks (in seconds)
 ls.config.ttl = 1209600
@@ -69,43 +64,29 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <EtabSynthese />,
+            action: etabSyntheseAction,
             loader: etabSyntheseLoader,
           },
           {
             path: "postes",
             element: <EtabPostes />,
+            action: etabPostesAction,
             loader: etabPostesLoader,
           },
           {
+            path: "contrats",
+            element: <EtabContrats />,
+            loader: etabContratsLoader,
+          },
+          {
+            path: "recours-abusif",
+            element: <EtabRecours />,
+            loader: etabRecoursLoader,
+          },
+          {
             path: "carence",
-            children: [
-              {
-                index: true,
-                loader: carenceLoader,
-              },
-              {
-                path: "parametres",
-                element: <CarenceParametres />,
-                action: carenceParamAction,
-                loader: carenceParamLoader,
-              },
-              {
-                path: "postes",
-                element: <CarencePostes />,
-                action: carencePostesAction,
-                loader: carencePostesLoader,
-              },
-              {
-                path: "contrats",
-                element: <CarenceContrats />,
-                action: carenceContratsAction,
-                loader: carenceContratsLoader,
-              },
-              {
-                path: "infractions",
-                element: <CarenceInfractions />,
-              },
-            ],
+            element: <EtabCarence />,
+            loader: etabCarenceLoader,
           },
         ],
       },

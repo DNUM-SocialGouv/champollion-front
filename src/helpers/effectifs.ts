@@ -1,20 +1,13 @@
-import dayjs from "dayjs"
-import "dayjs/locale/fr"
-dayjs.locale("fr")
-
 import { Effectif, EffectifUnit } from "../api/types"
 import { MonthData } from "../components/EffectifBarChart"
-
-const formatDateToShortMonth = (date: string) => dayjs(date).format("MMM YY")
-const formatDateToFullMonth = (date: string) => dayjs(date).format("MMMM YYYY")
-const formatDate = (date: string, format: string) => dayjs(date).format(format)
+import { formatDate } from "./format"
 
 const formatEffectifs = (effectifs: Effectif[]) =>
   effectifs.map(({ date, cdiCount, cddCount, cttCount }) => {
     return {
       date,
-      label: formatDateToShortMonth(date),
-      name: formatDateToFullMonth(date),
+      label: formatDate(date, "MMM YY"),
+      name: formatDate(date, "MMMM YYYY"),
       cdd: cddCount,
       cdi: cdiCount,
       ctt: cttCount,
@@ -42,11 +35,4 @@ const unitsOptions: {
 const getUnitOptionFromKey = (key: number | string) =>
   unitsOptions.find((option) => String(option.key) == String(key)) ?? unitsOptions[0]
 
-export {
-  formatDate,
-  formatDateToShortMonth,
-  formatDateToFullMonth,
-  formatEffectifs,
-  unitsOptions,
-  getUnitOptionFromKey,
-}
+export { formatEffectifs, unitsOptions, getUnitOptionFromKey }

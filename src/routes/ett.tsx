@@ -1,5 +1,4 @@
 import { LoaderFunctionArgs, redirect, useLoaderData } from "react-router-dom"
-import dayjs from "dayjs"
 import {
   getEtablissementsInfo,
   getEtablissementsType,
@@ -16,6 +15,7 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
 import { ReactNode } from "react"
 import { AppError, errorWording, isAppError } from "../helpers/errors"
+import { formatDate } from "../helpers/format"
 
 export async function loader({
   params,
@@ -156,9 +156,6 @@ export default function ETT() {
 
 function ETTContrats({ contrats, meta }: { contrats: EttContrat[]; meta: MetaData }) {
   const { page, siret } = useLoaderData() as ETTLoader
-
-  const formatDate = (date: string | null) =>
-    dayjs(date).isValid() ? dayjs(date).format("DD/MM/YYYY") : ""
 
   const formatContrats = (items: EttContrat[]) =>
     items.map((contrat) => {
