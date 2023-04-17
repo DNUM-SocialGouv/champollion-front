@@ -1,5 +1,5 @@
 import { EtablissementInfo, LastEffectif } from "../api/types"
-import { formatDate } from "../helpers/effectifs"
+import { formatDate } from "../helpers/format"
 
 type EtabInfoProps = {
   info: EtablissementInfo
@@ -70,13 +70,29 @@ export default function EtabInfo({ info, lastEffectif, siret }: EtabInfoProps) {
             ))}
           </div>
         </div>
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href={`https://suit.intranet.travail.gouv.fr/suit/desktop/#/etablissements/${siret}`}
-        >
-          Lien vers SUIT
-        </a>
+        <div className="flex flex-col lg:flex-row">
+          <div className="lg:w-1/2">
+            <a
+              className="lg:w-1/2"
+              target="_blank"
+              rel="noopener noreferrer"
+              href={`https://suit.intranet.travail.gouv.fr/suit/desktop/#/etablissements/${siret}`}
+            >
+              Lien vers SUIT
+            </a>
+          </div>
+
+          <div className="lg:w-1/2">
+            <a
+              className="lg:w-1/2"
+              target="_blank"
+              rel="noopener noreferrer"
+              href={`https://fce.fabrique.social.gouv.fr/establishment/${siret}`}
+            >
+              Lien vers FCE
+            </a>
+          </div>
+        </div>
       </div>
     </>
   )

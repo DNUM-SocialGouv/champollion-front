@@ -1,6 +1,16 @@
 fileignoreconfig:
+- filename: src/helpers/contrats.tsx
+  checksum: 8a51c08cb3220485e16fa4623a14ad69fcf661b3d8b57c6a8d063a9d78c60655
+- filename: src/helpers/format.ts
+  checksum: ed190ab00126a735709faf5788b21d03cba08be55733e6658e36ff6b363090d5
 - filename: src/routes/etablissement/carence/contrats.tsx
   checksum: 1473be856e20e9e10f3aa6bbb499fcacb462eb06f3c7862ba9c80f17592b05c8
+- filename: src/routes/etablissement/contrats.tsx
+  checksum: 2d3c789821912d3886cc3c8adf314f068993d996fec2523eb432ccdfbd077e95
+- filename: src/routes/etablissement/recours.tsx
+  checksum: a936fd7bd3fce3ddd9e46b4d4e49fd24a5dec899fb18f53412d4b92b0a3dc85a
+- filename: src/routes/etablissement/synthese.tsx
+  checksum: 1ecaf9c32cd26a987f7b123a89bdabe00f24cbfa705b187a6676d2eedcf63628
 scopeconfig:
 - scope: node
 version: "1.0"

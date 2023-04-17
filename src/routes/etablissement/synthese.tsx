@@ -1,24 +1,38 @@
-import { useState } from "react"
-import { LoaderFunctionArgs, useLoaderData } from "react-router-dom"
+import { ChangeEvent, useState } from "react"
+import ls from "localstorage-slim"
 import {
-  getEtablissementsInfo,
-  getEtablissementsType,
-  getEffectifs,
-  getEffectifsLast,
-} from "../../api"
-import { EtablissementInfo, Effectif, LastEffectif } from "../../api/types"
-
-import {
-  formatEffectifs,
-  unitsOptions,
-  getUnitOptionFromKey,
-} from "../../helpers/effectifs"
-import EtabInfo from "../../components/EtabInfo"
-import EffectifBarChart from "../../components/EffectifBarChart"
-import { Alert } from "@codegouvfr/react-dsfr/Alert"
-import { Select } from "@codegouvfr/react-dsfr/Select"
-import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
+  ActionFunctionArgs,
+  Form,
+  LoaderFunctionArgs,
+  useActionData,
+  useLoaderData,
+} from "react-router-dom"
+import { getEtablissementsInfo, getEtablissementsType, getEffectifsLast } from "../../api"
+import { EtablissementInfo, LastEffectif } from "../../api/types"
 import { AppError, errorWording, isAppError } from "../../helpers/errors"
+
+import EtabInfo from "../../components/EtabInfo"
+import { Alert } from "@codegouvfr/react-dsfr/Alert"
+import { Button } from "@codegouvfr/react-dsfr/Button"
+import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
+
+export async function action({
+  params,
+  request,
+}: ActionFunctionArgs): Promise<EtabSyntheseAction> {
+  const formData = await request.formData()
+  const data = Object.fromEntries(formData)
+  const openDays = Object.keys(data)
+    .filter((key) => key.includes("open-day"))
+    .map((key) => data[key])
+  ls.set(`etab.${params.siret}.openDays`, openDays)
+  return { state: "success", stateRelatedMessage: "Sauvegardé" }
+}
+
+type EtabSyntheseAction = {
+  state: "success" | "error" | "default" | undefined
+  stateRelatedMessage: string
+}
 
 export async function loader({
   params,
@@ -34,30 +48,62 @@ export async function loader({
 
   const etabId = etabType.id
 
-  const [effectifs, info, lastEffectif] = await Promise.all([
-    getEffectifs({
-      id: etabId,
-      startMonth: "2022-01-01",
-      endMonth: "2022-12-01",
-      unit: "tot",
-    }),
+  const localOpenDays = ls.get(`etab.${params.siret}.openDays`)
+  const savedOpenDays: string[] = Array.isArray(localOpenDays) ? localOpenDays : []
+
+  const [info, lastEffectif] = await Promise.all([
     getEtablissementsInfo(etabId),
     getEffectifsLast(etabId),
   ])
-  return { effectifs, etabId, info, lastEffectif, siret }
+  return { info, lastEffectif, savedOpenDays, siret }
 }
 
 type EtabSyntheseLoader = {
-  effectifs: Effectif[] | AppError
-  etabId: number
   info: EtablissementInfo | AppError
   lastEffectif: LastEffectif | AppError
+  savedOpenDays: string[]
   siret: string
 }
 
 export default function EtabSynthese() {
-  const { effectifs, etabId, info, lastEffectif, siret } =
+  const { info, lastEffectif, savedOpenDays, siret } =
     useLoaderData() as EtabSyntheseLoader
+  const checkboxState = useActionData() as EtabSyntheseAction
+
+  const daysName = [
+    "Lundi",
+    "Mardi",
+    "Mercredi",
+    "Jeudi",
+    "Vendredi",
+    "Samedi",
+    "Dimanche",
+  ]
+  const openDaysCheckboxValues = [0, 1, 2, 3, 4, 5, 6].map(
+    (key) => !!savedOpenDays.find((day) => day === String(key))
+  )
+  const initialOpenDays =
+    savedOpenDays.length > 0
+      ? openDaysCheckboxValues
+      : [true, true, true, true, true, false, false]
+  const [openDays, setOpenDays] = useState([...initialOpenDays])
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const dayIdx = parseInt(event.target.value)
+    const newOpenDays = [...openDays]
+    newOpenDays[dayIdx] = event.target.checked
+    setOpenDays(newOpenDays)
+  }
+  const openDaysOptions = daysName.map((day, idx) => {
+    return {
+      label: day,
+      nativeInputProps: {
+        name: `open-day-${day}`,
+        checked: openDays[idx],
+        value: idx,
+        onChange: handleChange,
+      },
+    }
+  })
 
   return (
     <>
@@ -80,91 +126,27 @@ export default function EtabSynthese() {
         />
       )}
       <div className="fr-py-3w flex w-full flex-col">
-        <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Vue globale des contrats</h2>
+        <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Jours d'ouverture</h2>
         <hr />
-        {isAppError(effectifs) ? (
-          <Alert
-            className="fr-mb-2w"
-            description="Pas de données disponibles"
-            severity="error"
-            title="Erreur"
+        <Form className="flex flex-col" method="post">
+          <p>
+            <span className="fr-icon-info-line" aria-hidden={true} />
+            Les jours d'ouverture ne sont pas fournis dans les déclarations de
+            l'établissement, mais sont essentiels à renseigner afin de calculer
+            correctement les jours travaillés et les délais de carence.
+          </p>
+          <Checkbox
+            legend="Jours d'ouverture habituels"
+            options={openDaysOptions}
+            orientation="horizontal"
+            state={checkboxState?.state}
+            stateRelatedMessage={checkboxState?.stateRelatedMessage}
           />
-        ) : (
-          <EtabSyntheseEffectifs defaultData={effectifs} etabId={etabId} />
-        )}
+          <Button className="fr-mt-2w" type="submit" priority="secondary">
+            Sauvegarder
+          </Button>
+        </Form>
       </div>
-    </>
-  )
-}
-
-function EtabSyntheseEffectifs({
-  defaultData,
-  etabId,
-}: {
-  defaultData: Effectif[]
-  etabId: number
-}) {
-  const [areTempContractsStacked, setAreTempContractsStacked] = useState(false)
-  const [unit, setUnit] = useState({ key: 1, option: getUnitOptionFromKey(1) })
-  const [data, setData] = useState(formatEffectifs(defaultData))
-  const [isEffectifError, setIsEffectifError] = useState(false)
-
-  const handleUnitSelected = async (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newKey = Number(event.target.value)
-    const newUnitOption = getUnitOptionFromKey(newKey)
-
-    setUnit({ key: newKey, option: newUnitOption })
-    const newData = await getEffectifs({
-      id: etabId,
-      startMonth: "2022-01-01",
-      endMonth: "2022-12-01",
-      unit: newUnitOption?.value || "tot",
-    })
-    if (!isAppError(newData)) {
-      setData(formatEffectifs(newData))
-      setIsEffectifError(false)
-    } else setIsEffectifError(true)
-  }
-
-  return (
-    <>
-      <div className="fr-mb-2w lg:columns-2">
-        <Select
-          className="md:w-3/4"
-          label="Unité des effectifs mensuels"
-          nativeSelectProps={{
-            onChange: handleUnitSelected,
-            value: unit.key,
-          }}
-        >
-          {unitsOptions.map(({ key, label, attr }) => (
-            <option {...attr} key={key} value={key}>
-              {label}
-            </option>
-          ))}
-        </Select>
-        <ToggleSwitch
-          label="Superposer les barres des CDD et CTT"
-          checked={areTempContractsStacked}
-          onChange={(checked) => setAreTempContractsStacked(checked)}
-        />
-      </div>
-      {isEffectifError ? (
-        <Alert
-          className="fr-mb-2w"
-          description={errorWording.errorOccurred}
-          severity="error"
-          title="Erreur"
-        />
-      ) : (
-        <div className="h-[500px]">
-          <EffectifBarChart
-            isStacked={areTempContractsStacked}
-            unit="contrats"
-            data={data}
-          />
-        </div>
-      )}
     </>
   )
 }

@@ -51,8 +51,10 @@ export async function loader({
 
 const tabs = [
   { tabId: "tab1", label: "Fiche synthèse", to: "" },
-  { tabId: "tab2", label: "Détail des contrats par poste", to: "postes" },
-  { tabId: "tab3", label: "Infraction délai de carence", to: "carence" },
+  { tabId: "tab2", label: "Postes", to: "postes" },
+  { tabId: "tab3", label: "Contrats", to: "contrats" },
+  { tabId: "tab4", label: "Recours abusif", to: "recours-abusif" },
+  { tabId: "tab5", label: "Délai de carence", to: "carence" },
 ]
 
 type ContextType = { etabId: number }
@@ -60,9 +62,8 @@ type ContextType = { etabId: number }
 export default function Etab() {
   const { etabId, pathname, raisonSociale, siret } = useLoaderData() as EtabLoader
   const navigate = useNavigate()
-  const tabPathregex = /\/etablissement\/\d{14}\/([\w]+)/
+  const tabPathregex = /\/etablissement\/\d{14}\/([\w-]+)/
   const tabPath = tabPathregex.exec(pathname)?.[1]
-
   const initialTab = tabs.find((tab) => tab.to === tabPath)?.tabId ?? "tab1"
 
   const [selectedTabId, setSelectedTabId] = useState(initialTab)

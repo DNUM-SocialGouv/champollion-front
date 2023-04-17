@@ -34,7 +34,7 @@ export type EtuContrat = {
   nomUsage: string | null
   prenoms: string
   posteId: string | null
-  libellePoste: string | null
+  libellePoste: string
   codeNatureContrat: string
   libelleNatureContrat: string
   dateDebut: string
@@ -77,6 +77,10 @@ export type Effectif = {
 }
 
 export type EffectifUnit = "etp" | "tot" | "ldm" | "avg"
+
+export const isEffectifUnit = (x: string): x is EffectifUnit => {
+  return ["etp", "tot", "ldm", "avg"].includes(x)
+}
 
 export type LastEffectif = {
   value: number
