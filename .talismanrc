@@ -7,6 +7,8 @@ fileignoreconfig:
   checksum: 1473be856e20e9e10f3aa6bbb499fcacb462eb06f3c7862ba9c80f17592b05c8
 - filename: src/routes/etablissement/contrats.tsx
   checksum: 2d3c789821912d3886cc3c8adf314f068993d996fec2523eb432ccdfbd077e95
+- filename: src/routes/etablissement/postes.tsx
+  checksum: be1a2b1ee4fbf376f878ae4add217cdb141adbfbb9f8e1e1072b8a68299da63a
 - filename: src/routes/etablissement/recours.tsx
   checksum: a936fd7bd3fce3ddd9e46b4d4e49fd24a5dec899fb18f53412d4b92b0a3dc85a
 - filename: src/routes/etablissement/synthese.tsx

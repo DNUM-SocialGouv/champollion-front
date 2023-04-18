@@ -24,6 +24,12 @@ import Pagination from "@codegouvfr/react-dsfr/Pagination"
 import { DateRange, EtablissementPoste, EtuContrat, MetaData } from "../../api/types"
 import { AppError, errorWording, isAppError } from "../../helpers/errors"
 import { formatDate, getQueryAsString, getQueryPage } from "../../helpers/format"
+import {
+  OptionComp,
+  SingleValueComp,
+  initOptions,
+  selectedPostesAfterMerge,
+} from "../../helpers/postes"
 
 type CarenceContratsLoader = {
   contratsData:
@@ -33,10 +39,10 @@ type CarenceContratsLoader = {
         meta: MetaData
       }
   dates: DateRange
-  localFusionsLabels: string[][] | null
+  mergesLabels: string[][] | null
   page: number
   postes: AppError | EtablissementPoste[]
-  selectedPoste: string | null
+  queryPoste: string
   siret: string
 }
 
@@ -44,8 +50,8 @@ export async function loader({
   params,
   request,
 }: LoaderFunctionArgs): Promise<CarenceContratsLoader> {
-  const searchParams = new URL(request.url).searchParams
-  const selectedPoste = getQueryAsString(searchParams, "poste")
+  const { searchParams } = new URL(request.url)
+  const queryPoste = getQueryAsString(searchParams, "poste")
   const page = getQueryPage(searchParams)
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
@@ -56,7 +62,9 @@ export async function loader({
     })
   }
   const postes = await getPostes(etabType.id)
-  const localFusionsLabels = ls.get(`etab.${params.siret}.fusions`) as string[][] | null
+  const localMergesLabels = ls.get(`etab.${params.siret}.merges`) as string[][] | null
+
+  const selectedPostesParam = selectedPostesAfterMerge(queryPoste, localMergesLabels)
 
   const dates: DateRange = {
     startDate: "2022-01-01",
@@ -66,42 +74,28 @@ export async function loader({
     startMonth: dates.startDate,
     endMonth: dates.endDate,
     id: etabType.id,
-    // mergedPostes: localFusionsLabels || [], //todo handle fusion with old endpoint?
-    postes: (selectedPoste && [selectedPoste]) || undefined,
+    postes: selectedPostesParam,
     page,
   })
 
   return {
     contratsData,
     dates,
-    localFusionsLabels,
+    mergesLabels: localMergesLabels,
     page,
     postes,
-    selectedPoste,
+    queryPoste,
     siret,
   }
 }
 
 export default function EtabContrats() {
   const submit = useSubmit()
-  const {
-    dates,
-    page,
-    postes,
-    contratsData,
-    localFusionsLabels,
-    selectedPoste: queryPoste,
-  } = useLoaderData() as CarenceContratsLoader
+  const { contratsData, dates, mergesLabels, page, postes, queryPoste } =
+    useLoaderData() as CarenceContratsLoader
 
-  const mergedLabelsToDelete = localFusionsLabels?.map((fusion) => fusion.slice(1)).flat()
-  let options: Option[] = []
-  if (!isAppError(postes))
-    options = postes
-      .filter((poste) => !mergedLabelsToDelete?.find((label) => label === poste.libelle))
-      .map((poste, index) => ({ value: index, label: poste.libelle } as Option))
+  const { options, initialPosteOption } = initOptions(postes, queryPoste, mergesLabels)
 
-  const initialPosteOption: Option =
-    options.find((option) => option.label === queryPoste) || ({} as Option)
   const [selectedPoste, setSelectedPoste] = useState(initialPosteOption)
   const noticeText = `Lorsque la date de fin réelle n'est pas déclarée par l'entreprise, elle est dite inférée.
     Vous pouvez corriger les dates d'après vos observations.`
@@ -131,10 +125,9 @@ export default function EtabContrats() {
       <Form>
         <AppMultiSelect
           className="fr-mr-2w md:w-3/5 lg:w-1/2"
+          customComponents={{ Option: OptionComp, SingleValue: SingleValueComp }}
           isMulti={false}
-          options={options}
-          value={selectedPoste}
-          label="Filtrer sur un poste :"
+          label="Filtrer sur un poste"
           onChange={(newValue) => {
             if (!Array.isArray(newValue)) {
               const poste = (newValue as Option) || ({} as Option)
@@ -144,6 +137,8 @@ export default function EtabContrats() {
               submit(formData)
             }
           }}
+          options={options}
+          value={selectedPoste}
         />
       </Form>
       {isAppError(contratsData) ? (

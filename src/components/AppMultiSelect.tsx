@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, CSSProperties, useId } from "react"
 import Select, {
   ClearIndicatorProps,
   InputActionMeta,
@@ -6,16 +6,19 @@ import Select, {
   MultiValueProps,
   SingleValue as SingleValueOpt,
   ThemeConfig,
+  GroupBase,
 } from "react-select"
-import { CSSProperties } from "react"
+import { SelectComponents } from "react-select/dist/declarations/src/components"
 
 export type Option = {
   value: number
   label: string
+  display?: string
 }
 
 type AppMultiSelectProps = {
   className?: string
+  customComponents?: Partial<SelectComponents<Option, boolean, GroupBase<Option>>>
   hintText?: string
   isMulti?: boolean
   label: string
@@ -93,6 +96,7 @@ const ClearIndicator = (props: ClearIndicatorProps<Option>) => {
 
 export default function AppMultiSelect({
   className,
+  customComponents,
   hintText,
   isMulti = true,
   label,
@@ -101,6 +105,7 @@ export default function AppMultiSelect({
   value: valueProp,
 }: AppMultiSelectProps) {
   const [value, setValue] = useState(valueProp)
+  const selectId = "select-postes" + useId()
 
   useEffect(() => {
     setValue(valueProp)
@@ -118,12 +123,12 @@ export default function AppMultiSelect({
 
   return (
     <div className={`fr-mb-3w ${className}`}>
-      <label className="fr-label" htmlFor="select-postes">
+      <label className="fr-label" htmlFor={selectId}>
         {label}
         {hintText && <span className="fr-hint-text">{hintText}</span>}
       </label>
       <Select
-        id="select-postes"
+        id={selectId}
         classNames={{
           control: (state) =>
             `bg-bg-contrast-grey rounded-t rounded-b-none border-none shadow-input fr-mt-1w ${
@@ -136,7 +141,12 @@ export default function AppMultiSelect({
           placeholder: () => "fr-ml-1v",
           valueContainer: () => "fr-py-1v fr-px-3v",
         }}
-        components={{ ClearIndicator, DropdownIndicator, MultiValue }}
+        components={{
+          ClearIndicator,
+          DropdownIndicator,
+          MultiValue,
+          ...customComponents,
+        }}
         closeMenuOnSelect={!isMulti}
         hideSelectedOptions={false}
         isClearable

@@ -6,6 +6,7 @@ import {
   useSearchParams,
   useSubmit,
 } from "react-router-dom"
+import ls from "localstorage-slim"
 
 import {
   formatEffectifs,
@@ -13,7 +14,12 @@ import {
   getUnitOptionFromKey,
 } from "../../helpers/effectifs"
 import { getEffectifs, getPostes, getEtablissementsType } from "../../api"
-import { Effectif, EffectifUnit, isEffectifUnit } from "../../api/types"
+import {
+  Effectif,
+  EffectifUnit,
+  EtablissementPoste,
+  isEffectifUnit,
+} from "../../api/types"
 import { AppError, errorWording, isAppError } from "../../helpers/errors"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
@@ -22,12 +28,21 @@ import { Select } from "@codegouvfr/react-dsfr/Select"
 import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
 import EffectifBarChart from "../../components/EffectifBarChart"
 import { getQueryAsString } from "../../helpers/format"
+import {
+  OptionComp,
+  SingleValueComp,
+  initOptions,
+  selectedPostesAfterMerge,
+} from "../../helpers/postes"
 
 export async function loader({
   params,
   request,
 }: LoaderFunctionArgs): Promise<EtabPostesLoader> {
-  // fetch etablissement postes
+  const { searchParams } = new URL(request.url)
+  const queryPoste = getQueryAsString(searchParams, "poste")
+  const queryUnit = getQueryAsString(searchParams, "unit")
+  const unit: EffectifUnit = isEffectifUnit(queryUnit) ? queryUnit : "tot"
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
 
@@ -37,56 +52,43 @@ export async function loader({
     })
   }
 
-  const etabPostes = await getPostes(etabType.id)
+  const postes = await getPostes(etabType.id)
 
-  if (isAppError(etabPostes)) {
-    const responseParams: ResponseInit = {
-      statusText: errorWording.etab,
-    }
-    if (etabPostes.status) responseParams.status = etabPostes.status
-    if (etabPostes.status == 404) responseParams.statusText = "Postes introuvables."
-    throw new Response("", responseParams)
-  }
+  const localMergesLabels = ls.get(`etab.${params.siret}.merges`) as string[][] | null
+  const selectedPostesParam = selectedPostesAfterMerge(queryPoste, localMergesLabels)
 
-  const options = etabPostes.map(
-    (poste, index) => ({ value: index, label: poste.libelle } as Option)
-  )
-
-  const { searchParams } = new URL(request.url)
-  const queryPoste = getQueryAsString(searchParams, "poste")
-  const queryUnit = getQueryAsString(searchParams, "unit")
-  const unit: EffectifUnit = isEffectifUnit(queryUnit) ? queryUnit : "tot"
   const effectifs = await getEffectifs({
     id: etabType.id,
     startMonth: "2022-01-01",
     endMonth: "2022-12-01",
     unit,
-    postes: queryPoste ? [queryPoste] : undefined,
+    postes: selectedPostesParam,
   })
   return {
     effectifs,
-    options,
+    mergesLabels: localMergesLabels,
+    postes,
     queryPoste,
   }
 }
 
 type EtabPostesLoader = {
   effectifs: Effectif[] | AppError
-  options: Option[]
+  mergesLabels: string[][] | null
+  postes: AppError | EtablissementPoste[]
   queryPoste: string
 }
 
 export default function EtabRecours() {
   const submit = useSubmit()
-
   const {
     effectifs: initialEffectifs,
-    options,
-    queryPoste: initialQueryPoste,
+    mergesLabels,
+    postes,
+    queryPoste,
   } = useLoaderData() as EtabPostesLoader
 
-  const initialPosteOption: Option =
-    options.find((option) => option.label === initialQueryPoste) || ({} as Option)
+  const { options, initialPosteOption } = initOptions(postes, queryPoste, mergesLabels)
   const [selectedPoste, setSelectedPoste] = useState(initialPosteOption)
 
   const [effectifs, setEffectifs] = useState(initialEffectifs)
@@ -105,11 +107,10 @@ export default function EtabRecours() {
         <hr />
         <Form>
           <AppMultiSelect
-            options={options}
             className="fr-mr-2w md:w-3/5 lg:w-1/2"
+            customComponents={{ Option: OptionComp, SingleValue: SingleValueComp }}
             isMulti={false}
-            value={selectedPoste}
-            label="Filtrer par poste"
+            label="Filtrer sur un poste"
             onChange={(newValue) => {
               if (!Array.isArray(newValue)) {
                 const poste = (newValue as Option) || ({} as Option)
@@ -120,6 +121,8 @@ export default function EtabRecours() {
                 submit(formData) // go back to loader with formData in url
               }
             }}
+            options={options}
+            value={selectedPoste}
           />
         </Form>
 
