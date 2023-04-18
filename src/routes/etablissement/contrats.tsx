@@ -15,12 +15,6 @@ import {
   EditableDate,
   ContratDatesState,
 } from "../../helpers/contrats"
-
-import { Alert } from "@codegouvfr/react-dsfr/Alert"
-import { Notice } from "@codegouvfr/react-dsfr/Notice"
-import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
-import AppTable from "../../components/AppTable"
-import Pagination from "@codegouvfr/react-dsfr/Pagination"
 import { DateRange, EtablissementPoste, EtuContrat, MetaData } from "../../api/types"
 import { AppError, errorWording, isAppError } from "../../helpers/errors"
 import { formatDate, getQueryAsString, getQueryPage } from "../../helpers/format"
@@ -30,6 +24,14 @@ import {
   initOptions,
   selectedPostesAfterMerge,
 } from "../../helpers/postes"
+
+import { Alert } from "@codegouvfr/react-dsfr/Alert"
+import { Button } from "@codegouvfr/react-dsfr/Button"
+import { createModal } from "@codegouvfr/react-dsfr/Modal"
+import { Notice } from "@codegouvfr/react-dsfr/Notice"
+import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
+import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
+import AppTable from "../../components/AppTable"
 
 type CarenceContratsLoader = {
   contratsData:
@@ -117,9 +119,31 @@ export default function EtabContrats() {
     ) as NonNullable<ReactNode>
   }
 
+  const { ExportModal, exportModalButtonProps } = createModal({
+    name: "Export",
+    isOpenedByDefault: false,
+  })
+
   return (
     <>
-      <h2 className="fr-text--xl fr-mb-1w">Liste des contrats</h2>
+      <div className="flex justify-between">
+        <h2 className="fr-text--xl fr-mb-1w">Liste des contrats</h2>
+        <Button
+          {...exportModalButtonProps}
+          iconId="fr-icon-download-line"
+          priority="tertiary no outline"
+          type="button"
+        >
+          Exporter
+        </Button>
+      </div>
+      <ExportModal title="Fonctionnalité d'export à venir">
+        <p>La fonctionnalité d'export est en court de développement.</p>
+        <p>
+          Elle permettra de télécharger les données des contrats sous format tableur .csv,
+          sous réserve d'acceptation des CGU.
+        </p>
+      </ExportModal>
       <hr />
       <Notice className="fr-mb-2w" title={noticeText} />
       <Form>

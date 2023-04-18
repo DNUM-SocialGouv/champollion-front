@@ -11,13 +11,13 @@ import { v4 as uuid } from "uuid"
 
 import { getEtablissementsType, getPostes } from "../../api"
 import { errorWording, isAppError } from "../../helpers/errors"
+import { getJobListWithMerge } from "../../helpers/postes"
 
 import { Alert, AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
-import { getJobListWithMerge } from "../../helpers/postes"
 
 type EtabPostesAction = {
   message?: string
@@ -130,7 +130,7 @@ export default function EtabPostes() {
       <div className="fr-mb-3w">
         <h2 className="fr-text--xl fr-mb-1w">Etat des lieux des postes</h2>
         <hr />
-        <Button {...postesListModalButtonProps} className="fr-mb-4w">
+        <Button {...postesListModalButtonProps} className="fr-mb-4w" type="button">
           Consulter la liste des libellés de poste
         </Button>
         <PostesListModal

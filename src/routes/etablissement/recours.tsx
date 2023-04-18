@@ -8,11 +8,6 @@ import {
 } from "react-router-dom"
 import ls from "localstorage-slim"
 
-import {
-  formatEffectifs,
-  unitsOptions,
-  getUnitOptionFromKey,
-} from "../../helpers/effectifs"
 import { getEffectifs, getPostes, getEtablissementsType } from "../../api"
 import {
   Effectif,
@@ -20,13 +15,12 @@ import {
   EtablissementPoste,
   isEffectifUnit,
 } from "../../api/types"
+import {
+  formatEffectifs,
+  unitsOptions,
+  getUnitOptionFromKey,
+} from "../../helpers/effectifs"
 import { AppError, errorWording, isAppError } from "../../helpers/errors"
-
-import { Alert } from "@codegouvfr/react-dsfr/Alert"
-import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
-import { Select } from "@codegouvfr/react-dsfr/Select"
-import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
-import EffectifBarChart from "../../components/EffectifBarChart"
 import { getQueryAsString } from "../../helpers/format"
 import {
   OptionComp,
@@ -34,6 +28,14 @@ import {
   initOptions,
   selectedPostesAfterMerge,
 } from "../../helpers/postes"
+
+import { Alert } from "@codegouvfr/react-dsfr/Alert"
+import { Button } from "@codegouvfr/react-dsfr/Button"
+import { createModal } from "@codegouvfr/react-dsfr/Modal"
+import { Select } from "@codegouvfr/react-dsfr/Select"
+import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
+import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
+import EffectifBarChart from "../../components/EffectifBarChart"
 
 export async function loader({
   params,
@@ -100,10 +102,29 @@ export default function EtabRecours() {
 
   const [unitValue, setUnitValue] = useState("tot" as EffectifUnit)
 
+  const { ExportModal, exportModalButtonProps } = createModal({
+    name: "Export",
+    isOpenedByDefault: false,
+  })
+
   return (
     <>
       <div className="fr-mb-3w">
-        <h2 className="fr-text--xl fr-mb-1w">Évolution des effectifs</h2>
+        <div className="flex justify-between">
+          <h2 className="fr-text--xl fr-mb-1w">Évolution des effectifs</h2>
+          <Button
+            {...exportModalButtonProps}
+            iconId="fr-icon-download-line"
+            priority="tertiary no outline"
+            type="button"
+          >
+            Exporter
+          </Button>
+        </div>
+        <ExportModal title="Fonctionnalité d'export à venir">
+          <p>La fonctionnalité d'export est en court de développement.</p>
+          <p>Elle permettra d'imprimer l'histogramme en pdf.</p>
+        </ExportModal>
         <hr />
         <Form>
           <AppMultiSelect
