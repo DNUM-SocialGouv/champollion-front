@@ -24,6 +24,8 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function Index() {
   const error = useActionData() as AppError
   const [input, setInput] = useState("")
+  const noticeText = `Vous consultez le site de démonstration, disposant uniquement de données fictives.
+  Vous pouvez tester avec les SIRET suivants : établissement 12345678912345, ETT 98765432112345.`
 
   return (
     <div className="fr-container fr-py-4w flex flex-col items-center lg:w-3/5">
@@ -59,10 +61,7 @@ export default function Index() {
             title="Erreur"
           />
         )}
-        <Notice
-          isClosable
-          title="Exemples de SIRET : ETT 33708054301162, établissement 47548331900343."
-        />
+        <Notice isClosable title={noticeText} />
       </div>
     </div>
   )
