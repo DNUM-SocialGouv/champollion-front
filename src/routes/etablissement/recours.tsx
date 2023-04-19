@@ -33,6 +33,7 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Select } from "@codegouvfr/react-dsfr/Select"
+import { Tile } from "@codegouvfr/react-dsfr/Tile"
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
 import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
 import EffectifBarChart from "../../components/EffectifBarChart"
@@ -160,6 +161,34 @@ export default function EtabRecours() {
             onUnitChange={(unit) => setUnitValue(unit)}
           />
         )}
+
+        <h2 className="fr-text--xl fr-mb-1w">Actions</h2>
+        <hr />
+        <div className="fr-grid-row fr-grid-row--gutters">
+          <div className="fr-col-12 fr-col-md-4">
+            <Tile
+              desc="Consulter les contrats correspondant à l'histogramme"
+              enlargeLink
+              linkProps={{
+                to: {
+                  pathname: "../contrats",
+                  search: queryPoste ? `?poste=${queryPoste}` : "",
+                },
+              }}
+              title="Contrats"
+            />
+          </div>
+          <div className="fr-col-12 fr-col-md-4">
+            <Tile
+              desc="Fusionner plusieurs libellés du même poste"
+              enlargeLink
+              linkProps={{
+                to: "../postes",
+              }}
+              title="Fusion de postes"
+            />
+          </div>
+        </div>
       </div>
     </>
   )

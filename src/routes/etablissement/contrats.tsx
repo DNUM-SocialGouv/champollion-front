@@ -30,6 +30,7 @@ import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Notice } from "@codegouvfr/react-dsfr/Notice"
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
+import { Tile } from "@codegouvfr/react-dsfr/Tile"
 import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
 import AppTable from "../../components/AppTable"
 
@@ -179,6 +180,20 @@ export default function EtabContrats() {
           key={`${queryPoste}-${page}`}
         />
       )}
+      <h2 className="fr-text--xl fr-mb-1w">Actions</h2>
+      <hr />
+      <Tile
+        className="w-full md:w-1/3"
+        desc="Lancer le diagnostic d'emploi permanent sur les contrats ci-dessus"
+        enlargeLink
+        linkProps={{
+          to: {
+            pathname: "../recours-abusif",
+            search: queryPoste ? `?poste=${queryPoste}` : "",
+          },
+        }}
+        title="Recours abusif"
+      />
     </>
   )
 }

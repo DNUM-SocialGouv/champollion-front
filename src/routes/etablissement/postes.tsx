@@ -17,6 +17,7 @@ import { Alert, AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
+import { Tile } from "@codegouvfr/react-dsfr/Tile"
 import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
 
 type EtabPostesAction = {
@@ -243,6 +244,18 @@ export default function EtabPostes() {
             <Button type="submit">Sauvegarder</Button>
           </div>
         </Form>
+
+        <h2 className="fr-text--xl fr-mb-1w">Actions</h2>
+        <hr />
+        <Tile
+          className="w-full md:w-1/3"
+          desc="Lancer le diagnostic d'emploi permanent"
+          enlargeLink
+          linkProps={{
+            to: "../recours-abusif",
+          }}
+          title="Recours abusif"
+        />
       </div>
     </>
   )
