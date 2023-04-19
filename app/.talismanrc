@@ -68,7 +68,7 @@ fileignoreconfig:
 - filename: app/src/routes/ett/ETTContrats.tsx
   checksum: a2b80dfe3e3fcca5e138372c86ec0b862b25c867c780db4e89fb384a73b225d5
 - filename: app/src/routes/index.tsx
-  checksum: e0c0ad72076e34952abcba13b174b4ec5bcfe6e57e6efd61d3da49c779cfc26e
+  checksum: 534291203ef0addc6da8e9d54a5d13c3c5155a162722eeb2df6f1db6cc19e11e
 - filename: app/src/routes/labellisation.tsx
   checksum: 0ac5e095aeb96efaa63c70321c4fd0b883e83e70862a3525fdb0bd19b53a88e4
 - filename: app/src/routes/news.tsx
