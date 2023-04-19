@@ -4,7 +4,6 @@ import { Option } from "../components/AppMultiSelect"
 import Badge from "@codegouvfr/react-dsfr/Badge"
 import { AppError, isAppError } from "./errors"
 
-console.log("jello")
 export type JobListWithMerge = {
   label: string
   isMergeResult: boolean
