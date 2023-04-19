@@ -93,6 +93,7 @@ const router = createBrowserRouter([
       {
         path: "ett/:siret/:page?",
         element: <ETT />,
+        errorElement: <Error />,
         loader: ettLoader,
       },
     ],
