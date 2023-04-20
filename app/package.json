@@ -13,7 +13,7 @@
     "preview": "vite preview",
     "prebuild": "only-include-used-icons",
     "predev": "only-include-used-icons",
-    "postinstall": "copy-dsfr-to-public && is-ci || husky install"
+    "postinstall": "copy-dsfr-to-public && is-ci || cd .. && husky install app/.husky"
   },
   "dependencies": {
     "@codegouvfr/react-dsfr": "^0.48.1",
