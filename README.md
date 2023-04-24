@@ -5,6 +5,43 @@ Le projet est développé par la DNUM des ministères sociaux, dans le cadre du 
 
 Ce projet est contruit avec [Vite](https://vitejs.dev/), [React](https://fr.reactjs.org/) et TypeScript.
 
+## Demo
+
+Le site est accessible sur un lien de démonstration, contenant uniquement des fausses données.
+Il est déployé via Scalingo et [accessible ici](https://champollion-front.osc-fr1.scalingo.io/).
+
+### Mettre à jour le site de démo sur Scalingo
+
+Lorsqu'une nouvelle version de l'application est disponible sur la branche `main`, il faut rebase la branche `main` depuis la branche `deploiement_scalingo`.
+En effet, cette branche a des configurations spécifiques pour Scalingo.
+
+- Pré-requis : avoir une remote correspondant au repo github.
+
+```bash
+# Ex: ajouter la remote en SSH et la nommer `upstream` (marche aussi en HTTPS et avec n'importe quel nom)
+git remote add upstream git@github.com:DNUM-SocialGouv/champollion-front.git
+```
+
+- Se placer sur la branche `deploiement_scalingo` à jour et rebase la branche `main`
+
+```bash
+# se mettre à jour localement sur la branche deploiement_scalingo
+git fetch upstream deploiement_scalingo
+git checkout -B deploiement_scalingo -t upstream/deploiement_scalingo
+git pull --rebase upstream main
+```
+
+Résoudre les conflits s'il y en a.
+
+- Vérifier le bon fonctionnement en local puis pousser en force sur la branche `deploiement_scalingo`.
+
+```bash
+# le push force est nécessaire après un reabse, qui réécrit l'historique.
+git push upstream deploiement_scalingo -f
+```
+
+- Le déploiement est lancé automatiquement sur Scalingo ✨
+
 ## Lancer le code
 
 Après avoir cloné le projet :
