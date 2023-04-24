@@ -195,7 +195,7 @@ export default function EtabPostes() {
                     name={`merge-${merge.id}`}
                     value={merge.mergeLabels.map((x) => x.label)}
                   />
-                  <div className="fr-mt-1w fr-mb-2w md:fr-mb-0">
+                  <div className="fr-mt-1w fr-mb-2w fr-mb-md-0">
                     <Button
                       iconId="fr-icon-delete-line"
                       type="button"

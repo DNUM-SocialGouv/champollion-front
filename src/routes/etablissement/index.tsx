@@ -4,6 +4,7 @@ import {
   Outlet,
   redirect,
   useLoaderData,
+  useLocation,
   useNavigate,
   useOutletContext,
 } from "react-router-dom"
@@ -15,16 +16,13 @@ import { errorWording, isAppError } from "../../helpers/errors"
 
 type EtabLoader = {
   etabId: number
-  siret: string
-  pathname: string
   raisonSociale: string
+  siret: string
 }
 
 export async function loader({
   params,
-  request,
 }: LoaderFunctionArgs): Promise<Response | EtabLoader> {
-  const url = new URL(request.url)
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
 
@@ -43,7 +41,6 @@ export async function loader({
 
   return {
     etabId: etabType.id,
-    pathname: url.pathname,
     raisonSociale: etabType.raisonSociale,
     siret,
   }
@@ -60,13 +57,23 @@ const tabs = [
 type ContextType = { etabId: number }
 
 export default function Etab() {
-  const { etabId, pathname, raisonSociale, siret } = useLoaderData() as EtabLoader
+  const { etabId, raisonSociale, siret } = useLoaderData() as EtabLoader
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+
   const tabPathregex = /\/etablissement\/\d{14}\/([\w-]+)/
   const tabPath = tabPathregex.exec(pathname)?.[1]
   const initialTab = tabs.find((tab) => tab.to === tabPath)?.tabId ?? "tab1"
 
   const [selectedTabId, setSelectedTabId] = useState(initialTab)
+
+  const [prevPath, setPrevPath] = useState(pathname)
+  if (pathname !== prevPath) {
+    setPrevPath(pathname)
+    const newTab = tabs.find((tab) => tab.to === tabPath)?.tabId ?? "tab1"
+
+    setSelectedTabId(newTab)
+  }
 
   const handleTabChange = (clickedTab: string) => {
     const clickedTabPath = tabs.find((tab) => tab.tabId === clickedTab)?.to || ""
