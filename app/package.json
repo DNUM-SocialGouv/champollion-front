@@ -13,7 +13,8 @@
     "preview": "vite preview",
     "prebuild": "only-include-used-icons",
     "predev": "only-include-used-icons",
-    "postinstall": "copy-dsfr-to-public && is-ci || cd .. && husky install app/.husky"
+    "postinstall": "copy-dsfr-to-public && is-ci || cd .. && husky install app/.husky",
+    "start": "node server.js"
   },
   "dependencies": {
     "@codegouvfr/react-dsfr": "^0.48.1",
@@ -22,7 +23,9 @@
     "@mui/material": "^5.11.4",
     "axios": "^1.2.3",
     "dayjs": "^1.11.7",
+    "express": "^4.18.2",
     "localstorage-slim": "^2.4.0",
+    "path": "^0.12.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.6.2",
