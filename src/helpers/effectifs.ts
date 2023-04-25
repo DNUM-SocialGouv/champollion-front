@@ -26,7 +26,7 @@ const unitsOptions: {
     label: "Sélectionnez l'unité des effectifs à afficher",
     attr: { disabled: true },
   },
-  { key: 1, value: "tot", label: "Nombre total de contrats sur le mois" },
+  { key: 1, value: "tot", label: "Nombre de contrats en vigueur chaque mois" },
   { key: 2, value: "avg", label: "Nombre moyen mensuel de contrats" },
   { key: 3, value: "ldm", label: "Nombre de contrats au dernier jour du mois" },
   // { key: 4, value: "etp", label: "ETP (équivalent temps plein)" }, // etp not available yet from api

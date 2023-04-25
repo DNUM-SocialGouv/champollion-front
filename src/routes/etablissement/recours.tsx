@@ -162,7 +162,7 @@ export default function EtabRecours() {
           />
         )}
 
-        <h2 className="fr-text--xl fr-mb-1w">Actions</h2>
+        <h2 className="fr-text--xl fr-mb-1w fr-mt-3w">Actions</h2>
         <hr />
         <div className="fr-grid-row fr-grid-row--gutters">
           <div className="fr-col-12 fr-col-md-4">
@@ -241,13 +241,14 @@ function EtabPostesEffectifs({
           ))}
         </Select>
         <ToggleSwitch
-          label="Superposer les barres des CDD et CTT"
+          label="Cumuler les effectifs CDD et CTT (intérim)"
           checked={areTempContractsStacked}
           onChange={(checked) => setAreTempContractsStacked(checked)}
         />
       </div>
 
-      <div className="h-[500px]">
+      <div className="fr-mt-4w h-[550px]">
+        <h3 className="fr-text--xl text-center">{unit.option.label}</h3>
         <EffectifBarChart
           isStacked={areTempContractsStacked}
           unit="contrats"
