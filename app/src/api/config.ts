@@ -4,7 +4,7 @@ import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios"
 import { AppError, defaultAxiosError, getErrorMessage } from "../helpers/errors"
 import { keysToCamel } from "../helpers/format"
 
-const baseURL: string = import.meta.env.VITE_API_URL as string
+const baseURL: string = import.meta.env.VITE_API_BASE_URL as string
 const isDevMode = import.meta.env.DEV
 
 const api = axios.create({

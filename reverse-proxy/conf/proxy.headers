@@ -1,0 +1,28 @@
+# Http protocol version (default 1.0)
+proxy_http_version                  1.1;
+# Allows response to bypass cache
+proxy_cache_bypass                 $http_upgrade;
+# The host name from the request line, or the host name from the “Host” request header field, or the server name matching a request.
+proxy_set_header Host              $host;
+# Contains the client IP address. It forwards the real visitor remote IP address to the proxied server.
+proxy_set_header X-Real-IP         $remote_addr;
+# Defines the address of the client connected to the proxy.
+proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+# Defines the original host requested by the client.
+proxy_set_header X-Forwarded-Host  $host;
+# If defined in an HTTPS server block, the HTTP responses from the proxied server are rewritten to HTTPS.
+proxy_set_header X-Forwarded-Proto $scheme;
+# Defines the original port requested by the client.
+proxy_set_header X-Forwarded-Port  $server_port;
+
+# NO CACHE ON LOAD
+add_header Cache-Control no-cache;
+# HSTS
+add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+# NOT USED - ONLY IF NEEDED 
+#     proxy_set_header Upgrade $http_upgrade;
+#     proxy_set_header Connection 'upgrade';
+#     proxy_redirect off;
+#     proxy_set_header X-Scheme $scheme;
+#     proxy_set_header Authorization $http_authorization;
