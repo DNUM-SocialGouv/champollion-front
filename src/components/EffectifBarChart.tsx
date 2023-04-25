@@ -102,9 +102,9 @@ export default function EffectifBarChart({
           data={data}
           margin={{
             top: 10,
-            right: 70,
+            right: 20,
             left: 20,
-            bottom: 50,
+            bottom: 100,
           }}
         >
           <defs>
@@ -189,15 +189,19 @@ export default function EffectifBarChart({
             }}
           />
           <Legend
+            align="right"
+            className="fr-ml-3w"
             iconSize={30}
-            onMouseEnter={handleMouseEnterLegend}
-            onMouseLeave={handleMouseLeaveLegend}
-            verticalAlign="top"
             formatter={(value, entry) => {
               // @ts-ignore: Rechart types incorrect for payload
               const color = entry?.payload?.stroke || entry.color
               return <span style={{ color }}>{value}</span>
             }}
+            layout="vertical"
+            onMouseEnter={handleMouseEnterLegend}
+            onMouseLeave={handleMouseLeaveLegend}
+            verticalAlign="top"
+            wrapperStyle={{ marginRight: "-1em", marginTop: "2em" }}
           />
           <Bar
             dataKey="cdi"

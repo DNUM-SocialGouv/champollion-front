@@ -1,6 +1,8 @@
 fileignoreconfig:
 - filename: src/helpers/contrats.tsx
   checksum: 8a51c08cb3220485e16fa4623a14ad69fcf661b3d8b57c6a8d063a9d78c60655
+- filename: src/helpers/effectifs.ts
+  checksum: 998d8c51d12a82560dabfc3e95b0977509186d33353d9a688225d91df0808f0c
 - filename: src/helpers/format.ts
   checksum: ed190ab00126a735709faf5788b21d03cba08be55733e6658e36ff6b363090d5
 - filename: src/routes/etablissement/carence/contrats.tsx
