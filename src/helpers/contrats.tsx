@@ -57,6 +57,9 @@ const contractTypeShort = [
   { code: "03", label: "CTT" },
 ]
 
+const getContractType = (contractCode: string) =>
+  contractTypeShort.find((item) => item.code === contractCode)?.label || "Autre"
+
 export type DateStatus = "declared" | "computed" | "validated" | "unknown"
 
 export type EditableDate = {
@@ -172,17 +175,14 @@ const formatContrats = (
       )
       const motive =
         contrat.codeNatureContrat === "01" ? "n/a" : contrat.libelleMotifRecours
-      const contractType =
-        contractTypeShort.find((item) => item.code === contrat.codeNatureContrat)
-          ?.label || "Autre"
 
       return {
         id: contrat.id,
         jobTitle: contrat.libellePoste,
-        employee: `${contrat.prenoms} ${contrat.nomFamille}`,
+        employee: `${contrat.prenoms} ${contrat.nomFamille?.toUpperCase()}`,
         startDate,
         endDate,
-        contractType,
+        contractType: getContractType(contrat.codeNatureContrat),
         motive,
         conventionCode: contrat.codeConventionCollective,
         ett,
@@ -275,4 +275,4 @@ function ContratDate({
   )
 }
 
-export { formatContrats, headers }
+export { getContractType, formatContrats, headers }
