@@ -1,12 +1,14 @@
 // types inspired by https://wanago.io/2020/03/09/functional-react-components-with-generic-props-in-typescript/
 
+export type Header<ObjectType> = {
+  key: keyof ObjectType
+  label: string
+  width: string
+}
+
 interface TableProps<ObjectType> {
   items: ObjectType[]
-  headers: {
-    key: keyof ObjectType
-    label: string
-    width: string
-  }[]
+  headers: Header<ObjectType>[]
 }
 
 export default function AppTable<T extends { id: number }>({

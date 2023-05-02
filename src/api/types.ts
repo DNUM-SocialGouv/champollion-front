@@ -33,6 +33,7 @@ export type EtuContrat = {
   nomFamille: string | null
   nomUsage: string | null
   prenoms: string
+  civilite?: string | null
   posteId: string | null
   libellePoste: string
   codeNatureContrat: string
@@ -40,8 +41,8 @@ export type EtuContrat = {
   dateDebut: string
   dateFinPrevisionnelle: string | null
   dateFin: string | null
-  codeConventionCollective: string
-  libelleConventionCollective: string
+  codeConventionCollective: string | null
+  libelleConventionCollective: string | null
   codeMotifRecours: string | null
   libelleMotifRecours: string | null
   ettSiret: string | null
@@ -60,8 +61,8 @@ export type EttContrat = {
   dateDebut: string
   dateFinPrevisionnelle: string | null
   dateFin: string | null
-  codeConventionCollective: string
-  libelleConventionCollective: string
+  codeConventionCollective: string | null
+  libelleConventionCollective: string | null
   codeMotifRecours: string | null
   libelleMotifRecours: string | null
   etuSiret: string | null

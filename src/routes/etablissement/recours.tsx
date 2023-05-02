@@ -123,7 +123,7 @@ export default function EtabRecours() {
           </Button>
         </div>
         <ExportModal title="Fonctionnalité d'export à venir">
-          <p>La fonctionnalité d'export est en court de développement.</p>
+          <p>La fonctionnalité d'export est en cours de développement.</p>
           <p>Elle permettra d'imprimer l'histogramme en pdf.</p>
         </ExportModal>
         <hr />
