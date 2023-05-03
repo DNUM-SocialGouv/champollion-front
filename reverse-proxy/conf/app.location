@@ -1,11 +1,21 @@
 set $api_server OV1-APP-LAB-DEV-002.dev.tech.intranet.social.gouv.fr:8000;
 
-location / {
-    proxy_pass http://app:8081;
-    
-    proxy_connect_timeout 1;
-    proxy_send_timeout 30;
-    proxy_read_timeout 30;
+location /admin {
+    proxy_pass https://$host/auth/admin/app-realm/console/;
+    proxy_set_header    X-Real-IP          $remote_addr;
+    proxy_set_header    X-Forwarded-For    $proxy_add_x_forwarded_for;
+    proxy_set_header    X-Forwarded-Host   $host;
+    proxy_set_header    X-Forwarded-Server $host;
+    proxy_set_header    X-Forwarded-Proto  $scheme;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    proxy_hide_header   Cache-Control;
+}
+
+location /logout {
+    proxy_pass https://$host/auth/realms/app-realm/protocol/openid-connect/logout?redirect_uri=https://$host/oauth2/sign_out?rd=/;
 }
 
 location /api {

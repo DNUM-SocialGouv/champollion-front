@@ -1,10 +1,15 @@
 import { MuiDsfrThemeProvider } from "@codegouvfr/react-dsfr/mui"
 import { StyledEngineProvider } from "@mui/material/styles"
 import { Outlet } from "react-router-dom"
+import { ScrollRestoration } from "react-router-dom"
 
 import { Display, headerFooterDisplayItem } from "@codegouvfr/react-dsfr/Display"
 import { Footer } from "@codegouvfr/react-dsfr/Footer"
 import { Header } from "@codegouvfr/react-dsfr/Header"
+import { useEffect } from "react"
+
+const logoutURL: string = import.meta.env.VITE_LOGOUT_URL as string
+const isProd: boolean = import.meta.env.PROD
 
 const brandTop = (
   <>
@@ -27,6 +32,28 @@ const contentDescription =
   "Champollion est un projet développé par les équipes de la Direction du numérique des ministères sociaux, en collaboration avec la Direction Générale du Travail (DGT)."
 
 export default function Root() {
+  const onWindowFocus = async () => {
+    // console.log("in listener")
+    if (isProd) {
+      try {
+        const res = await fetch("/oauth2/auth")
+        // console.log("success", res)
+        if (res?.status === 401) location.reload()
+      } catch (err) {
+        console.error("Error when checking authorization", err)
+      }
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener("focus", onWindowFocus)
+    // console.log("add listener")
+    return () => {
+      // console.log("remove listener")
+      window.removeEventListener("focus", onWindowFocus)
+    }
+  }, [])
+
   return (
     <StyledEngineProvider injectFirst>
       <MuiDsfrThemeProvider>
@@ -44,6 +71,14 @@ export default function Root() {
                 },
                 text: "Rechercher un établissement",
               },
+              {
+                iconId: "fr-icon-lock-line",
+                linkProps: {
+                  to: logoutURL,
+                  reloadDocument: true,
+                },
+                text: "Se déconnecter",
+              },
               headerFooterDisplayItem,
             ]}
           />
@@ -59,6 +94,7 @@ export default function Root() {
             bottomItems={[headerFooterDisplayItem]}
           />
           <Display />
+          <ScrollRestoration />
         </div>
       </MuiDsfrThemeProvider>
     </StyledEngineProvider>
