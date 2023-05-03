@@ -30,10 +30,13 @@ api.interceptors.response.use(
         err.message = message
         err.messageFr = messageFr
       } else if (error.request) {
+        if (error.request?.status) err.status = error.request.status
+
         if (!error.code) err.code = "ENO_RESPONSE"
       } else {
         if (!error.code) err.code = "ENO_REQUEST"
       }
+      if (!err.status) err.status = 503
     }
     if (isDevMode) console.warn("Axios error interceptor: ", error.message, err)
     return Promise.reject(err)

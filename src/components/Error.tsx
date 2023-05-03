@@ -20,13 +20,18 @@ export default function Error() {
     errorStatus = error?.status
     if (error?.statusText) errorMsg = error.statusText
     if (errorStatus === 404) title = "Page non trouvée"
+    if ([502, 503].includes(Number(errorStatus))) {
+      title = "Service indisponible"
+      errorMsg =
+        "Essayez de rafraîchir la page ou bien ressayez plus tard. Si vous avez besoin d'une aide immédiate, merci de nous contacter."
+    }
   }
 
   return (
     <div className="fr-mt-10v fr-container mx-auto flex flex-col items-center justify-center lg:flex-row lg:px-32">
       <div className="flex flex-col lg:w-3/5">
         <h1>{title}</h1>
-        {errorStatus && (
+        {errorStatus && errorStatus !== 200 && (
           <p className="fr-text--sm text-tx-mention-grey">Erreur {errorStatus}</p>
         )}
         <p>{text}</p>
