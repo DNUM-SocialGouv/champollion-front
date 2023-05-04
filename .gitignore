@@ -24,4 +24,5 @@ dist-ssr
 *.sw?
 
 # dsfr
-/public/dsfr/
+app/public/dsfr/
+app/.gitignore

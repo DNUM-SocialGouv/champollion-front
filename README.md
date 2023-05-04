@@ -11,9 +11,13 @@ Après avoir cloné le projet :
 
 ```sh
 # installer les dépendances
-yarn
+yarn --cwd ${HOME}/${FRONT_REPOSITORY_PATH}/app/
+
 # lancer le serveur de développement
-yarn dev
+yarn --cwd ${HOME}/${FRONT_REPOSITORY_PATH}/app/ dev
+
+# pour spécifier une autre API de backend
+VITE_API_BASE_URL=API_URL yarn --cwd ${HOME}/${FRONT_REPOSITORY_PATH}/app/
 ```
 
 ## Dépendances
