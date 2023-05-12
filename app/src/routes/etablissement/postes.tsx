@@ -111,13 +111,18 @@ export async function loader({ params }: LoaderFunctionArgs): Promise<EtabPostes
       )
     : []
 
-  return { jobListWithMerge, options, savedMerges }
+  return {
+    jobListWithMerge,
+    options,
+    savedMerges,
+  }
 }
 
 export default function EtabPostes() {
   const savedState = useActionData() as EtabPostesAction
   const { jobListWithMerge, options, savedMerges } = useLoaderData() as EtabPostesLoader
   const [merges, setMerges] = useState(savedMerges)
+
   const { PostesListModal, postesListModalButtonProps } = createModal({
     name: "PostesList",
     isOpenedByDefault: false,

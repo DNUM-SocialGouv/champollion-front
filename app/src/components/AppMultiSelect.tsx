@@ -1,30 +1,55 @@
-import { useState, useEffect, CSSProperties, useId } from "react"
+import {
+  CSSProperties,
+  ForwardedRef,
+  forwardRef,
+  useEffect,
+  useId,
+  useState,
+} from "react"
 import Select, {
   ClearIndicatorProps,
+  GroupBase,
   InputActionMeta,
   MultiValue as MultiValueOpt,
   MultiValueProps,
+  SelectInstance,
   SingleValue as SingleValueOpt,
   ThemeConfig,
-  GroupBase,
 } from "react-select"
 import { SelectComponents } from "react-select/dist/declarations/src/components"
 
 export type Option = {
-  value: number
+  value: number | string
   label: string
   display?: string
 }
 
-type AppMultiSelectProps = {
+export type MultiSelectInstance<
+  Option = unknown,
+  IsMulti extends boolean = true,
+  Group extends GroupBase<Option> = GroupBase<Option>
+> = SelectInstance<Option, IsMulti, Group>
+
+type AppMultiSelectProps = Controlled | Uncontrolled
+
+type Common = {
   className?: string
+  name?: string
   customComponents?: Partial<SelectComponents<Option, boolean, GroupBase<Option>>>
   hintText?: string
   isMulti?: boolean
   label: string
-  onChange: (newValue: MultiValueOpt<Option> | SingleValueOpt<Option>) => void
   options: Option[]
+}
+type Controlled = Common & {
+  onChange: (newValue: MultiValueOpt<Option> | SingleValueOpt<Option>) => void
   value: Option | Option[]
+  defaultValue?: never
+}
+type Uncontrolled = Common & {
+  onChange?: (newValue: MultiValueOpt<Option> | SingleValueOpt<Option>) => void
+  value?: never
+  defaultValue: Option | Option[]
 }
 
 const selectTheme = () => {
@@ -94,16 +119,21 @@ const ClearIndicator = (props: ClearIndicatorProps<Option>) => {
   )
 }
 
-export default function AppMultiSelect({
-  className,
-  customComponents,
-  hintText,
-  isMulti = true,
-  label,
-  onChange,
-  options,
-  value: valueProp,
-}: AppMultiSelectProps) {
+const AppMultiSelect = forwardRef(function AppMultiSelect(
+  {
+    className,
+    customComponents,
+    defaultValue,
+    hintText,
+    isMulti = true,
+    label,
+    name,
+    onChange,
+    options,
+    value: valueProp,
+  }: AppMultiSelectProps,
+  ref: ForwardedRef<SelectInstance<Option> | MultiSelectInstance<Option> | null>
+) {
   const [value, setValue] = useState(valueProp)
   const selectId = "select-postes" + useId()
 
@@ -148,9 +178,11 @@ export default function AppMultiSelect({
           ...customComponents,
         }}
         closeMenuOnSelect={!isMulti}
+        defaultValue={defaultValue}
         hideSelectedOptions={false}
         isClearable
         isMulti={isMulti}
+        name={name}
         noOptionsMessage={({ inputValue }) =>
           inputValue ? `Aucun résultat pour "${inputValue}"` : "Aucune option disponible"
         }
@@ -158,9 +190,12 @@ export default function AppMultiSelect({
         onChange={onChange}
         onInputChange={onInputChange}
         placeholder=""
+        ref={ref}
         theme={selectTheme}
         value={value}
       />
     </div>
   )
-}
+})
+
+export default AppMultiSelect

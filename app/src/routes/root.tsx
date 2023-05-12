@@ -33,11 +33,9 @@ const contentDescription =
 
 export default function Root() {
   const onWindowFocus = async () => {
-    // console.log("in listener")
     if (isProd) {
       try {
         const res = await fetch("/oauth2/auth")
-        // console.log("success", res)
         if (res?.status === 401) location.reload()
       } catch (err) {
         console.error("Error when checking authorization", err)
@@ -47,9 +45,7 @@ export default function Root() {
 
   useEffect(() => {
     window.addEventListener("focus", onWindowFocus)
-    // console.log("add listener")
     return () => {
-      // console.log("remove listener")
       window.removeEventListener("focus", onWindowFocus)
     }
   }, [])

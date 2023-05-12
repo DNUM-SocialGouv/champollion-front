@@ -1,11 +1,5 @@
 import { ReactNode, useState } from "react"
-import {
-  Form,
-  LoaderFunctionArgs,
-  useLoaderData,
-  useSearchParams,
-  useSubmit,
-} from "react-router-dom"
+import { LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router-dom"
 import ls from "localstorage-slim"
 
 import { getEtablissementsType, getPostes, getContratsEtu } from "../../api"
@@ -15,15 +9,18 @@ import {
   EditableDate,
   ContratDatesState,
 } from "../../helpers/contrats"
-import { DateRange, EtablissementPoste, EtuContrat, MetaData } from "../../api/types"
+import { EtablissementPoste, EtuContrat, MetaData } from "../../api/types"
 import { AppError, errorWording, isAppError } from "../../helpers/errors"
-import { formatDate, getQueryAsString, getQueryPage } from "../../helpers/format"
 import {
-  OptionComp,
-  SingleValueComp,
-  initOptions,
-  selectedPostesAfterMerge,
-} from "../../helpers/postes"
+  createFiltersQuery,
+  formatDate,
+  getQueryAsArray,
+  getQueryAsString,
+  getQueryPage,
+  oneYearAgo,
+  today,
+} from "../../helpers/format"
+import { initOptions, selectedPostesAfterMerge } from "../../helpers/postes"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
@@ -31,8 +28,8 @@ import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Notice } from "@codegouvfr/react-dsfr/Notice"
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
 import { Tile } from "@codegouvfr/react-dsfr/Tile"
-import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
 import AppTable from "../../components/AppTable"
+import EtabFilters from "../../components/EtabFilters"
 
 type CarenceContratsLoader = {
   contratsData:
@@ -41,11 +38,14 @@ type CarenceContratsLoader = {
         contrats: EtuContrat[]
         meta: MetaData
       }
-  dates: DateRange
   mergesLabels: string[][] | null
   page: number
   postes: AppError | EtablissementPoste[]
-  queryPoste: string
+  queryStartDate: string
+  queryEndDate: string
+  queryMotives: string[]
+  queryNature: string[]
+  queryJobs: string[]
   siret: string
 }
 
@@ -54,8 +54,14 @@ export async function loader({
   request,
 }: LoaderFunctionArgs): Promise<CarenceContratsLoader> {
   const { searchParams } = new URL(request.url)
-  const queryPoste = getQueryAsString(searchParams, "poste")
+
+  const queryStartDate = getQueryAsString(searchParams, "debut") || oneYearAgo
+  const queryEndDate = getQueryAsString(searchParams, "fin") || today
+  const queryMotives = getQueryAsArray(searchParams, "motif")
+  const queryNature = getQueryAsArray(searchParams, "nature")
+  const queryJobs = getQueryAsArray(searchParams, "poste")
   const page = getQueryPage(searchParams)
+
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
 
@@ -67,16 +73,11 @@ export async function loader({
   }
   const postes = await getPostes(etabType.id)
   const localMergesLabels = ls.get(`etab.${params.siret}.merges`) as string[][] | null
+  const selectedPostesParam = selectedPostesAfterMerge(queryJobs, localMergesLabels)
 
-  const selectedPostesParam = selectedPostesAfterMerge(queryPoste, localMergesLabels)
-
-  const dates: DateRange = {
-    startDate: "2022-01-01",
-    endDate: "2022-12-01",
-  }
   const contratsData = await getContratsEtu({
-    startMonth: dates.startDate,
-    endMonth: dates.endDate,
+    startMonth: queryStartDate,
+    endMonth: queryEndDate,
     id: etabType.id,
     postes: selectedPostesParam,
     page,
@@ -84,28 +85,46 @@ export async function loader({
 
   return {
     contratsData,
-    dates,
     mergesLabels: localMergesLabels,
     page,
     postes,
-    queryPoste,
+    queryEndDate,
+    queryStartDate,
+    queryMotives,
+    queryNature,
+    queryJobs,
     siret,
   }
 }
 
 export default function EtabContrats() {
-  const submit = useSubmit()
-  const { contratsData, dates, mergesLabels, page, postes, queryPoste } =
-    useLoaderData() as CarenceContratsLoader
+  const {
+    contratsData,
+    mergesLabels,
+    page,
+    postes,
+    queryEndDate,
+    queryMotives,
+    queryNature,
+    queryJobs,
+    queryStartDate,
+  } = useLoaderData() as CarenceContratsLoader
 
-  const { options, initialPosteOption } = initOptions(postes, queryPoste, mergesLabels)
+  const filtersQuery = createFiltersQuery(
+    queryStartDate,
+    queryEndDate,
+    queryMotives,
+    queryNature,
+    queryJobs
+  )
 
-  const [selectedPoste, setSelectedPoste] = useState(initialPosteOption)
+  const options = initOptions(postes, mergesLabels)
+
   const noticeText = `Lorsque la date de fin réelle n'est pas déclarée par l'entreprise, elle est dite inférée.
     Vous pouvez corriger les dates d'après vos observations.`
   const formattedDates = {
-    startDate: formatDate(dates.startDate),
-    endDate: formatDate(dates.endDate),
+    startDate: formatDate(queryStartDate),
+    endDate: formatDate(queryEndDate),
   }
   const warningList = () => {
     return (
@@ -114,8 +133,8 @@ export default function EtabContrats() {
           Contrats en cours au moins un jour sur la période du {formattedDates.startDate}{" "}
           au {formattedDates.endDate}
         </li>
-        {selectedPoste?.label && (
-          <li>Intitulé de poste sélectionné : {selectedPoste.label}</li>
+        {queryJobs.length > 0 && (
+          <li>Intitulé(s) de poste sélectionné(s) : {...queryJobs}</li>
         )}
       </>
     ) as NonNullable<ReactNode>
@@ -128,6 +147,16 @@ export default function EtabContrats() {
 
   return (
     <>
+      <h2 className="fr-text--xl fr-mb-1w">Module de filtres</h2>
+      <hr />
+      <EtabFilters
+        startDate={queryStartDate}
+        endDate={queryEndDate}
+        natures={queryNature}
+        motives={queryMotives}
+        jobs={queryJobs}
+        jobOptions={options}
+      />
       <div className="flex justify-between">
         <h2 className="fr-text--xl fr-mb-1w">Liste des contrats</h2>
         <Button
@@ -148,37 +177,19 @@ export default function EtabContrats() {
       </ExportModal>
       <hr />
       <Notice className="fr-mb-2w" title={noticeText} />
-      <Form>
-        <AppMultiSelect
-          className="fr-mr-2w md:w-3/5 lg:w-1/2"
-          customComponents={{ Option: OptionComp, SingleValue: SingleValueComp }}
-          isMulti={false}
-          label="Filtrer sur un poste"
-          onChange={(newValue) => {
-            if (!Array.isArray(newValue)) {
-              const poste = (newValue as Option) || ({} as Option)
-              setSelectedPoste(poste)
-              const formData = new FormData()
-              if (poste?.label) formData.append("poste", poste?.label)
-              submit(formData)
-            }
-          }}
-          options={options}
-          value={selectedPoste}
-        />
-      </Form>
       {isAppError(contratsData) ? (
         <Alert
+          className="fr-mb-2w"
           severity="warning"
           title="Aucun contrat ne correspond à vos paramètres :"
           description={warningList()}
         />
       ) : (
-        <CarenceContratsTable
+        <ContratsTable
           contrats={contratsData.contrats}
           meta={contratsData.meta}
-          queryPoste={queryPoste}
-          key={`${queryPoste}-${page}`}
+          queryJobs={queryJobs}
+          key={`${queryJobs[0]}-${page}`}
         />
       )}
       <h2 className="fr-text--xl fr-mb-1w">Actions</h2>
@@ -190,7 +201,7 @@ export default function EtabContrats() {
         linkProps={{
           to: {
             pathname: "../recours-abusif",
-            search: queryPoste ? `?poste=${queryPoste}` : "",
+            search: filtersQuery ? `?${filtersQuery}` : "",
           },
         }}
         title="Recours abusif"
@@ -199,14 +210,14 @@ export default function EtabContrats() {
   )
 }
 
-function CarenceContratsTable({
+function ContratsTable({
   contrats,
   meta,
-  queryPoste,
+  queryJobs,
 }: {
   contrats: EtuContrat[]
   meta: MetaData
-  queryPoste: string | null
+  queryJobs: string[] | null
 }) {
   const [searchParams] = useSearchParams()
   const { siret } = useLoaderData() as CarenceContratsLoader
@@ -271,7 +282,7 @@ function CarenceContratsTable({
               defaultPage={getQueryPage(searchParams)}
               getPageLinkProps={(page) => {
                 let query = `?page=${page}`
-                if (queryPoste) query += `&poste=${queryPoste}`
+                if (queryJobs) queryJobs.forEach((poste) => (query += `&poste=${poste}}`))
                 return {
                   to: { search: query },
                 }
