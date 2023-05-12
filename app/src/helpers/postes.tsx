@@ -1,5 +1,5 @@
 import { EtablissementPoste } from "../api/types"
-import { components, OptionProps, SingleValueProps } from "react-select"
+import { components, MultiValueProps, OptionProps, SingleValueProps } from "react-select"
 import { Option } from "../components/AppMultiSelect"
 import Badge from "@codegouvfr/react-dsfr/Badge"
 import { AppError, isAppError } from "./errors"
@@ -30,47 +30,46 @@ export const getJobListWithMerge = (
 }
 
 export const selectedPostesAfterMerge = (
-  queryPoste: string,
+  queryPostes: string[],
   mergesLabels: string[][] | null
-) => {
-  let selectedPostesParam = queryPoste ? [queryPoste] : undefined
-  if (
-    mergesLabels &&
-    mergesLabels.length > 0 &&
-    mergesLabels.flat().includes(queryPoste)
-  ) {
-    selectedPostesParam = mergesLabels.find((arr) => arr.includes(queryPoste))
+): string[] => {
+  if (mergesLabels && mergesLabels.length > 0) {
+    const allMerges = mergesLabels.flat()
+
+    return queryPostes
+      .map((poste) => {
+        if (allMerges.includes(poste)) {
+          return mergesLabels.find((arr) => arr.includes(poste)) ?? []
+        }
+        return poste
+      })
+      .flat()
   }
-  return selectedPostesParam
+  return queryPostes
 }
 
 export const initOptions = (
   postes: EtablissementPoste[] | AppError,
-  queryPoste: string,
   mergesLabels: string[][] | null
 ) => {
   let options: Option[] = []
   if (!isAppError(postes)) {
     const jobListWithMerge = getJobListWithMerge(postes, mergesLabels)
-
     options = jobListWithMerge
       .filter((poste) => !poste.isRedundant)
-      .map((poste, index) => {
+      .map((poste) => {
         return {
-          value: index,
+          value: poste.label,
           label: poste.label,
           display: poste.isMergeResult ? "merge" : "",
         } as Option
       })
   }
 
-  const initialPosteOption: Option =
-    options.find((option) => option.label === queryPoste) || ({} as Option)
-
-  return { options, initialPosteOption }
+  return options
 }
 
-export const OptionComp = (props: OptionProps<Option>) => {
+export const OptionWithMerge = (props: OptionProps<Option>) => {
   return (
     <components.Option {...props}>
       {props.children}
@@ -83,7 +82,7 @@ export const OptionComp = (props: OptionProps<Option>) => {
   )
 }
 
-export const SingleValueComp = (props: SingleValueProps<Option>) => {
+export const SingleValueWithMerge = (props: SingleValueProps<Option>) => {
   return (
     <components.SingleValue {...props}>
       {props.children}
@@ -93,5 +92,31 @@ export const SingleValueComp = (props: SingleValueProps<Option>) => {
         </Badge>
       )}
     </components.SingleValue>
+  )
+}
+
+export const MultiValueWithMerge = (props: MultiValueProps<Option>) => {
+  const selectedData = props.data as Option
+  const removeProps = props.removeProps as {
+    onClick: () => void
+    onTouchEnd: () => void
+  }
+  return (
+    <>
+      <button
+        className="fr-btn--icon-right fr-icon-close-line fr-tag fr-tag--sm fr-m-1v"
+        aria-label={`Retirer ${selectedData.label}`}
+        onClick={() => removeProps?.onClick && removeProps.onClick()}
+        onTouchEnd={() => removeProps?.onTouchEnd && removeProps.onTouchEnd()}
+        type="button"
+      >
+        {selectedData.label}
+        {selectedData?.display === "merge" && (
+          <Badge severity="new" className="fr-ml-1w" small>
+            Fusionné
+          </Badge>
+        )}
+      </button>
+    </>
   )
 }

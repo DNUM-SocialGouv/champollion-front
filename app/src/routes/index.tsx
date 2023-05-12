@@ -10,7 +10,7 @@ import { AppError, isAppError } from "../helpers/errors"
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData()
-  const siret = formData.get("input") ? String(formData.get("input")) : ""
+  const siret = formData.get("siret") ? String(formData.get("siret")) : ""
   const etabType = await getEtablissementsType(siret)
 
   if (!isAppError(etabType)) {
@@ -36,7 +36,7 @@ export default function Index() {
             hintText="Format attendu : 14 chiffres"
             label="Entrez un SIRET"
             nativeInputProps={{
-              name: "input",
+              name: "siret",
               minLength: 14,
               value: input,
               onChange: (event) => setInput(event.target.value.replace(/\s/g, "")),
