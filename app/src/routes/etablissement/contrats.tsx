@@ -188,7 +188,6 @@ export default function EtabContrats() {
         <ContratsTable
           contrats={contratsData.contrats}
           meta={contratsData.meta}
-          queryJobs={queryJobs}
           key={`${queryJobs[0]}-${page}`}
         />
       )}
@@ -210,15 +209,7 @@ export default function EtabContrats() {
   )
 }
 
-function ContratsTable({
-  contrats,
-  meta,
-  queryJobs,
-}: {
-  contrats: EtuContrat[]
-  meta: MetaData
-  queryJobs: string[] | null
-}) {
+function ContratsTable({ contrats, meta }: { contrats: EtuContrat[]; meta: MetaData }) {
   const [searchParams] = useSearchParams()
   const { siret } = useLoaderData() as CarenceContratsLoader
 
@@ -281,10 +272,10 @@ function ContratsTable({
               count={meta.totalPages}
               defaultPage={getQueryPage(searchParams)}
               getPageLinkProps={(page) => {
-                let query = `?page=${page}`
-                if (queryJobs) queryJobs.forEach((poste) => (query += `&poste=${poste}}`))
+                const newQuery = new URLSearchParams(searchParams)
+                newQuery.set("page", String(page))
                 return {
-                  to: { search: query },
+                  to: { search: newQuery.toString() },
                 }
               }}
               showFirstLast
