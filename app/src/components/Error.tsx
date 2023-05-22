@@ -1,5 +1,6 @@
 import { useRouteError } from "react-router-dom"
-import { Button } from "@codegouvfr/react-dsfr/Button"
+import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup"
+
 import artworkConnectionLost from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/system/connection-lost.svg"
 import artworkBackground from "@codegouvfr/react-dsfr/dsfr/artwork/background/ovoid.svg"
 
@@ -36,7 +37,22 @@ export default function Error() {
         )}
         <p>{text}</p>
         {errorMsg && <p className="italic">{errorMsg}</p>}
-        <Button linkProps={{ to: "/" }}>Retourner à la page d'accueil</Button>
+        <ButtonsGroup
+          buttons={[
+            {
+              children: "Retourner à la page d'accueil",
+              linkProps: { to: "/" },
+            },
+            {
+              children: "Contactez-nous",
+              linkProps: {
+                to: "mailto:champollion@sg.social.gouv.fr",
+              },
+              priority: "secondary",
+            },
+          ]}
+          inlineLayoutWhen="md and up"
+        />
       </div>
 
       <div className="flex lg:w-2/5">
