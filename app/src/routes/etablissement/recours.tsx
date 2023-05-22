@@ -124,8 +124,6 @@ export default function EtabRecours() {
     setEffectifs(initialEffectifs)
   }
 
-  const [unitValue, setUnitValue] = useState(unit) //todo useful?
-
   const { ExportModal, exportModalButtonProps } = createModal({
     name: "Export",
     isOpenedByDefault: false,
@@ -169,11 +167,7 @@ export default function EtabRecours() {
             title="Erreur"
           />
         ) : (
-          <EtabPostesEffectifs
-            defaultData={effectifs}
-            defaultUnit={unitValue}
-            onUnitChange={(unit) => setUnitValue(unit)}
-          />
+          <EtabPostesEffectifs defaultData={effectifs} defaultUnit={unit} />
         )}
 
         <h2 className="fr-text--xl fr-mb-1w fr-mt-3w">Actions</h2>
@@ -211,16 +205,13 @@ export default function EtabRecours() {
 function EtabPostesEffectifs({
   defaultData,
   defaultUnit,
-  onUnitChange,
 }: {
   defaultData: Effectif[]
   defaultUnit: EffectifUnit
-  onUnitChange: (unitValue: EffectifUnit) => void
 }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [areTempContractsStacked, setAreTempContractsStacked] = useState(false)
   const initialUnitOption = unitsOptions.find((option) => option.value === defaultUnit)
-  const [, setUnit] = useState(initialUnitOption)
   const [effectifsData, setEffectifsData] = useState(formatEffectifs(defaultData))
 
   const [prevEffectifs, setPrevEffectifs] = useState(defaultData)
@@ -235,9 +226,6 @@ function EtabPostesEffectifs({
     const unitValue = newUnitOption?.value || "tot"
     searchParams.set("unit", unitValue)
     setSearchParams(searchParams)
-
-    setUnit(newUnitOption)
-    onUnitChange(unitValue)
   }
 
   return (

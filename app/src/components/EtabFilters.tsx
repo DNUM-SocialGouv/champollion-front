@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react"
-import { Form } from "react-router-dom"
+import { Form, useSearchParams } from "react-router-dom"
 
 import { arrayEquals } from "../helpers/format"
 import { MultiValueWithMerge, OptionWithMerge } from "../helpers/postes"
@@ -39,6 +39,13 @@ export default function EtabFilters({
   const cttRef = useRef<HTMLInputElement>(null)
   const motivesRef = useRef<MultiSelectInstance<Option> | null>(null)
   const jobsRef = useRef<MultiSelectInstance<Option> | null>(null)
+
+  const [searchParams] = useSearchParams()
+  const otherParamsToKeep: [string, string][] = []
+  for (const entry of searchParams.entries()) {
+    if (!["debut", "fin", "motif", "nature", "poste", "page"].includes(entry[0]))
+      otherParamsToKeep.push(entry)
+  }
 
   const natureArr = [
     { key: "cdi", label: "CDI", ref: cdiRef },
@@ -172,6 +179,10 @@ export default function EtabFilters({
           defaultValue={jobSelectedOptions}
         />
       </div>
+      {otherParamsToKeep.length > 0 &&
+        otherParamsToKeep.map((param) => (
+          <input type="hidden" name={param[0]} value={param[1]} />
+        ))}
       <div className="fr-mt-1w flex flex-col justify-end gap-3 lg:flex-row">
         <Button
           linkProps={{ to: "" }}
