@@ -28,8 +28,16 @@ const homeLinkProps = {
   title: "Accueil Champollion - Ministère du travail, du plein emploi et de l'insertion",
 }
 
-const contentDescription =
-  "Champollion est un projet développé par les équipes de la Direction du numérique des ministères sociaux, en collaboration avec la Direction Générale du Travail (DGT)."
+const contentDescription = (
+  <>
+    Champollion est un projet développé par les équipes de la Direction du numérique des
+    ministères sociaux, en collaboration avec la Direction Générale du Travail (DGT).
+    <br />
+    <br />
+    Pour nous contacter par courriel :{" "}
+    <a href="mailto:champollion@sg.social.gouv.fr">champollion@sg.social.gouv.fr</a>
+  </>
+)
 
 export default function Root() {
   const onWindowFocus = async () => {
