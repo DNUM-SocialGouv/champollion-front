@@ -191,7 +191,7 @@ const formatContrats = (
   else return []
 }
 
-function DateStatusBadge({ status }: { status: DateStatus }) {
+export function DateStatusBadge({ status }: { status: DateStatus }) {
   const severity = statusBadgeData?.[status]?.severity
   const text = statusBadgeData?.[status]?.text || "inconnu"
   return (

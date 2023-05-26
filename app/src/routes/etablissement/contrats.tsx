@@ -25,11 +25,11 @@ import { initOptions, selectedPostesAfterMerge } from "../../helpers/postes"
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
-import { Notice } from "@codegouvfr/react-dsfr/Notice"
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
 import { Tile } from "@codegouvfr/react-dsfr/Tile"
 import AppTable from "../../components/AppTable"
 import EtabFilters from "../../components/EtabFilters"
+import { DateStatusBadge } from "../../helpers/contrats"
 
 type CarenceContratsLoader = {
   contratsData:
@@ -120,8 +120,6 @@ export default function EtabContrats() {
 
   const options = initOptions(postes, mergesLabels)
 
-  const noticeText = `Lorsque la date de fin réelle n'est pas déclarée par l'entreprise, elle est dite inférée.
-    Vous pouvez corriger les dates d'après vos observations.`
   const formattedDates = {
     startDate: formatDate(queryStartDate),
     endDate: formatDate(queryEndDate),
@@ -176,7 +174,33 @@ export default function EtabContrats() {
         </p>
       </ExportModal>
       <hr />
-      <Notice className="fr-mb-2w" title={noticeText} />
+      <p>Vous pouvez corriger les dates d'après vos observations.</p>
+      <div className="fr-px-3w fr-py-2w fr-mb-2w bg-bg-alt-greyyyy border border-solid border-bd-default-grey">
+        <h3 className="fr-text--md fr-mb-2w">Légende des statuts de date</h3>
+        <ul className="fr-my-0">
+          <li className="flex flex-col md:flex-row">
+            <span className="fr-col-md-2 fr-col-xl-1">
+              <DateStatusBadge status="declared" />
+            </span>
+            <span className="fr-mb-0">Date déclarée en DSN.</span>
+          </li>
+          <li className="flex flex-col md:flex-row">
+            <span className="fr-col-md-2 fr-col-xl-1">
+              <DateStatusBadge status="computed" />
+            </span>
+            <span className="fr-mb-0">
+              Date non déclarée (déduite de la date prévisionnelle et du dernier mois de
+              déclaration du contrat).
+            </span>
+          </li>
+          <li className="flex flex-col md:flex-row">
+            <span className="fr-col-md-2 fr-col-xl-1">
+              <DateStatusBadge status="validated" />
+            </span>
+            <span className="fr-mb-0">Date corrigée par vos soins.</span>
+          </li>
+        </ul>
+      </div>
       {isAppError(contratsData) ? (
         <Alert
           className="fr-mb-2w"
@@ -265,7 +289,7 @@ function ContratsTable({ contrats, meta }: { contrats: EtuContrat[]; meta: MetaD
     <>
       {meta.totalCount > 0 ? (
         <>
-          <p>{meta.totalCount} résultats</p>
+          <p className="fr-mb-0">{meta.totalCount} résultats</p>
           <AppTable headers={headers} items={formattedContrats} />
           {meta.totalPages > 1 && (
             <Pagination
