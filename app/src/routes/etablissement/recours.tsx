@@ -1,6 +1,7 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router-dom"
 import ls from "localstorage-slim"
+import { v4 as uuid } from "uuid"
 
 import { getEffectifs, getPostes, getEtablissementsType } from "../../api"
 import {
@@ -24,10 +25,12 @@ import {
 } from "../../helpers/format"
 import { initOptions, selectedPostesAfterMerge } from "../../helpers/postes"
 
+import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Select } from "@codegouvfr/react-dsfr/Select"
+import { Table } from "@codegouvfr/react-dsfr/Table"
 import { Tile } from "@codegouvfr/react-dsfr/Tile"
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
 import EffectifBarChart from "../../components/EffectifBarChart"
@@ -213,6 +216,7 @@ function EtabPostesEffectifs({
   const [areTempContractsStacked, setAreTempContractsStacked] = useState(false)
   const initialUnitOption = unitsOptions.find((option) => option.value === defaultUnit)
   const [effectifsData, setEffectifsData] = useState(formatEffectifs(defaultData))
+  const tableRefs = useRef<HTMLDivElement[]>([])
 
   const [prevEffectifs, setPrevEffectifs] = useState(defaultData)
   if (defaultData !== prevEffectifs) {
@@ -226,6 +230,56 @@ function EtabPostesEffectifs({
     const unitValue = newUnitOption?.value || "tot"
     searchParams.set("unit", unitValue)
     setSearchParams(searchParams)
+  }
+
+  // Create tables to display effectifs
+
+  type TableContent = {
+    id: string
+    headers: string[]
+    data: (string | number)[][]
+  }
+  const nbMonthsPerTable = 12
+  const nbSubTables = Math.ceil(effectifsData.length / nbMonthsPerTable)
+  const tablesContent: TableContent[] = []
+  const formatNumber = (effectif: number) =>
+    (Math.round(effectif * 100) / 100).toLocaleString("fr-FR")
+
+  for (let i = 0; i < nbSubTables; i++) {
+    const headers = [i === 0 ? initialUnitOption?.label || "" : ""]
+    const cdiArray: Array<string | number> = ["CDI"]
+    const cddArray: Array<string | number> = ["CDD"]
+    const cttArray: Array<string | number> = ["CTT"]
+    effectifsData
+      .slice(i * nbMonthsPerTable, (i + 1) * nbMonthsPerTable)
+      .forEach((month) => {
+        headers.push(month.label)
+        cdiArray.push(formatNumber(month.cdi))
+        cddArray.push(formatNumber(month.cdd))
+        cttArray.push(formatNumber(month.ctt))
+      })
+    tablesContent.push({
+      id: uuid(),
+      headers,
+      data: [cdiArray, cddArray, cttArray],
+    })
+  }
+
+  const copyTableToClipboard = async () => {
+    const allTablesContent = tableRefs.current
+      .map((subtable) => subtable?.outerHTML || "")
+      .join("")
+
+    try {
+      const blob = new Blob([allTablesContent], { type: "text/html" })
+
+      await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })])
+      alert(
+        "Le tableau a bien été copié. Vous pouvez le coller dans un tableur ou un logiciel de traitement de texte."
+      )
+    } catch (error) {
+      console.error("Failed to copy table: ", error)
+    }
   }
 
   return (
@@ -260,6 +314,30 @@ function EtabPostesEffectifs({
           data={effectifsData}
         />
       </div>
+      <Accordion
+        label="Afficher les effectifs sous forme de tableau"
+        className="fr-mt-4w"
+      >
+        {tablesContent.map((subTable, index) => (
+          <Table
+            data={subTable.data}
+            headers={subTable.headers}
+            key={subTable.id}
+            ref={(el) => {
+              if (el) tableRefs.current[index] = el
+            }}
+            className="fr-my-2w fr-pt-0"
+          />
+        ))}
+        <Button
+          onClick={copyTableToClipboard}
+          iconId="fr-icon-download-line"
+          priority="secondary"
+          type="button"
+        >
+          Copier le tableau
+        </Button>
+      </Accordion>
     </>
   )
 }

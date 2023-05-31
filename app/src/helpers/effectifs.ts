@@ -6,7 +6,7 @@ const formatEffectifs = (effectifs: Effectif[]) =>
   effectifs.map(({ date, cdiCount, cddCount, cttCount }) => {
     return {
       date,
-      label: formatDate(date, "MMM YY"),
+      label: formatDate(date, "MMM YYYY"),
       name: formatDate(date, "MMMM YYYY"),
       cdd: cddCount,
       cdi: cdiCount,
