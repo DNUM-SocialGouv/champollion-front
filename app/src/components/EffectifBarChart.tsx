@@ -104,7 +104,7 @@ export default function EffectifBarChart({
             top: 10,
             right: 20,
             left: 20,
-            bottom: 100,
+            bottom: 120,
           }}
         >
           <defs>
@@ -162,7 +162,7 @@ export default function EffectifBarChart({
             }}
             angle={40}
             dx={20}
-            dy={15}
+            dy={25}
             interval={0}
             stroke="var(--text-mention-grey)"
           />

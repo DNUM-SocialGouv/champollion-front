@@ -181,7 +181,7 @@ export default function EtabFilters({
       </div>
       {otherParamsToKeep.length > 0 &&
         otherParamsToKeep.map((param) => (
-          <input type="hidden" name={param[0]} value={param[1]} />
+          <input type="hidden" key={param[0]} name={param[0]} value={param[1]} />
         ))}
       <div className="fr-mt-1w flex flex-col justify-end gap-3 lg:flex-row">
         <Button
