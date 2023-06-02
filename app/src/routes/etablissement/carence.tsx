@@ -39,7 +39,11 @@ export default function EtabCarence() {
 
   return (
     <>
-      <div className="fr-mb-3w">
+      <p className="italic text-tx-mention-grey">
+        Le diagnostic automatique d'infraction potentielle au délai de carence est en
+        cours de développement et sera bientôt disponible.
+      </p>
+      {/* <div className="fr-mb-3w">
         <div className="flex justify-between">
           <h2 className="fr-text--xl fr-mb-1w">
             Infractions potentielles au délai de carence
@@ -83,7 +87,7 @@ export default function EtabCarence() {
             </Accordion>
           ))}
         </div>
-      </div>
+      </div> */}
     </>
   )
 }

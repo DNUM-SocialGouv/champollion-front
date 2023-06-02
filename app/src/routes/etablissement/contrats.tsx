@@ -194,8 +194,7 @@ export default function EtabContrats() {
       <ExportModal title="Fonctionnalité d'export à venir">
         <p>La fonctionnalité d'export est en cours de développement.</p>
         <p>
-          Elle permettra de télécharger les données des contrats sous format tableur .csv,
-          sous réserve d'acceptation des CGU.
+          Elle permettra de télécharger les données des contrats sous format tableur .csv.
         </p>
       </ExportModal>
       <hr />

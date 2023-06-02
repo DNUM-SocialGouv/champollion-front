@@ -160,8 +160,19 @@ export default function EtabRecours() {
           </Button>
         </div>
         <ExportModal title="Fonctionnalité d'export à venir">
-          <p>La fonctionnalité d'export est en cours de développement.</p>
-          <p>Elle permettra d'imprimer l'histogramme en pdf.</p>
+          <p>
+            La fonctionnalité d'export est en cours de développement. Elle permettra de
+            copier l'histogramme en tant qu'image.
+          </p>
+          <p>
+            En attendant, vous pouvez réaliser une capture d'écran de l'histogramme
+            (raccourci clavier : Touche Windows + Maj + S).
+          </p>
+          <p>
+            Vous pouvez également copier le tableau des effectifs dans votre presse-papier
+            via le bouton <i>Copier le tableau</i>, et le coller dans un logiciel de
+            traitement de texte ou un tableur.
+          </p>
         </ExportModal>
         <hr />
 
