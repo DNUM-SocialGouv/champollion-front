@@ -95,7 +95,16 @@ export default function Root() {
             className="fr-mt-10v"
             contentDescription={contentDescription}
             homeLinkProps={homeLinkProps}
-            bottomItems={[headerFooterDisplayItem]}
+            bottomItems={[
+              {
+                text: "Conditions d'utilisation",
+                linkProps: { to: "/cgu" },
+              },
+              headerFooterDisplayItem,
+            ]}
+            termsLinkProps={{ to: "mentions-legales" }}
+            personalDataLinkProps={{ to: "politique-confidentialite" }}
+            license=""
           />
           <Display />
           <ScrollRestoration />

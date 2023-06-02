@@ -24,6 +24,9 @@ import EtabContrats, {
 import EtabRecours, { loader as etabRecoursLoader } from "./routes/etablissement/recours"
 import EtabCarence, { loader as etabCarenceLoader } from "./routes/etablissement/carence"
 import ETT, { loader as ettLoader } from "./routes/ett"
+import CGU, { loader as cguLoader } from "./routes/cgu"
+import Terms, { loader as termsLoader } from "./routes/terms"
+import PersonalData, { loader as personalDataLoader } from "./routes/personalData"
 
 // set localStorage expiration to 2 weeks (in seconds)
 ls.config.ttl = 1209600
@@ -95,6 +98,24 @@ const router = createBrowserRouter([
         element: <ETT />,
         errorElement: <Error />,
         loader: ettLoader,
+      },
+      {
+        path: "cgu",
+        element: <CGU />,
+        errorElement: <Error />,
+        loader: cguLoader,
+      },
+      {
+        path: "mentions-legales",
+        element: <Terms />,
+        errorElement: <Error />,
+        loader: termsLoader,
+      },
+      {
+        path: "politique-confidentialite",
+        element: <PersonalData />,
+        errorElement: <Error />,
+        loader: personalDataLoader,
       },
     ],
   },
