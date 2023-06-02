@@ -3,6 +3,7 @@ import { Form, useSearchParams } from "react-router-dom"
 
 import { arrayEquals } from "../helpers/format"
 import { MultiValueWithMerge, OptionWithMerge } from "../helpers/postes"
+import { contractNatures, motiveOptions } from "../helpers/contrats"
 
 import Input from "@codegouvfr/react-dsfr/Input"
 import Checkbox from "@codegouvfr/react-dsfr/Checkbox"
@@ -16,13 +17,12 @@ type EtabFiltersProps = {
   natures: string[]
   jobs: string[]
   jobOptions: Option[]
+  disabledFilters?: Record<string, boolean>
 }
 
-const motiveOptions: Option[] = [
-  { value: 1, label: "Remplacement d'un salarié" },
-  { value: 2, label: "Accroissement temporaire d'activité" },
-  { value: 3, label: "Autre" },
-]
+const defaultDisabledFilters = {
+  natures: false,
+}
 
 export default function EtabFilters({
   startDate,
@@ -31,6 +31,7 @@ export default function EtabFilters({
   motives,
   jobs,
   jobOptions,
+  disabledFilters = defaultDisabledFilters,
 }: EtabFiltersProps) {
   const startDateRef = useRef<HTMLInputElement>(null)
   const endDateRef = useRef<HTMLInputElement>(null)
@@ -48,19 +49,20 @@ export default function EtabFilters({
   }
 
   const natureArr = [
-    { key: "cdi", label: "CDI", ref: cdiRef },
-    { key: "cdd", label: "CDD", ref: cddRef },
-    { key: "ctt", label: "CTT (intérim)", ref: cttRef },
+    { ...contractNatures[0], ref: cdiRef },
+    { ...contractNatures[1], ref: cddRef },
+    { ...contractNatures[2], ref: cttRef },
   ]
 
   const natureOptions = natureArr.map((nature) => {
     return {
       label: nature.label,
+      ref: nature.ref,
       nativeInputProps: {
         name: "nature",
-        value: nature.key,
-        defaultChecked: natures.includes(nature.key),
-        ref: nature.ref,
+        value: nature.code,
+        defaultChecked: natures.includes(nature.code),
+        disabled: disabledFilters?.natures ?? false,
       },
     }
   })
@@ -122,6 +124,7 @@ export default function EtabFilters({
 
   return (
     <Form
+      reloadDocument // Todo remove reload document & fix filter reactivity (when nature or date change, contractDates are empty)
       method="get"
       className="fr-px-3w fr-py-2w fr-mb-2w border border-solid border-bd-default-grey bg-bg-alt-grey"
     >
@@ -129,8 +132,8 @@ export default function EtabFilters({
         <Input
           className="fr-col-12 fr-col-lg-6 fr-mb-1w"
           label="Date de début"
+          ref={startDateRef}
           nativeInputProps={{
-            ref: startDateRef,
             name: "debut",
             defaultValue: startDate,
             type: "date",
@@ -140,17 +143,16 @@ export default function EtabFilters({
         <Input
           className="fr-col-12 fr-col-lg-6 fr-mb-1w"
           label="Date de fin"
+          ref={endDateRef}
           nativeInputProps={{
             name: "fin",
-            ref: endDateRef,
             defaultValue: endDate,
             type: "date",
             min: "2019-01-01",
           }}
         />
         {/* // todo handle startDate after endDate */}
-        {/* nature and motive are temporarily hidden, waiting for updated endpoints */}
-        <div className="fr-col-12 fr-col-lg-6 fr-mb-1w hidden">
+        <div className="fr-col-12 fr-col-lg-6 fr-mb-1w">
           {/* extra div necessary to display correctly checkboxes in the grid, since it has negative margins */}
           <Checkbox
             legend="Nature de contrat"
@@ -159,8 +161,8 @@ export default function EtabFilters({
           />
         </div>
         <AppMultiSelect
-          className="fr-col-12 fr-col-lg-6 fr-mb-1w hidden"
-          label="Motif de recours"
+          className="fr-col-12 fr-col-lg-6 fr-mb-1w"
+          label="Motif de recours (ne s'applique pas au CDI)"
           name="motif"
           ref={motivesRef}
           options={motiveOptions}
