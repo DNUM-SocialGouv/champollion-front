@@ -47,6 +47,7 @@ export async function loader({
   const queryNature = getQueryAsArray(searchParams, "nature")
   const queryJobs = getQueryAsArray(searchParams, "poste")
   const queryUnit = getQueryAsString(searchParams, "unit")
+  const motives = queryMotives.map((motive) => Number(motive))
 
   const unit: EffectifUnit = isEffectifUnit(queryUnit) ? queryUnit : "tot"
 
@@ -70,6 +71,7 @@ export async function loader({
     startMonth: queryStartDate,
     endMonth: queryEndDate,
     unit,
+    motives,
     postes: selectedPostesParam,
   })
   return {
@@ -140,10 +142,11 @@ export default function EtabRecours() {
         <EtabFilters
           startDate={queryStartDate}
           endDate={queryEndDate}
-          natures={queryNature}
+          natures={["01", "02", "03"]}
           motives={queryMotives}
           jobs={queryJobs}
           jobOptions={options}
+          disabledFilters={{ natures: true }}
         />
         <div className="flex justify-between">
           <h2 className="fr-text--xl fr-mb-1w">Évolution des effectifs</h2>

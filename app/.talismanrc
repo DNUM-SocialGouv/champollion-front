@@ -1,6 +1,8 @@
 fileignoreconfig:
 - filename: app/src/components/EtabFilters.tsx
   checksum: b24a99452c924b0435d51c22f3d762cd318842bd3733b4ac3ab1355b30e799a8
+- filename: app/src/helpers/contrats.tsx
+  checksum: 8a9ce00cdd5cfc2909d7dc4d87b93893b80d6a1eb7ade5530af490790fcac0e0
 - filename: app/src/helpers/format.ts
   checksum: 1c78d8cdd421a628ad81be6a29aebefd1ac6029ba8d6093f8c7196e238b27527
 - filename: app/src/routes/etablissement/contrats.tsx

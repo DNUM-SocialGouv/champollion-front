@@ -8,6 +8,8 @@ import {
   headers,
   EditableDate,
   ContratDatesState,
+  motiveOptions,
+  contractNatures,
 } from "../../helpers/contrats"
 import { EtablissementPoste, EtuContrat, MetaData } from "../../api/types"
 import { AppError, errorWording, isAppError } from "../../helpers/errors"
@@ -61,6 +63,7 @@ export async function loader({
   const queryNature = getQueryAsArray(searchParams, "nature")
   const queryJobs = getQueryAsArray(searchParams, "poste")
   const page = getQueryPage(searchParams)
+  const motives = queryMotives.map((motive) => Number(motive))
 
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
@@ -78,6 +81,8 @@ export async function loader({
   const contratsData = await getContratsEtu({
     startMonth: queryStartDate,
     endMonth: queryEndDate,
+    natures: queryNature,
+    motives,
     id: etabType.id,
     postes: selectedPostesParam,
     page,
@@ -132,7 +137,27 @@ export default function EtabContrats() {
           au {formattedDates.endDate}
         </li>
         {queryJobs.length > 0 && (
-          <li>Intitulé(s) de poste sélectionné(s) : {...queryJobs}</li>
+          <li>Intitulés de poste sélectionnés : {queryJobs.join(", ")}</li>
+        )}
+        {queryMotives.length > 0 && (
+          <li>
+            Motifs de recours sélectionnés :{" "}
+            {queryMotives
+              .map(
+                (motive) => motiveOptions.find((x) => x.value === Number(motive))?.label
+              )
+              .filter(Boolean)
+              .join(", ")}
+          </li>
+        )}
+        {queryNature.length > 0 && (
+          <li>
+            Natures de contrat sélectionnées :{" "}
+            {queryNature
+              .map((nature) => contractNatures.find((x) => x.code === nature)?.label)
+              .filter(Boolean)
+              .join(", ")}
+          </li>
         )}
       </>
     ) as NonNullable<ReactNode>

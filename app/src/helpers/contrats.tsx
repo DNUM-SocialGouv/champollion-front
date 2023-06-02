@@ -9,6 +9,7 @@ import { AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Input } from "@codegouvfr/react-dsfr/Input"
+import { Option } from "../components/AppMultiSelect"
 
 type FormattedContrat = {
   id: number
@@ -104,7 +105,6 @@ const formatContrats = (
         )
       const contratDates =
         contratsDatesState.find((x) => x.id === contrat.id) || ({} as ContratDatesState)
-
       const handleEdit = (type: DateType) => {
         const nextState = contratsDatesState.map((x) => {
           if (x.id === contrat.id) {
@@ -275,4 +275,31 @@ function ContratDate({
   )
 }
 
-export { getContractType, formatContrats, headers }
+const motiveOptions: Option[] = [
+  { value: 1, label: "Remplacement d'un salarié" },
+  { value: 2, label: "Accroissement temporaire d'activité" },
+  { value: 3, label: "Usage / saisonnier" },
+  { value: 4, label: "Autre" },
+]
+
+const motivesCodeDict: Record<number, string[]> = {
+  1: ["01", "07", "08", "12", "13"],
+  2: ["02"],
+  3: ["03", "04", "05"],
+  4: ["06", "09", "10", "11", "14", "15"],
+}
+
+const contractNatures = [
+  { key: "cdi", code: "01", label: "CDI" },
+  { key: "cdd", code: "02", label: "CDD" },
+  { key: "ctt", code: "03", label: "CTT (intérim)" },
+]
+
+export {
+  contractNatures,
+  formatContrats,
+  getContractType,
+  headers,
+  motiveOptions,
+  motivesCodeDict,
+}
