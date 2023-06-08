@@ -3,7 +3,7 @@ server {
     listen [::]:80 default_server;
     
     # Server names
-    server_name champollion.dev.intranet.travail.gouv.fr;
+    server_name ${APP_URL};
     return 302 https://$server_name$request_uri;
 }
 
@@ -26,7 +26,7 @@ server {
     # Common headers for all locations
     include /etc/nginx/conf.d/proxy.headers;
 
-    # Application specific locations
+    # Applications specific locations
     include /etc/nginx/conf.d/auth.location;
     include /etc/nginx/conf.d/app.location;
 }

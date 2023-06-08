@@ -1,4 +1,4 @@
-set $auth_server authentification.intranet.social.gouv.fr;
+set $auth_server ${AUTH_URL};
 
 location / {
     proxy_pass http://oauth2_proxy:4180;
