@@ -72,14 +72,7 @@ type ETTLoader = {
       }
 }
 
-type Column =
-  | "poste"
-  | "etu"
-  | "employee"
-  | "startDate"
-  | "expectedEndDate"
-  | "endDate"
-  | "motive"
+type Column = "poste" | "etu" | "employee" | "startDate" | "endDate" | "motive"
 
 type ContratsHeader = {
   key: Column
@@ -92,8 +85,7 @@ const headers = [
   { key: "etu", label: "Etablissement utilisateur", width: "15%" },
   { key: "employee", label: "Salarié", width: "15%" },
   { key: "startDate", label: "Date de début", width: "10%" },
-  { key: "expectedEndDate", label: "Date de fin prévisionnelle", width: "10%" },
-  { key: "endDate", label: "Date de fin réelle", width: "10%" },
+  { key: "endDate", label: "Date de fin", width: "10%" },
   { key: "motive", label: "Motif de recours", width: "20%" },
 ] as ContratsHeader[]
 
@@ -103,7 +95,6 @@ type FormattedContrat = {
   etu: ReactNode
   employee: string
   startDate: string
-  expectedEndDate: string | null
   endDate: string | null
   motive: string | null
 }
@@ -172,7 +163,6 @@ function ETTContrats({ contrats, meta }: { contrats: EttContrat[]; meta: MetaDat
         etu,
         employee: `${contrat.prenoms} ${contrat.nomFamille}`,
         startDate: formatDate(contrat.dateDebut),
-        expectedEndDate: formatDate(contrat.dateFinPrevisionnelle),
         endDate: formatDate(contrat.dateFin),
         motive: contrat.libelleMotifRecours,
       } as FormattedContrat

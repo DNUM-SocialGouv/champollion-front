@@ -39,8 +39,8 @@ export type EtuContrat = {
   codeNatureContrat: string
   libelleNatureContrat: string
   dateDebut: string
-  dateFinPrevisionnelle: string | null
   dateFin: string | null
+  statutFin: number | null
   codeConventionCollective: string | null
   libelleConventionCollective: string | null
   codeMotifRecours: string | null
@@ -59,8 +59,8 @@ export type EttContrat = {
   codeNatureContrat: string
   libelleNatureContrat: string
   dateDebut: string
-  dateFinPrevisionnelle: string | null
   dateFin: string | null
+  statutFin: number | null
   codeConventionCollective: string | null
   libelleConventionCollective: string | null
   codeMotifRecours: string | null

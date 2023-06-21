@@ -12,7 +12,7 @@ type PreviousContractWithDelay = {
   codeNatureContrat: string
   libelleNatureContrat: string
   dateDebut: string
-  dateFinPrevisionnelle: string | null
+  statutFin: number | null
   dateFin: string | null
   codeConventionCollective: string | null
   libelleConventionCollective: string | null
@@ -128,7 +128,7 @@ export const infractions: Infraction[] = [
           codeNatureContrat: "02",
           libelleNatureContrat: "Contrat de travail à durée déterminée de droit privé",
           dateDebut: "2022-01-15",
-          dateFinPrevisionnelle: null,
+          statutFin: null,
           dateFin: "2022-05-16",
           codeConventionCollective: null,
           libelleConventionCollective: null,
@@ -148,7 +148,7 @@ export const infractions: Infraction[] = [
             codeNatureContrat: "02",
             libelleNatureContrat: "Contrat de travail à durée déterminée de droit privé",
             dateDebut: "2020-11-25",
-            dateFinPrevisionnelle: "2022-01-07",
+            statutFin: 2,
             dateFin: "2022-01-07",
             codeConventionCollective: "0003",
             libelleConventionCollective:
@@ -173,7 +173,7 @@ export const infractions: Infraction[] = [
           codeNatureContrat: "02",
           libelleNatureContrat: "Contrat de travail à durée déterminée de droit privé",
           dateDebut: "2022-02-15",
-          dateFinPrevisionnelle: null,
+          statutFin: null,
           dateFin: "2022-06-05",
           codeConventionCollective: null,
           libelleConventionCollective: null,
@@ -193,7 +193,7 @@ export const infractions: Infraction[] = [
             codeNatureContrat: "02",
             libelleNatureContrat: "Contrat de travail à durée déterminée de droit privé",
             dateDebut: "2020-11-25",
-            dateFinPrevisionnelle: "2022-01-07",
+            statutFin: 1,
             dateFin: "2022-01-07",
             codeConventionCollective: "0003",
             libelleConventionCollective:
@@ -218,7 +218,7 @@ export const infractions: Infraction[] = [
           codeNatureContrat: "02",
           libelleNatureContrat: "Contrat de travail à durée déterminée de droit privé",
           dateDebut: "2022-02-15",
-          dateFinPrevisionnelle: null,
+          statutFin: null,
           dateFin: "2022-09-05",
           codeConventionCollective: null,
           libelleConventionCollective: null,
@@ -238,7 +238,7 @@ export const infractions: Infraction[] = [
             codeNatureContrat: "02",
             libelleNatureContrat: "Contrat de travail à durée déterminée de droit privé",
             dateDebut: "2020-11-25",
-            dateFinPrevisionnelle: "2022-01-07",
+            statutFin: 1,
             dateFin: "2022-01-07",
             codeConventionCollective: "0003",
             libelleConventionCollective:
@@ -263,7 +263,7 @@ export const infractions: Infraction[] = [
           codeNatureContrat: "02",
           libelleNatureContrat: "Contrat de travail à durée déterminée de droit privé",
           dateDebut: "2022-06-15",
-          dateFinPrevisionnelle: null,
+          statutFin: null,
           dateFin: "2022-12-05",
           codeConventionCollective: null,
           libelleConventionCollective: null,
@@ -283,7 +283,7 @@ export const infractions: Infraction[] = [
             codeNatureContrat: "02",
             libelleNatureContrat: "Contrat de travail à durée déterminée de droit privé",
             dateDebut: "2022-01-15",
-            dateFinPrevisionnelle: null,
+            statutFin: null,
             dateFin: "2022-05-16",
             codeConventionCollective: null,
             libelleConventionCollective: null,
@@ -304,7 +304,7 @@ export const infractions: Infraction[] = [
             codeNatureContrat: "02",
             libelleNatureContrat: "Contrat de travail à durée déterminée de droit privé",
             dateDebut: "2022-02-15",
-            dateFinPrevisionnelle: null,
+            statutFin: null,
             dateFin: "2022-06-05",
             codeConventionCollective: null,
             libelleConventionCollective: null,
@@ -334,7 +334,7 @@ export const infractions: Infraction[] = [
   //         codeNatureContrat: "02",
   //         libelleNatureContrat: "Contrat de travail à durée déterminée de droit privé",
   //         dateDebut: "2022-01-15",
-  //         dateFinPrevisionnelle: null,
+  //         statutFin: null,
   //         dateFin: "2022-05-16",
   //         codeConventionCollective: null,
   //         libelleConventionCollective: null,
@@ -354,7 +354,7 @@ export const infractions: Infraction[] = [
   //           codeNatureContrat: "02",
   //           libelleNatureContrat: "Contrat de travail à durée déterminée de droit privé",
   //           dateDebut: "2020-11-25",
-  //           dateFinPrevisionnelle: "2022-01-07",
+  //           statutFin: 2,
   //           dateFin: "2022-01-07",
   //           codeConventionCollective: "0003",
   //           libelleConventionCollective:
@@ -379,7 +379,7 @@ export const infractions: Infraction[] = [
   //         codeNatureContrat: "02",
   //         libelleNatureContrat: "Contrat de travail à durée déterminée de droit privé",
   //         dateDebut: "2022-02-15",
-  //         dateFinPrevisionnelle: null,
+  //         statutFin: null,
   //         dateFin: "2022-06-05",
   //         codeConventionCollective: null,
   //         libelleConventionCollective: null,
@@ -399,7 +399,7 @@ export const infractions: Infraction[] = [
   //           codeNatureContrat: "02",
   //           libelleNatureContrat: "Contrat de travail à durée déterminée de droit privé",
   //           dateDebut: "2020-11-25",
-  //           dateFinPrevisionnelle: "2022-01-07",
+  //           statutFin: 2,
   //           dateFin: "2022-01-07",
   //           codeConventionCollective: "0003",
   //           libelleConventionCollective:

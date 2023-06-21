@@ -271,7 +271,7 @@ function ContratsTable({ contrats, meta }: { contrats: EtuContrat[]; meta: MetaD
     }
     const end: EditableDate = {
       date: contrat.dateFin,
-      status: "declared",
+      status: contrat.statutFin === 2 ? "declared" : "computed",
       isEdit: false,
     }
     const endKey = `${contrat.id}-end`
@@ -284,11 +284,6 @@ function ContratsTable({ contrats, meta }: { contrats: EtuContrat[]; meta: MetaD
     if (savedContratsDates && endKey in savedContratsDates) {
       end.date = savedContratsDates[endKey]
       end.status = "validated"
-    }
-
-    if (!end.date) {
-      end.date = contrat.dateFinPrevisionnelle
-      end.status = "computed"
     }
 
     if (!end.date) {
