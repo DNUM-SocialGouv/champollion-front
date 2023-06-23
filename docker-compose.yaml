@@ -7,6 +7,8 @@ services:
   app:
     image: ${NEXUS_CHAMPOLLION_URL}/front/node:${APP_IMAGE_TAG}
     container_name: champollion-app-${ENV}
+    environnement:
+      API_URL: ${API_URL}
     restart: on-failure
     networks:
       - champollion
@@ -51,7 +53,6 @@ services:
       - champollion
     environment:
       APP_URL: ${APP_URL}
-      API_URL: ${API_URL}
       AUTH_URL: ${AUTH_URL}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
     ports:

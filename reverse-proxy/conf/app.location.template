@@ -1,5 +1,3 @@
-set $api_server ${API_URL};
-
 location /admin {
     proxy_pass https://$host/auth/admin/${KEYCLOAK_REALM}/console/;
     proxy_set_header    X-Real-IP          $remote_addr;

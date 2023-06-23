@@ -10,6 +10,8 @@ La configuration Nginx est dynamique, c'est-à-dire qu'elle se génère lors du 
 - `AUTH_URL`
 - `KEYCLOAK_REALM`
 
+> ⚠️ La variable d'environnement `API_URL` est intégrée à la [configuration Nginx de l'application](../app/default.conf.template) et non du reverse proxy. La logique reste même ([docker-entrypoints.sh](../app/docker-entrypoint.sh)).
+
 Tous les fichiers correspondant à la configuration sont dans le dossier [`reverse-proxy/conf/`](../reverse-proxy).
 
 Les différents fichiers de configurations :
@@ -27,11 +29,7 @@ include /etc/nginx/conf.d/MY_APP.location.location;
 Si vous souhaitez que votre configuration intégres des variables d'environnement de manière dynamique, appelez le fichier `MY_APP.location.template` et compléter le script script [docker-entrypoint.sh](../reverse-proxy/docker-entrypoint.sh) de la manière suivante : 
 
 ```bash
-envsubst '${MY_VAR}' <  /etc/nginx/conf/MY_APP.location.template > MY_APP.location
+envsubst '${MY_VAR}' < /etc/nginx/conf/MY_APP.location.template > MY_APP.location
 ```
 
 * [`reverse-proxy/conf/snippets`](../reverse-proxy/conf/snippets) : dossier dans lequel se trouve la configuration pour le chiffrement des connections (HTTPS)
-
-
-
-
