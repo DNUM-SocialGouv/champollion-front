@@ -109,7 +109,7 @@ Si vous déployez le service sur la VM Lab (OV1-APP-LAB-DEV-003) vous pouvez clo
 ### 3. Run les images grâce au fichier docker-compose.yaml
 
 ```bash
-docker compose --file ${DOCKER_COMPOSE_FILE_PATH} --env-file ${ENV_FILE_PATH} stop && \
-docker compose --file ${DOCKER_COMPOSE_FILE_PATH} --env-file ${ENV_FILE_PATH} rm -f && \
-docker compose --file ${DOCKER_COMPOSE_FILE_PATH} --env-file ${ENV_FILE_PATH} up --detach
+docker compose --env-file ${ENV_FILE_PATH} stop && \
+docker compose --env-file ${ENV_FILE_PATH} rm -f && \
+docker compose --env-file ${ENV_FILE_PATH} up --detach
 ```
