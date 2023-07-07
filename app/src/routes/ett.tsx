@@ -43,8 +43,6 @@ export async function loader({
     getEffectifsLast(etabType.id),
     getContratsEtt({
       id: etabType.id,
-      startMonth: "2022-01-01",
-      endMonth: "2022-12-01",
       page,
     }),
   ])

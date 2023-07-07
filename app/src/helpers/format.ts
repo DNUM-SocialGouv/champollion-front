@@ -13,6 +13,22 @@ const arrayEquals = <T>(a: Array<T>, b: Array<T>): boolean => {
   )
 }
 
+const findDuplicates = <T>(arr: Array<T>): Array<T> => {
+  const uniqueSet: Set<T> = new Set()
+  const duplicatesSet: Set<T> = new Set()
+
+  for (let i = 0; i < arr.length; i++) {
+    const element = arr[i]
+    if (uniqueSet.has(element)) {
+      duplicatesSet.add(element)
+    } else {
+      uniqueSet.add(element)
+    }
+  }
+
+  return Array.from(duplicatesSet)
+}
+
 // keyToCamel code coming from https://matthiashager.com/converting-snake-case-to-camel-case-object-keys-with-javascript
 const isObject = function (input: unknown) {
   return input === Object(input) && !Array.isArray(input) && typeof input !== "function"
@@ -59,6 +75,12 @@ const getQueryAsArray = (searchParams: URLSearchParams, key: string) =>
     .filter(Boolean)
     .map((value) => decodeURIComponent(value))
 
+const getQueryAsNumberArray = (searchParams: URLSearchParams, key: string) =>
+  searchParams
+    .getAll(key)
+    .map((value) => Number(decodeURIComponent(value)))
+    .filter(Boolean)
+
 const getQueryPage = (searchParams: URLSearchParams) =>
   parseInt(searchParams.get("page") || "1")
 
@@ -67,7 +89,7 @@ const createFiltersQuery = (
   endDate: string,
   motives: string[],
   natures: string[],
-  jobs: string[]
+  jobs: number[]
 ) => {
   let query = ""
   // todo useful at all or use current location works fine ?
@@ -81,17 +103,55 @@ const createFiltersQuery = (
   return query
 }
 
+/* Format unknow data from localstorage */
+
+export const formatLocalMerges = (data: unknown): number[][] | undefined => {
+  let formattedMergesIds: number[][] | undefined
+  if (Array.isArray(data)) {
+    formattedMergesIds = [] as number[][]
+    data.forEach((merge) => {
+      if (Array.isArray(merge)) {
+        Array.isArray(formattedMergesIds) &&
+          formattedMergesIds.push(merge.map(Number).filter(Boolean))
+      }
+    })
+    formattedMergesIds = formattedMergesIds.filter((merge) => merge.length > 0)
+  } else formattedMergesIds = undefined
+
+  return formattedMergesIds
+}
+
+type DayCode = "0" | "1" | "2" | "3" | "4" | "5" | "6"
+
+export const formatLocalOpenDays = (
+  dataFromLocalStorage: unknown
+): DayCode[] | undefined => {
+  let formattedOpenDaysCode: DayCode[] | undefined
+
+  if (Array.isArray(dataFromLocalStorage)) {
+    formattedOpenDaysCode = dataFromLocalStorage.filter((item) => {
+      return (
+        typeof item === "string" && ["0", "1", "2", "3", "4", "5", "6"].includes(item)
+      )
+    })
+  }
+
+  return formattedOpenDaysCode
+}
+
 export {
   arrayEquals,
   capitalize,
   createFiltersQuery,
-  isObject,
+  findDuplicates,
   formatDate,
-  toCamel,
-  keysToCamel,
   getQueryAsArray,
+  getQueryAsNumberArray,
   getQueryAsString,
   getQueryPage,
-  today,
+  isObject,
+  keysToCamel,
   oneYearAgo,
+  toCamel,
+  today,
 }

@@ -5,23 +5,27 @@ import { motivesCodeDict } from "../../helpers/contrats"
 
 type EffectifsParams = {
   id: number
-  startMonth: string
-  endMonth: string
+  startDate: string
+  endDate: string
   unit: EffectifUnit
   motives?: number[]
-  postes?: string[]
+  openDaysCodes?: string[]
+  postesIds?: number[]
+  mergedPostesIds?: number[][]
 }
 
-export const getEffectifs = async ({
+export const postEffectifs = async ({
   id,
-  startMonth,
-  endMonth,
+  startDate,
+  endDate,
   unit,
   motives,
-  postes,
+  postesIds,
+  openDaysCodes,
+  mergedPostesIds,
 }: EffectifsParams) => {
   try {
-    let params = `etablissement_id=${id}&start_date=${startMonth}&end_date=${endMonth}&unit=${unit}`
+    let params = `etablissement_id=${id}&start_date=${startDate}&end_date=${endDate}&unit=${unit}`
 
     if (motives && motives.length > 0) {
       const motivesCodes = motives
@@ -29,16 +33,27 @@ export const getEffectifs = async ({
         .filter(Boolean)
         .flat()
       const motivesParam = motivesCodes
-        .map((motive) => `motifs_recours=${motive}`)
+        .map((motive) => `motif_recours_ids=${motive}`)
         .join("&")
       params += `&${motivesParam}`
     }
 
-    if (postes && postes.length > 0) {
-      const postesParam = postes.map((poste) => `postes=${poste}`).join("&")
+    if (openDaysCodes && openDaysCodes.length > 0) {
+      const openDaysParam = openDaysCodes
+        .map((day) => `jour_ouverture_ids=${day}`)
+        .join("&")
+      params += `&${openDaysParam}`
+    }
+    if (postesIds && postesIds.length > 0) {
+      const postesParam = postesIds.map((poste) => `poste_ids=${poste}`).join("&")
       params += `&${postesParam}`
     }
-    const response = await api.get(`/effectifs/?${params}`)
+
+    let body = {}
+    if (mergedPostesIds && mergedPostesIds?.length > 0)
+      body = Object.assign(body, { merged_poste_ids: mergedPostesIds })
+
+    const response = await api.post(`/effectifs/?${params}`, body)
     return (response.data.data as Effectif[]) ?? handleUndefinedData("/effectifs")
   } catch (err) {
     return handleEndpointError(err)

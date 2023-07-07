@@ -1,4 +1,3 @@
-import { ChangeEvent, useState } from "react"
 import ls from "localstorage-slim"
 import {
   ActionFunctionArgs,
@@ -15,6 +14,7 @@ import EtabInfo from "../../components/EtabInfo"
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
+import { formatLocalOpenDays } from "../../helpers/format"
 
 export async function action({
   params,
@@ -50,58 +50,48 @@ export async function loader({
   const etabId = etabType.id
 
   const localOpenDays = ls.get(`etab.${params.siret}.openDays`)
-  const savedOpenDays: string[] = Array.isArray(localOpenDays) ? localOpenDays : []
+  const savedOpenDaysCodes = formatLocalOpenDays(localOpenDays)
 
   const [info, lastEffectif] = await Promise.all([
     getEtablissementsInfo(etabId),
     getEffectifsLast(etabId),
   ])
-  return { info, lastEffectif, savedOpenDays, siret }
+  return { info, lastEffectif, savedOpenDaysCodes, siret }
 }
 
 type EtabSyntheseLoader = {
   info: EtablissementInfo | AppError
   lastEffectif: LastEffectif | AppError
-  savedOpenDays: string[]
+  savedOpenDaysCodes: string[] | undefined
   siret: string
 }
 
 export default function EtabSynthese() {
-  const { info, lastEffectif, savedOpenDays, siret } =
+  const { info, lastEffectif, savedOpenDaysCodes, siret } =
     useLoaderData() as EtabSyntheseLoader
   const checkboxState = useActionData() as EtabSyntheseAction
 
-  const daysName = [
-    "Lundi",
-    "Mardi",
-    "Mercredi",
-    "Jeudi",
-    "Vendredi",
-    "Samedi",
-    "Dimanche",
+  const initialOpenDays = [
+    { code: "1", label: "Lundi", checked: true },
+    { code: "2", label: "Mardi", checked: true },
+    { code: "3", label: "Mercredi", checked: true },
+    { code: "4", label: "Jeudi", checked: true },
+    { code: "5", label: "Vendredi", checked: true },
+    { code: "6", label: "Samedi", checked: false },
+    { code: "0", label: "Dimanche", checked: false },
   ]
-  const openDaysCheckboxValues = [0, 1, 2, 3, 4, 5, 6].map(
-    (key) => !!savedOpenDays.find((day) => day === String(key))
-  )
-  const initialOpenDays =
-    savedOpenDays.length > 0
-      ? openDaysCheckboxValues
-      : [true, true, true, true, true, false, false]
-  const [openDays, setOpenDays] = useState([...initialOpenDays])
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const dayIdx = parseInt(event.target.value)
-    const newOpenDays = [...openDays]
-    newOpenDays[dayIdx] = event.target.checked
-    setOpenDays(newOpenDays)
-  }
-  const openDaysOptions = daysName.map((day, idx) => {
+  if (savedOpenDaysCodes && savedOpenDaysCodes.length > 0)
+    initialOpenDays.forEach(
+      (day) => (day.checked = savedOpenDaysCodes.includes(day.code))
+    )
+
+  const openDaysOptions = initialOpenDays.map((day) => {
     return {
-      label: day,
+      label: day.label,
       nativeInputProps: {
-        name: `open-day-${day}`,
-        checked: openDays[idx],
-        value: idx,
-        onChange: handleChange,
+        name: `open-day-${day.label}`,
+        defaultChecked: day.checked,
+        value: day.code,
       },
     }
   })

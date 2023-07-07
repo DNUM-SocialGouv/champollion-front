@@ -15,7 +15,7 @@ type EtabFiltersProps = {
   endDate: string
   motives: string[]
   natures: string[]
-  jobs: string[]
+  jobs: number[]
   jobOptions: Option[]
   disabledFilters?: Record<string, boolean>
 }
@@ -35,9 +35,7 @@ export default function EtabFilters({
 }: EtabFiltersProps) {
   const startDateRef = useRef<HTMLInputElement>(null)
   const endDateRef = useRef<HTMLInputElement>(null)
-  const cdiRef = useRef<HTMLInputElement>(null)
-  const cddRef = useRef<HTMLInputElement>(null)
-  const cttRef = useRef<HTMLInputElement>(null)
+  const naturesRef = useRef<HTMLFieldSetElement>(null)
   const motivesRef = useRef<MultiSelectInstance<Option> | null>(null)
   const jobsRef = useRef<MultiSelectInstance<Option> | null>(null)
 
@@ -48,16 +46,9 @@ export default function EtabFilters({
       otherParamsToKeep.push(entry)
   }
 
-  const natureArr = [
-    { ...contractNatures[0], ref: cdiRef },
-    { ...contractNatures[1], ref: cddRef },
-    { ...contractNatures[2], ref: cttRef },
-  ]
-
-  const natureOptions = natureArr.map((nature) => {
+  const natureOptions = contractNatures.map((nature) => {
     return {
       label: nature.label,
-      ref: nature.ref,
       nativeInputProps: {
         name: "nature",
         value: nature.code,
@@ -80,14 +71,28 @@ export default function EtabFilters({
 
   useEffect(() => {
     if (startDateRef.current) {
-      startDateRef.current.value = startDate
+      const startDateInputEl = startDateRef.current.children[1].lastChild as HTMLInputElement
+      if (startDateInputEl && startDateInputEl?.value) startDateInputEl.value = startDate
     }
   }, [startDate])
 
   useEffect(() => {
-    if (endDateRef.current) {
-      endDateRef.current.value = endDate
+    if (naturesRef.current) {
+      // todo find better way to update inputs
+      const cdiCheckboxEl = naturesRef.current.children[1].children[0].children[0] as HTMLInputElement
+      const cddCheckboxEl = naturesRef.current.children[1].children[1].children[0] as HTMLInputElement
+      const cttCheckboxEl = naturesRef.current.children[1].children[2].children[0] as HTMLInputElement
+
+      cdiCheckboxEl.checked = natures.includes("01")
+      cddCheckboxEl.checked = natures.includes("02")
+      cttCheckboxEl.checked = natures.includes("03")
     }
+  }, [natures])
+
+  useEffect(() => {
+    if (endDateRef.current) {
+      const endDateInputEl = endDateRef.current.children[1].lastChild as HTMLInputElement
+      if (endDateInputEl && endDateInputEl?.value) endDateInputEl.value = endDate    }
   }, [endDate])
 
   useEffect(() => {
@@ -105,7 +110,7 @@ export default function EtabFilters({
   useEffect(() => {
     if (jobsRef.current) {
       const areStateAndPropsEquals = arrayEquals(
-        jobsRef.current.state.selectValue.map((option) => String(option.value)),
+        jobsRef.current.state.selectValue.map((option) => Number(option.value)),
         jobs
       )
       if (!areStateAndPropsEquals) {
@@ -114,13 +119,6 @@ export default function EtabFilters({
     }
   }, [jobs])
 
-  useEffect(() => {
-    natureArr.forEach((nature) => {
-      if (nature.ref.current) {
-        nature.ref.current.checked = natures.includes(nature.key)
-      }
-    })
-  }, [natures])
 
   return (
     <Form
@@ -155,6 +153,7 @@ export default function EtabFilters({
         <div className="fr-col-12 fr-col-lg-6 fr-mb-1w">
           {/* extra div necessary to display correctly checkboxes in the grid, since it has negative margins */}
           <Checkbox
+            ref={naturesRef}
             legend="Nature de contrat"
             options={natureOptions}
             orientation="horizontal"
