@@ -9,16 +9,17 @@ import {
 import ls from "localstorage-slim"
 import { v4 as uuid } from "uuid"
 
-import { getEtablissementsType, getPostes } from "../../api"
+import { getEtablissementsType, postPostes } from "../../api"
 import { errorWording, isAppError } from "../../helpers/errors"
-import { getJobListWithMerge } from "../../helpers/postes"
 
 import { Alert, AlertProps } from "@codegouvfr/react-dsfr/Alert"
-import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Tile } from "@codegouvfr/react-dsfr/Tile"
 import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
+import { findDuplicates, formatLocalMerges } from "../../helpers/format"
+import { EtablissementPoste } from "../../api/types"
+import { JobMergedBadge } from "../../helpers/contrats"
 
 type EtabPostesAction = {
   message?: string
@@ -27,18 +28,14 @@ type EtabPostesAction = {
 }
 
 type EtabPostesLoader = {
-  jobListWithMerge: {
-    label: string
-    isMergeResult: boolean
-    isRedundant: boolean
-  }[]
+  jobList: EtablissementPoste[]
   options: Option[]
   savedMerges: MergeOptionObject[]
 }
 
 type MergeOptionObject = {
   id: number | string
-  mergeLabels: Option[]
+  mergedOptions: Option[]
 }
 
 export async function action({
@@ -47,25 +44,29 @@ export async function action({
 }: ActionFunctionArgs): Promise<EtabPostesAction> {
   const formData = await request.formData()
   const data = Object.fromEntries(formData)
-  const duplicatedPostes = Object.values(data)
-    .map((x) => (typeof x === "string" ? x.split(",") : ""))
-    .filter((x) => x.length > 1)
-    .flat()
-    .filter((item, index, array) => array.indexOf(item) !== index)
+  const formattedJobMergesList = Object.values(data).map(
+    (merge) => (typeof merge === "string" && merge.split(",").map(Number)) || []
+  )
+  const validJobMergesList = formattedJobMergesList.filter((merge) => merge.length > 1)
+
+  let message = ""
+  if (formattedJobMergesList.some((merge) => merge.length === 1))
+    message = "Les fusions ne contenant qu'un seul libellé ne sont pas prises en compte."
+
+  const duplicatedPostes = findDuplicates(validJobMergesList.flat())
   if (duplicatedPostes.length > 0)
     return {
       message: `Vous ne pouvez pas sélectionner un même libellé dans des fusions différentes :
-      ${duplicatedPostes.toString().replace(",", ", ")}`,
+      ${duplicatedPostes.join(", ")}`,
       severity: "error",
       title: "Erreur",
     }
-  const mergesLabelsArr = Object.values(data)
-    .map((merge) => (typeof merge === "string" && merge.split(",")) || [])
-    .filter((merge) => Array.isArray(merge) && merge.length > 1)
-  ls.set(`etab.${params.siret}.merges`, mergesLabelsArr)
+
+  ls.set(`etab.${params.siret}.merges`, validJobMergesList)
   return {
     title: "Sauvegardé",
     severity: "success",
+    message,
   }
 }
 
@@ -80,7 +81,7 @@ export async function loader({ params }: LoaderFunctionArgs): Promise<EtabPostes
     })
   }
 
-  const etabPostes = await getPostes(etabType.id)
+  const etabPostes = await postPostes(etabType.id)
 
   if (isAppError(etabPostes)) {
     const responseParams: ResponseInit = {
@@ -90,29 +91,41 @@ export async function loader({ params }: LoaderFunctionArgs): Promise<EtabPostes
     if (etabPostes.status == 404) responseParams.statusText = "Postes introuvables."
     throw new Response("", responseParams)
   }
+
   const options = etabPostes.map(
-    (poste, index) => ({ value: index, label: poste.libelle } as Option)
+    (poste) => ({ value: poste.posteId, label: poste.libellePoste } as Option)
   )
 
-  const localMergesLabels = ls.get(`etab.${params.siret}.merges`) as string[][] | null
-  const jobListWithMerge = getJobListWithMerge(etabPostes, localMergesLabels)
+  const localMergesIds = ls.get(`etab.${params.siret}.merges`)
+  const formattedMergesIds = formatLocalMerges(localMergesIds)
 
-  const savedMerges: MergeOptionObject[] = Array.isArray(localMergesLabels)
-    ? localMergesLabels.map(
+  const savedMerges: MergeOptionObject[] = Array.isArray(formattedMergesIds)
+    ? formattedMergesIds.map(
         (merge): MergeOptionObject => ({
           id: uuid(),
-          mergeLabels: merge
+          mergedOptions: merge
             .map(
-              (label) =>
-                options.find((option) => option.label === label) || ({} as Option)
+              (id) =>
+                options.find((option) => option.value === Number(id)) || ({} as Option)
             )
             .filter((option) => Object.keys(option).length > 0),
         })
       )
     : []
 
+  const jobListWithMerge = await postPostes(etabType.id, formattedMergesIds)
+
+  if (isAppError(jobListWithMerge)) {
+    const responseParams: ResponseInit = {
+      statusText: errorWording.etab,
+    }
+    if (jobListWithMerge.status) responseParams.status = jobListWithMerge.status
+    if (jobListWithMerge.status == 404) responseParams.statusText = "Postes introuvables."
+    throw new Response("", responseParams)
+  }
+
   return {
-    jobListWithMerge,
+    jobList: jobListWithMerge,
     options,
     savedMerges,
   }
@@ -120,7 +133,7 @@ export async function loader({ params }: LoaderFunctionArgs): Promise<EtabPostes
 
 export default function EtabPostes() {
   const savedState = useActionData() as EtabPostesAction
-  const { jobListWithMerge, options, savedMerges } = useLoaderData() as EtabPostesLoader
+  const { jobList, options, savedMerges } = useLoaderData() as EtabPostesLoader
   const [merges, setMerges] = useState(savedMerges)
 
   const { PostesListModal, postesListModalButtonProps } = createModal({
@@ -128,7 +141,7 @@ export default function EtabPostes() {
     isOpenedByDefault: false,
   })
 
-  const handleAddMerge = () => setMerges([...merges, { id: uuid(), mergeLabels: [] }])
+  const handleAddMerge = () => setMerges([...merges, { id: uuid(), mergedOptions: [] }])
   const handleDeleteMerge = (id: number | string) =>
     setMerges(merges.filter((merge) => merge.id !== id))
 
@@ -149,19 +162,13 @@ export default function EtabPostes() {
           ]}
         >
           <ul className="fr-pl-0">
-            {jobListWithMerge.map((poste) => {
+            {jobList.map((job) => {
               return (
-                <Fragment key={poste.label}>
-                  {!poste.isRedundant && (
-                    <li className="list-none">
-                      {poste.label}
-                      {poste.isMergeResult && (
-                        <Badge severity="new" className={"fr-ml-1w"} small>
-                          Fusionné
-                        </Badge>
-                      )}
-                    </li>
-                  )}
+                <Fragment key={job.posteId}>
+                  <li className="list-none">
+                    {job.libellePoste}
+                    <JobMergedBadge merged={Boolean(job.merged)} />
+                  </li>
                 </Fragment>
               )
             })}
@@ -188,18 +195,18 @@ export default function EtabPostes() {
                       const newMerges = merges.map(
                         (savedMerge): MergeOptionObject =>
                           savedMerge.id === merge.id
-                            ? { ...savedMerge, mergeLabels: newValue as Option[] }
+                            ? { ...savedMerge, mergedOptions: newValue as Option[] }
                             : savedMerge
                       )
                       setMerges(newMerges)
                     }}
                     options={options}
-                    value={merge.mergeLabels}
+                    value={merge.mergedOptions}
                   />
                   <input
                     type="hidden"
                     name={`merge-${merge.id}`}
-                    value={merge.mergeLabels.map((x) => x.label)}
+                    value={merge.mergedOptions.map((x) => String(x.value))}
                   />
                   <div className="fr-mt-1w fr-mb-2w fr-mb-md-0">
                     <Button
@@ -217,12 +224,10 @@ export default function EtabPostes() {
                     Le nouveau nom du poste ainsi constitué est le 1e libellé sélectionné
                     :
                   </p>
-                  {merge.mergeLabels.length > 0 && (
+                  {merge.mergedOptions.length > 0 && (
                     <span className="fr-text--sm fr-mb-0 fr-mr-1w italic">
-                      {merge.mergeLabels[0].label || ""}
-                      <Badge severity="new" className="fr-ml-1w" small>
-                        Fusionné
-                      </Badge>
+                      {merge.mergedOptions[0].label || ""}
+                      <JobMergedBadge merged />
                     </span>
                   )}
                 </div>

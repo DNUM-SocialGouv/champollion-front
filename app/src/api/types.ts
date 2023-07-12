@@ -24,8 +24,9 @@ export type EtablissementInfo = {
 }
 
 export type EtablissementPoste = {
-  id: number
-  libelle: string
+  posteId: number
+  libellePoste: string
+  merged: number
 }
 
 export type EtuContrat = {
@@ -36,6 +37,7 @@ export type EtuContrat = {
   civilite?: string | null
   posteId: string | null
   libellePoste: string
+  merged: number
   codeNatureContrat: string
   libelleNatureContrat: string
   dateDebut: string
@@ -77,10 +79,10 @@ export type Effectif = {
   cttCount: number
 }
 
-export type EffectifUnit = "etp" | "tot" | "ldm" | "avg"
+export type EffectifUnit = "etp" | "tot" | "avg"
 
 export const isEffectifUnit = (x: string): x is EffectifUnit => {
-  return ["etp", "tot", "ldm", "avg"].includes(x)
+  return ["etp", "tot", "avg"].includes(x)
 }
 
 export type LastEffectif = {

@@ -2,23 +2,17 @@ import api from "../config"
 import { EtablissementPoste } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 
-export const getPostes = async (id: number) => {
+export const postPostes = async (id: number, mergedPostesIds?: number[][]) => {
   try {
-    const response = await api.get(`/postes/?etablissement_id=${id}`)
+    let body = {}
+
+    if (mergedPostesIds && mergedPostesIds?.length > 0)
+      body = Object.assign(body, { merged_poste_ids: mergedPostesIds })
+
+    const response = await api.post(`/postes/?etablissement_id=${id}`, body)
+
     return (
       (response.data?.data as EtablissementPoste[]) ?? handleUndefinedData("/postes/")
-    )
-  } catch (err) {
-    return handleEndpointError(err)
-  }
-}
-
-// get only postes with contracts in cdi or cdd for ATA (accroissement temporaire d'activité)
-export const getPostesAta = async (id: number) => {
-  try {
-    const response = await api.get(`/postes/ata?etablissement_id=${id}`)
-    return (
-      (response.data?.data as EtablissementPoste[]) ?? handleUndefinedData("/postes/ata")
     )
   } catch (err) {
     return handleEndpointError(err)

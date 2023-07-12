@@ -1,69 +1,19 @@
 import { EtablissementPoste } from "../api/types"
 import { components, MultiValueProps, OptionProps, SingleValueProps } from "react-select"
 import { Option } from "../components/AppMultiSelect"
-import Badge from "@codegouvfr/react-dsfr/Badge"
 import { AppError, isAppError } from "./errors"
+import { JobMergedBadge } from "./contrats"
 
-export type JobListWithMerge = {
-  label: string
-  isMergeResult: boolean
-  isRedundant: boolean
-}[]
-
-export const getJobListWithMerge = (
-  postes: EtablissementPoste[],
-  mergesLabels: string[][] | null
-): JobListWithMerge => {
-  const mergedLabelsToDelete = mergesLabels?.map((merge) => merge.slice(1)).flat()
-  const mergesResults = mergesLabels?.map((merge) => merge[0]).flat()
-
-  return postes.map((poste) => {
-    const label = poste.libelle
-    const isRedundant = mergedLabelsToDelete?.includes(label) ?? false
-    const isMergeResult = mergesResults?.includes(label) ?? false
-    return {
-      label,
-      isMergeResult,
-      isRedundant,
-    }
-  })
-}
-
-export const selectedPostesAfterMerge = (
-  queryPostes: string[],
-  mergesLabels: string[][] | null
-): string[] => {
-  if (mergesLabels && mergesLabels.length > 0) {
-    const allMerges = mergesLabels.flat()
-
-    return queryPostes
-      .map((poste) => {
-        if (allMerges.includes(poste)) {
-          return mergesLabels.find((arr) => arr.includes(poste)) ?? []
-        }
-        return poste
-      })
-      .flat()
-  }
-  return queryPostes
-}
-
-export const initOptions = (
-  postes: EtablissementPoste[] | AppError,
-  mergesLabels: string[][] | null
-) => {
+export const initJobOptions = (postes: EtablissementPoste[] | AppError) => {
   let options: Option[] = []
   if (!isAppError(postes)) {
-    const jobListWithMerge = getJobListWithMerge(postes, mergesLabels)
-    options = jobListWithMerge
-      .filter((poste) => !poste.isRedundant)
-      .map((poste) => {
-        return {
-          value: poste.label,
-          label: poste.label,
-          display: poste.isMergeResult ? "merge" : "",
-        } as Option
-      })
+    options = postes.map((poste) => {
+      return {
+        value: poste.posteId,
+        label: poste.libellePoste,
+        display: poste.merged ? "merge" : "",
+      } as Option
+    })
   }
 
   return options
@@ -73,11 +23,7 @@ export const OptionWithMerge = (props: OptionProps<Option>) => {
   return (
     <components.Option {...props}>
       {props.children}
-      {props.data?.display === "merge" && (
-        <Badge severity="new" className="fr-ml-1w" small>
-          Fusionné
-        </Badge>
-      )}
+      <JobMergedBadge merged={props.data?.display === "merge"} />
     </components.Option>
   )
 }
@@ -86,11 +32,7 @@ export const SingleValueWithMerge = (props: SingleValueProps<Option>) => {
   return (
     <components.SingleValue {...props}>
       {props.children}
-      {props.data?.display === "merge" && (
-        <Badge severity="new" className="fr-ml-1w" small>
-          Fusionné
-        </Badge>
-      )}
+      <JobMergedBadge merged={props.data?.display === "merge"} />
     </components.SingleValue>
   )
 }
@@ -111,11 +53,7 @@ export const MultiValueWithMerge = (props: MultiValueProps<Option>) => {
         type="button"
       >
         {selectedData.label}
-        {selectedData?.display === "merge" && (
-          <Badge severity="new" className="fr-ml-1w" small>
-            Fusionné
-          </Badge>
-        )}
+        <JobMergedBadge merged={selectedData?.display === "merge"} />
       </button>
     </>
   )

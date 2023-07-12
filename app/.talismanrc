@@ -2,13 +2,19 @@ fileignoreconfig:
 - filename: app/src/components/EtabFilters.tsx
   checksum: b24a99452c924b0435d51c22f3d762cd318842bd3733b4ac3ab1355b30e799a8
 - filename: app/src/helpers/contrats.tsx
-  checksum: 8a9ce00cdd5cfc2909d7dc4d87b93893b80d6a1eb7ade5530af490790fcac0e0
+  checksum: cb5dd0123beb362fb6ac14e2fa3c4f0784ae2986e177fca14428750f9fd1ba10
+- filename: app/src/helpers/effectifs.ts
+  checksum: 26f3f907b249d22346fa9633357a06627af21e0920fd03111d4eea82304d0a54
 - filename: app/src/helpers/format.ts
-  checksum: 1c78d8cdd421a628ad81be6a29aebefd1ac6029ba8d6093f8c7196e238b27527
+  checksum: 339eb5b88267f90eef3c6738da2164fa7cf460cabee36b2076ff94ceb948fa78
 - filename: app/src/routes/etablissement/contrats.tsx
   checksum: b352ad4378ea7fd0ae1fda24bf51d6d662f236bc4f9d09f143748a7fe63b5a0f
+- filename: app/src/routes/etablissement/postes.tsx
+  checksum: e3d95e0ac64a6088c700826e257d27114db9789746f9a84f317e3cf6837dee10
 - filename: app/src/routes/etablissement/recours.tsx
   checksum: 29f464e31e7d5019a7f9f8ca6684b68e24bed92a92841dd4004e2ca39fb90eb9
+- filename: app/src/routes/etablissement/synthese.tsx
+  checksum: 320f195b51c0db2add624af322095ada208d51c77c2800ab6d5c81fc8e2fac1f
 - filename: app/src/routes/ett.tsx
   checksum: 6f6f88de3dcd5e7df5be553e884f21f09844443e7b9eb35e4d31d3d571506bc7
 - filename: src/components/AppTable.tsx

@@ -3,7 +3,7 @@ import { LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router
 import ls from "localstorage-slim"
 import { v4 as uuid } from "uuid"
 
-import { getEffectifs, getPostes, getEtablissementsType } from "../../api"
+import { postEffectifs, postPostes, getEtablissementsType } from "../../api"
 import {
   Effectif,
   EffectifUnit,
@@ -18,12 +18,15 @@ import {
 import { AppError, errorWording, isAppError } from "../../helpers/errors"
 import {
   createFiltersQuery,
+  formatLocalMerges,
+  formatLocalOpenDays,
   getQueryAsArray,
+  getQueryAsNumberArray,
   getQueryAsString,
   oneYearAgo,
   today,
 } from "../../helpers/format"
-import { initOptions, selectedPostesAfterMerge } from "../../helpers/postes"
+import { initJobOptions } from "../../helpers/postes"
 
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
@@ -45,7 +48,7 @@ export async function loader({
   const queryEndDate = getQueryAsString(searchParams, "fin") || today
   const queryMotives = getQueryAsArray(searchParams, "motif")
   const queryNature = getQueryAsArray(searchParams, "nature")
-  const queryJobs = getQueryAsArray(searchParams, "poste")
+  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
   const queryUnit = getQueryAsString(searchParams, "unit")
   const motives = queryMotives.map((motive) => Number(motive))
 
@@ -61,22 +64,25 @@ export async function loader({
     })
   }
 
-  const postes = await getPostes(etabType.id)
+  const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
+  const formattedMergesIds = formatLocalMerges(localMergesIds)
+  const openDays = ls.get(`etab.${params.siret}.openDays`)
+  const formattedOpenDays = formatLocalOpenDays(openDays)
 
-  const localMergesLabels = ls.get(`etab.${params.siret}.merges`) as string[][] | null
-  const selectedPostesParam = selectedPostesAfterMerge(queryJobs, localMergesLabels)
-
-  const effectifs = await getEffectifs({
+  const postes = await postPostes(etabType.id, formattedMergesIds)
+  const effectifs = await postEffectifs({
     id: etabType.id,
-    startMonth: queryStartDate,
-    endMonth: queryEndDate,
+    startDate: queryStartDate,
+    endDate: queryEndDate,
     unit,
     motives,
-    postes: selectedPostesParam,
+    postesIds: queryJobs,
+    mergedPostesIds: formattedMergesIds,
+    openDaysCodes: formattedOpenDays,
   })
+
   return {
     effectifs,
-    mergesLabels: localMergesLabels,
     postes,
     queryEndDate,
     queryJobs,
@@ -89,20 +95,18 @@ export async function loader({
 
 type EtabPostesLoader = {
   effectifs: Effectif[] | AppError
-  mergesLabels: string[][] | null
   postes: AppError | EtablissementPoste[]
   queryStartDate: string
   queryEndDate: string
   queryMotives: string[]
   queryNature: string[]
-  queryJobs: string[]
+  queryJobs: number[]
   unit: EffectifUnit
 }
 
 export default function EtabRecours() {
   const {
     effectifs: initialEffectifs,
-    mergesLabels,
     postes,
     queryEndDate,
     queryJobs,
@@ -120,7 +124,7 @@ export default function EtabRecours() {
     queryJobs
   )
 
-  const options = initOptions(postes, mergesLabels)
+  const jobOptions = initJobOptions(postes)
 
   const [effectifs, setEffectifs] = useState(initialEffectifs)
   const [prevEffectifs, setPrevEffectifs] = useState(initialEffectifs)
@@ -145,7 +149,7 @@ export default function EtabRecours() {
           natures={["01", "02", "03"]}
           motives={queryMotives}
           jobs={queryJobs}
-          jobOptions={options}
+          jobOptions={jobOptions}
           disabledFilters={{ natures: true }}
         />
         <div className="flex justify-between">
@@ -179,9 +183,9 @@ export default function EtabRecours() {
         {isAppError(effectifs) ? (
           <Alert
             className="fr-mb-2w"
-            description="Pas de données disponibles"
             severity="error"
-            title="Erreur"
+            title={effectifs.messageFr}
+            description={`Erreur ${effectifs.status}`}
           />
         ) : (
           <EtabPostesEffectifs defaultData={effectifs} defaultUnit={unit} />

@@ -13,7 +13,7 @@ import { Option } from "../components/AppMultiSelect"
 
 type FormattedContrat = {
   id: number
-  jobTitle: string
+  jobTitle: string | ReactNode
   employee: string
   startDate: ReactNode
   endDate: ReactNode
@@ -46,7 +46,7 @@ const headers = [
   { key: "employee", label: "Salarié", width: "15%" },
   { key: "startDate", label: "Date de début", width: "15%" },
   { key: "endDate", label: "Date de fin", width: "15%" },
-  { key: "contractType", label: "Nature de contrat", width: "5%" },
+  { key: "contractType", label: "Nature contrat", width: "5%" },
   { key: "motive", label: "Motif de recours", width: "15%" },
   { key: "ett", label: "ETT", width: "15%" },
   { key: "conventionCode", label: "Conv. collective", width: "5%" },
@@ -93,6 +93,12 @@ const formatContrats = (
 ) => {
   if (Array.isArray(items) && items.length > 0)
     return items.map((contrat): FormattedContrat => {
+      const jobTitle = (
+        <>
+          {contrat.libellePoste}
+          <JobMergedBadge merged={Boolean(contrat.merged)} short />
+        </>
+      )
       const ett =
         contrat.codeNatureContrat !== "03" ? (
           <p>n/a</p>
@@ -178,7 +184,7 @@ const formatContrats = (
 
       return {
         id: contrat.id,
-        jobTitle: contrat.libellePoste,
+        jobTitle,
         employee: `${contrat.prenoms} ${contrat.nomFamille?.toUpperCase()}`,
         startDate,
         endDate,
@@ -198,6 +204,30 @@ export function DateStatusBadge({ status }: { status: DateStatus }) {
     <Badge severity={severity} small>
       {text}
     </Badge>
+  )
+}
+
+export function JobMergedBadge({
+  merged,
+  short = false,
+}: {
+  merged: boolean
+  short?: boolean
+}) {
+  return (
+    <>
+      {merged && (
+        <Badge
+          severity="new"
+          className={`fr-ml-1w ${
+            short ? "fr-px-1v before:mx-0 before:content-['*']" : ""
+          }`}
+          small
+        >
+          {short ? "" : "Fusionné"}
+        </Badge>
+      )}
+    </>
   )
 }
 

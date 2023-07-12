@@ -5,28 +5,32 @@ import { motivesCodeDict } from "../../helpers/contrats"
 
 type ContratsParams = {
   id: number
-  startMonth: string
-  endMonth: string
+  startDate?: string
+  endDate?: string
   motives?: number[]
   natures?: string[]
-  postes?: string[]
+  postesIds?: number[]
   page?: number
   per?: number
-  mergedPostes?: string[][]
+  mergedPostesIds?: number[][]
 }
 
-export const getContratsEtu = async ({
+export const postContratsEtu = async ({
   id,
-  startMonth,
-  endMonth,
+  startDate,
+  endDate,
   motives,
   natures,
-  postes,
+  postesIds,
+  mergedPostesIds,
   page,
   per,
 }: ContratsParams) => {
   try {
-    let params = `etablissement_id=${id}&start_date=${startMonth}&end_date=${endMonth}`
+    let params = `etablissement_id=${id}`
+
+    if (endDate) params += `&end_date=${endDate}`
+    if (startDate) params += `&start_date=${startDate}`
 
     if (motives && motives.length > 0) {
       const motivesCodes = motives
@@ -34,25 +38,32 @@ export const getContratsEtu = async ({
         .filter(Boolean)
         .flat()
       const motivesParam = motivesCodes
-        .map((motive) => `motifs_recours=${motive}`)
+        .map((motive) => `motif_recours_ids=${motive}`)
         .join("&")
       params += `&${motivesParam}`
     }
 
     if (natures && natures.length > 0) {
-      const naturesParam = natures.map((nature) => `natures_contrat=${nature}`).join("&")
+      const naturesParam = natures
+        .map((nature) => `nature_contrat_ids=${nature}`)
+        .join("&")
       params += `&${naturesParam}`
     }
 
-    if (postes && postes.length > 0) {
-      const postesParam = postes.map((poste) => `postes=${poste}`).join("&")
+    if (postesIds && postesIds.length > 0) {
+      const postesParam = postesIds.map((poste) => `poste_ids=${poste}`).join("&")
       params += `&${postesParam}`
     }
 
     if (page) params += `&page=${page}`
     if (per) params += `&per_page=${per}`
 
-    const response = await api.get(`/contrats/etu?${params}`)
+    let body = {}
+
+    if (mergedPostesIds && mergedPostesIds?.length > 0)
+      body = Object.assign(body, { merged_poste_ids: mergedPostesIds })
+
+    const response = await api.post(`/contrats/etu?${params}`, body)
     const contrats = response.data?.data as EtuContrat[]
     const meta = response.data?.meta as MetaData
 
@@ -69,63 +80,28 @@ export const getContratsEtu = async ({
 
 export const getContratsEtt = async ({
   id,
-  startMonth,
-  endMonth,
-  postes,
+  startDate,
+  endDate,
+  postesIds: postes,
   page,
   per,
 }: ContratsParams) => {
   try {
-    let params = `etablissement_id=${id}&start_date=${startMonth}&end_date=${endMonth}`
+    let params = `etablissement_id=${id}`
 
+    if (endDate) params += `&end_date=${endDate}`
+    if (startDate) params += `&start_date=${startDate}`
+    if (page) params += `&page=${page}`
+    if (per) params += `&per_page=${per}`
     if (postes && postes.length > 0) {
-      const postesParam = postes.map((poste) => `postes=${poste}`).join("&")
+      const postesParam = postes.map((poste) => `poste_ids=${poste}`).join("&")
       params += `&${postesParam}`
     }
 
-    if (page) params += `&page=${page}`
-    if (per) params += `&per_page=${per}`
-
-    const response = await api.get(`/contrats/ett?${params}`)
+    const response = await api.post(`/contrats/ett?${params}`)
     const contrats = response.data?.data as EttContrat[]
     const meta = response.data?.meta as MetaData
 
-    if (contrats && meta) {
-      return {
-        contrats,
-        meta,
-      }
-    } else return handleUndefinedData("/contrats/ett")
-  } catch (err) {
-    return handleEndpointError(err)
-  }
-}
-
-export const postContratsAta = async ({
-  id,
-  startMonth,
-  endMonth,
-  postes,
-  page,
-  per,
-  mergedPostes = [],
-}: ContratsParams) => {
-  try {
-    let params = `etablissement_id=${id}&start_date=${startMonth}&end_date=${endMonth}`
-
-    if (postes && postes.length > 0) {
-      const postesParam = postes.map((poste) => `postes=${poste}`).join("&")
-      params += `&${postesParam}`
-    }
-
-    if (page) params += `&page=${page}`
-    if (per) params += `&per_page=${per}`
-
-    const response = await api.post(`/contrats/ata?${params}`, {
-      merged_postes: mergedPostes,
-    })
-    const contrats = response.data?.data as EtuContrat[]
-    const meta = response.data?.meta as MetaData
     if (contrats && meta) {
       return {
         contrats,

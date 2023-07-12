@@ -2,7 +2,7 @@ import { ReactNode, useState } from "react"
 import { LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router-dom"
 import ls from "localstorage-slim"
 
-import { getEtablissementsType, getPostes, getContratsEtu } from "../../api"
+import { getEtablissementsType, postPostes, postContratsEtu } from "../../api"
 import {
   formatContrats,
   headers,
@@ -16,13 +16,15 @@ import { AppError, errorWording, isAppError } from "../../helpers/errors"
 import {
   createFiltersQuery,
   formatDate,
+  formatLocalMerges,
   getQueryAsArray,
+  getQueryAsNumberArray,
   getQueryAsString,
   getQueryPage,
   oneYearAgo,
   today,
 } from "../../helpers/format"
-import { initOptions, selectedPostesAfterMerge } from "../../helpers/postes"
+import { initJobOptions } from "../../helpers/postes"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
@@ -32,24 +34,6 @@ import { Tile } from "@codegouvfr/react-dsfr/Tile"
 import AppTable from "../../components/AppTable"
 import EtabFilters from "../../components/EtabFilters"
 import { DateStatusBadge } from "../../helpers/contrats"
-
-type CarenceContratsLoader = {
-  contratsData:
-    | AppError
-    | {
-        contrats: EtuContrat[]
-        meta: MetaData
-      }
-  mergesLabels: string[][] | null
-  page: number
-  postes: AppError | EtablissementPoste[]
-  queryStartDate: string
-  queryEndDate: string
-  queryMotives: string[]
-  queryNature: string[]
-  queryJobs: string[]
-  siret: string
-}
 
 export async function loader({
   params,
@@ -61,7 +45,7 @@ export async function loader({
   const queryEndDate = getQueryAsString(searchParams, "fin") || today
   const queryMotives = getQueryAsArray(searchParams, "motif")
   const queryNature = getQueryAsArray(searchParams, "nature")
-  const queryJobs = getQueryAsArray(searchParams, "poste")
+  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
   const page = getQueryPage(searchParams)
   const motives = queryMotives.map((motive) => Number(motive))
 
@@ -74,23 +58,23 @@ export async function loader({
       statusText: errorWording.etab,
     })
   }
-  const postes = await getPostes(etabType.id)
-  const localMergesLabels = ls.get(`etab.${params.siret}.merges`) as string[][] | null
-  const selectedPostesParam = selectedPostesAfterMerge(queryJobs, localMergesLabels)
+  const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
+  const formattedMergesIds = formatLocalMerges(localMergesIds)
 
-  const contratsData = await getContratsEtu({
-    startMonth: queryStartDate,
-    endMonth: queryEndDate,
+  const postes = await postPostes(etabType.id, formattedMergesIds)
+  const contratsData = await postContratsEtu({
+    startDate: queryStartDate,
+    endDate: queryEndDate,
     natures: queryNature,
     motives,
     id: etabType.id,
-    postes: selectedPostesParam,
+    postesIds: queryJobs,
     page,
+    mergedPostesIds: formattedMergesIds,
   })
 
   return {
     contratsData,
-    mergesLabels: localMergesLabels,
     page,
     postes,
     queryEndDate,
@@ -102,10 +86,26 @@ export async function loader({
   }
 }
 
+type CarenceContratsLoader = {
+  contratsData:
+    | AppError
+    | {
+        contrats: EtuContrat[]
+        meta: MetaData
+      }
+  page: number
+  postes: AppError | EtablissementPoste[]
+  queryStartDate: string
+  queryEndDate: string
+  queryMotives: string[]
+  queryNature: string[]
+  queryJobs: number[]
+  siret: string
+}
+
 export default function EtabContrats() {
   const {
     contratsData,
-    mergesLabels,
     page,
     postes,
     queryEndDate,
@@ -123,7 +123,7 @@ export default function EtabContrats() {
     queryJobs
   )
 
-  const options = initOptions(postes, mergesLabels)
+  const options = initJobOptions(postes)
 
   const formattedDates = {
     startDate: formatDate(queryStartDate),
@@ -136,8 +136,15 @@ export default function EtabContrats() {
           Contrats en cours au moins un jour sur la période du {formattedDates.startDate}{" "}
           au {formattedDates.endDate}
         </li>
+
         {queryJobs.length > 0 && (
-          <li>Intitulés de poste sélectionnés : {queryJobs.join(", ")}</li>
+          <li>
+            Intitulés de poste sélectionnés :{" "}
+            {queryJobs
+              .map((jobId) => options.find((x) => x.value === Number(jobId))?.label)
+              .filter(Boolean)
+              .join(", ")}
+          </li>
         )}
         {queryMotives.length > 0 && (
           <li>
@@ -228,15 +235,22 @@ export default function EtabContrats() {
       {isAppError(contratsData) ? (
         <Alert
           className="fr-mb-2w"
-          severity="warning"
-          title="Aucun contrat ne correspond à vos paramètres :"
-          description={warningList()}
+          severity="error"
+          title={contratsData.messageFr}
+          description={`Erreur ${contratsData.status}`}
         />
-      ) : (
+      ) : contratsData.contrats.length > 0 ? (
         <ContratsTable
           contrats={contratsData.contrats}
           meta={contratsData.meta}
           key={`${queryJobs[0]}-${page}`}
+        />
+      ) : (
+        <Alert
+          className="fr-mb-2w"
+          severity="warning"
+          title="Aucun contrat ne correspond à vos paramètres :"
+          description={warningList()}
         />
       )}
       <h2 className="fr-text--xl fr-mb-1w">Actions</h2>
