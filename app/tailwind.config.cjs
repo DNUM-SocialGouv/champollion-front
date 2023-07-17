@@ -40,6 +40,7 @@ module.exports = {
     boxShadow: {
       overlap: "var(--overlap-shadow)",
       input: "inset 0 -2px 0 0 var(--border-plain-grey)",
+      "input-disabled": "inset 0 -2px 0 0 var(--border-disabled-grey)",
     },
     extend: {},
   },

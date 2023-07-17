@@ -23,10 +23,12 @@ export type EtablissementInfo = {
   libelleConventionCollective?: string
 }
 
+export type MergedCode = 0 | 1
+
 export type EtablissementPoste = {
   posteId: number
   libellePoste: string
-  merged: number
+  merged: MergedCode
 }
 
 export type EtuContrat = {
@@ -37,7 +39,7 @@ export type EtuContrat = {
   civilite?: string | null
   posteId: string | null
   libellePoste: string
-  merged: number
+  merged: MergedCode
   codeNatureContrat: string
   libelleNatureContrat: string
   dateDebut: string
@@ -91,3 +93,60 @@ export type LastEffectif = {
 }
 
 export type DateRange = { startDate: string; endDate: string }
+
+export type IllegalContract = {
+  contratId: number
+  civilite?: string | null
+  nomFamille: string | null
+  prenoms: string
+  dateDebut: string
+  dateFin: string | null
+  posteId: number
+  libellePoste: string
+  codeMotifRecours: string | null
+  libelleMotifRecours: string | null
+  codeNatureContrat: string
+  libelleNatureContrat: string
+  ettSiret: string | null
+  ettRaisonSociale: string | null
+  merged: MergedCode
+}
+
+export type CarenceContract = {
+  carenceId: number
+  contratId: number
+  civilite?: string | null
+  nomFamille: string
+  prenoms: string
+  dateDebut: string
+  dateFin: string | null
+  posteId: number
+  libellePoste: string | null
+  codeMotifRecours: string | null
+  libelleMotifRecours: string | null
+  codeNatureContrat: string
+  libelleNatureContrat: string
+  ettSiret: string | null
+  ettRaisonSociale: string | null
+  merged: MergedCode
+  codeNatureCarence: string
+  dureeContrat: number
+  dureeCarence: number
+  dateFinCarence: string
+  jourPostCarence: string
+  unitCarence: string
+}
+
+export type Violation = {
+  illegalContract: IllegalContract
+  carenceContracts: CarenceContract[]
+}
+
+export type JobInfraction = {
+  libelle: string
+  count: number
+  merged: MergedCode
+  violations: { [key: string]: Violation }
+}
+
+export type Infractions = { [key: string]: JobInfraction }

@@ -115,13 +115,13 @@ export default function EtabContrats() {
     queryStartDate,
   } = useLoaderData() as CarenceContratsLoader
 
-  const filtersQuery = createFiltersQuery(
-    queryStartDate,
-    queryEndDate,
-    queryMotives,
-    queryNature,
-    queryJobs
-  )
+  const filtersQuery = createFiltersQuery({
+    startDate: queryStartDate,
+    endDate: queryEndDate,
+    motives: queryMotives,
+    natures: queryNature,
+    jobs: queryJobs,
+  })
 
   const options = initJobOptions(postes)
 
@@ -254,20 +254,36 @@ export default function EtabContrats() {
           description={warningList()}
         />
       )}
-      <h2 className="fr-text--xl fr-mb-1w">Actions</h2>
+      <h2 className="fr-text--xl fr-mb-1w fr-mt-3w">Actions</h2>
       <hr />
-      <Tile
-        className="w-full md:w-1/3"
-        desc="Lancer le diagnostic d'emploi permanent sur les contrats ci-dessus"
-        enlargeLink
-        linkProps={{
-          to: {
-            pathname: "../recours-abusif",
-            search: filtersQuery ? `?${filtersQuery}` : "",
-          },
-        }}
-        title="Recours abusif"
-      />
+      <div className="fr-grid-row fr-grid-row--gutters">
+        <div className="fr-col-12 fr-col-md-4">
+          <Tile
+            desc="Lancer le diagnostic d'emploi permanent sur les contrats sélectionnés"
+            enlargeLink
+            linkProps={{
+              to: {
+                pathname: "../recours-abusif",
+                search: filtersQuery ? `?${filtersQuery}` : "",
+              },
+            }}
+            title="Recours abusif"
+          />
+        </div>
+        <div className="fr-col-12 fr-col-md-4">
+          <Tile
+            desc="Lancer le diagnostic d'anomalies des délais de carence sur les contrats sélectionnés"
+            enlargeLink
+            linkProps={{
+              to: {
+                pathname: "../carence",
+                search: filtersQuery ? `?${filtersQuery}` : "",
+              },
+            }}
+            title="Délai de carence"
+          />
+        </div>
+      </div>
     </>
   )
 }

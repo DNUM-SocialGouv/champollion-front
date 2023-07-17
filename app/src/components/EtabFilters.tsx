@@ -13,15 +13,17 @@ import AppMultiSelect, { MultiSelectInstance, Option } from "./AppMultiSelect"
 type EtabFiltersProps = {
   startDate: string
   endDate: string
-  motives: string[]
-  natures: string[]
-  jobs: number[]
-  jobOptions: Option[]
+  motives?: string[]
+  natures?: string[]
+  jobs?: number[]
+  jobOptions?: Option[]
   disabledFilters?: Record<string, boolean>
 }
 
 const defaultDisabledFilters = {
   natures: false,
+  motives: false,
+  jobs: false,
 }
 
 export default function EtabFilters({
@@ -52,36 +54,45 @@ export default function EtabFilters({
       nativeInputProps: {
         name: "nature",
         value: nature.code,
-        defaultChecked: natures.includes(nature.code),
-        disabled: disabledFilters?.natures ?? false,
+        defaultChecked: natures && natures.includes(nature.code),
       },
     }
   })
 
   const motiveSelectedOptions = motives
-    .map(
-      (motive) =>
-        motiveOptions.find((option) => option.value === Number(motive)) || ({} as Option)
-    )
-    .filter((option) => Object.keys(option).length > 0)
+    ? motives
+        .map(
+          (motive) =>
+            motiveOptions.find((option) => option.value === Number(motive)) ||
+            ({} as Option)
+        )
+        .filter((option) => Object.keys(option).length > 0)
+    : []
 
-  const jobSelectedOptions = jobs
-    .map((job) => jobOptions.find((option) => option.value === job) || ({} as Option))
-    .filter((option) => Object.keys(option).length > 0)
+  const jobSelectedOptions =
+    jobs &&
+    jobOptions &&
+    jobs
+      .map((job) => jobOptions.find((option) => option.value === job) || ({} as Option))
+      .filter((option) => Object.keys(option).length > 0)
 
   useEffect(() => {
     if (startDateRef.current) {
-      const startDateInputEl = startDateRef.current.children[1].lastChild as HTMLInputElement
+      const startDateInputEl = startDateRef.current.children[1]
+        .lastChild as HTMLInputElement
       if (startDateInputEl && startDateInputEl?.value) startDateInputEl.value = startDate
     }
   }, [startDate])
 
   useEffect(() => {
-    if (naturesRef.current) {
+    if (natures && naturesRef.current) {
       // todo find better way to update inputs
-      const cdiCheckboxEl = naturesRef.current.children[1].children[0].children[0] as HTMLInputElement
-      const cddCheckboxEl = naturesRef.current.children[1].children[1].children[0] as HTMLInputElement
-      const cttCheckboxEl = naturesRef.current.children[1].children[2].children[0] as HTMLInputElement
+      const cdiCheckboxEl = naturesRef.current.children[1].children[0]
+        .children[0] as HTMLInputElement
+      const cddCheckboxEl = naturesRef.current.children[1].children[1]
+        .children[0] as HTMLInputElement
+      const cttCheckboxEl = naturesRef.current.children[1].children[2]
+        .children[0] as HTMLInputElement
 
       cdiCheckboxEl.checked = natures.includes("01")
       cddCheckboxEl.checked = natures.includes("02")
@@ -92,33 +103,33 @@ export default function EtabFilters({
   useEffect(() => {
     if (endDateRef.current) {
       const endDateInputEl = endDateRef.current.children[1].lastChild as HTMLInputElement
-      if (endDateInputEl && endDateInputEl?.value) endDateInputEl.value = endDate    }
+      if (endDateInputEl && endDateInputEl?.value) endDateInputEl.value = endDate
+    }
   }, [endDate])
 
   useEffect(() => {
-    if (motivesRef.current) {
+    if (motives && motivesRef.current) {
       const areStateAndPropsEquals = arrayEquals(
         motivesRef.current.state.selectValue.map((option) => String(option.value)),
         motives
       )
-      if (!areStateAndPropsEquals) {
+      if (!areStateAndPropsEquals && motiveSelectedOptions) {
         motivesRef.current?.setValue(motiveSelectedOptions, "select-option")
       }
     }
   }, [motives])
 
   useEffect(() => {
-    if (jobsRef.current) {
+    if (jobs && jobsRef.current) {
       const areStateAndPropsEquals = arrayEquals(
         jobsRef.current.state.selectValue.map((option) => Number(option.value)),
         jobs
       )
-      if (!areStateAndPropsEquals) {
+      if (!areStateAndPropsEquals && jobSelectedOptions) {
         jobsRef.current?.setValue(jobSelectedOptions, "select-option")
       }
     }
   }, [jobs])
-
 
   return (
     <Form
@@ -154,6 +165,7 @@ export default function EtabFilters({
           {/* extra div necessary to display correctly checkboxes in the grid, since it has negative margins */}
           <Checkbox
             ref={naturesRef}
+            disabled={disabledFilters?.natures ?? false}
             legend="Nature de contrat"
             options={natureOptions}
             orientation="horizontal"
@@ -166,6 +178,7 @@ export default function EtabFilters({
           ref={motivesRef}
           options={motiveOptions}
           defaultValue={motiveSelectedOptions}
+          disabled={disabledFilters?.motives ?? false}
         />
         <AppMultiSelect
           className="fr-col-12 fr-col-lg-6 fr-mb-1w"
@@ -176,8 +189,8 @@ export default function EtabFilters({
           label="Postes"
           name="poste"
           ref={jobsRef}
-          options={jobOptions}
-          defaultValue={jobSelectedOptions}
+          options={jobOptions ?? []}
+          defaultValue={jobSelectedOptions ?? []}
         />
       </div>
       {otherParamsToKeep.length > 0 &&

@@ -1,12 +1,18 @@
 fileignoreconfig:
+- filename: app/src/api/types.ts
+  checksum: 8446ffa06211b4b813694f84fb130e4fcfd2fe3936d4a544c7359a805365d5a1
 - filename: app/src/components/EtabFilters.tsx
   checksum: b24a99452c924b0435d51c22f3d762cd318842bd3733b4ac3ab1355b30e799a8
+- filename: app/src/helpers/carence.tsx
+  checksum: 08bb47b4ee70459cfa2da32bd51d3467e4907afa4b79a6848a6c1968d7e3e6ac
 - filename: app/src/helpers/contrats.tsx
   checksum: cb5dd0123beb362fb6ac14e2fa3c4f0784ae2986e177fca14428750f9fd1ba10
 - filename: app/src/helpers/effectifs.ts
   checksum: 26f3f907b249d22346fa9633357a06627af21e0920fd03111d4eea82304d0a54
 - filename: app/src/helpers/format.ts
   checksum: 339eb5b88267f90eef3c6738da2164fa7cf460cabee36b2076ff94ceb948fa78
+- filename: app/src/routes/etablissement/carence.tsx
+  checksum: 6bc69113c7d318896fadc6c23e6f891a2ccc878d37b1ea5fb3f7a0037920b84c
 - filename: app/src/routes/etablissement/contrats.tsx
   checksum: b352ad4378ea7fd0ae1fda24bf51d6d662f236bc4f9d09f143748a7fe63b5a0f
 - filename: app/src/routes/etablissement/postes.tsx

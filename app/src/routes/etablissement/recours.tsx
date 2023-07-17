@@ -47,7 +47,6 @@ export async function loader({
   const queryStartDate = getQueryAsString(searchParams, "debut") || oneYearAgo
   const queryEndDate = getQueryAsString(searchParams, "fin") || today
   const queryMotives = getQueryAsArray(searchParams, "motif")
-  const queryNature = getQueryAsArray(searchParams, "nature")
   const queryJobs = getQueryAsNumberArray(searchParams, "poste")
   const queryUnit = getQueryAsString(searchParams, "unit")
   const motives = queryMotives.map((motive) => Number(motive))
@@ -87,7 +86,6 @@ export async function loader({
     queryEndDate,
     queryJobs,
     queryMotives,
-    queryNature,
     queryStartDate,
     unit,
   }
@@ -99,7 +97,6 @@ type EtabPostesLoader = {
   queryStartDate: string
   queryEndDate: string
   queryMotives: string[]
-  queryNature: string[]
   queryJobs: number[]
   unit: EffectifUnit
 }
@@ -111,19 +108,19 @@ export default function EtabRecours() {
     queryEndDate,
     queryJobs,
     queryMotives,
-    queryNature,
     queryStartDate,
     unit,
   } = useLoaderData() as EtabPostesLoader
 
-  const filtersQuery = createFiltersQuery(
-    queryStartDate,
-    queryEndDate,
-    queryMotives,
-    queryNature,
-    queryJobs
-  )
+  const effectifsNatures = ["01", "02", "03"]
 
+  const filtersQuery = createFiltersQuery({
+    startDate: queryStartDate,
+    endDate: queryEndDate,
+    motives: queryMotives,
+    natures: [], // all natures selected is equivalent to none selected
+    jobs: queryJobs,
+  })
   const jobOptions = initJobOptions(postes)
 
   const [effectifs, setEffectifs] = useState(initialEffectifs)
@@ -146,7 +143,7 @@ export default function EtabRecours() {
         <EtabFilters
           startDate={queryStartDate}
           endDate={queryEndDate}
-          natures={["01", "02", "03"]}
+          natures={effectifsNatures}
           motives={queryMotives}
           jobs={queryJobs}
           jobOptions={jobOptions}
@@ -215,6 +212,19 @@ export default function EtabRecours() {
                 to: "../postes",
               }}
               title="Fusion de postes"
+            />
+          </div>
+          <div className="fr-col-12 fr-col-md-4">
+            <Tile
+              desc="Lancer le diagnostic d'anomalie des délais de carence sur les contrats sélectionnés"
+              enlargeLink
+              linkProps={{
+                to: {
+                  pathname: "../carence",
+                  search: filtersQuery ? `?${filtersQuery}` : "",
+                },
+              }}
+              title="Délai de carence"
             />
           </div>
         </div>
