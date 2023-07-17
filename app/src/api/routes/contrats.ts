@@ -23,8 +23,8 @@ export const postContratsEtu = async ({
   natures,
   postesIds,
   mergedPostesIds,
-  page,
-  per,
+  page = 1,
+  per = 20,
 }: ContratsParams) => {
   try {
     let params = `etablissement_id=${id}`
@@ -83,8 +83,8 @@ export const getContratsEtt = async ({
   startDate,
   endDate,
   postesIds: postes,
-  page,
-  per,
+  page = 1,
+  per = 20,
 }: ContratsParams) => {
   try {
     let params = `etablissement_id=${id}`

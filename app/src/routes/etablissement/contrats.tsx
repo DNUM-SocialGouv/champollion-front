@@ -166,6 +166,7 @@ export default function EtabContrats() {
               .join(", ")}
           </li>
         )}
+        {page > 1 && <li>Page sélectionnée : {page}</li>}
       </>
     ) as NonNullable<ReactNode>
   }
