@@ -84,15 +84,20 @@ const getQueryAsNumberArray = (searchParams: URLSearchParams, key: string) =>
 const getQueryPage = (searchParams: URLSearchParams) =>
   parseInt(searchParams.get("page") || "1")
 
-const createFiltersQuery = (
-  startDate: string,
-  endDate: string,
-  motives: string[],
-  natures: string[],
+const createFiltersQuery = ({
+  startDate,
+  endDate,
+  motives,
+  natures,
+  jobs,
+}: {
+  startDate: string
+  endDate: string
+  motives: string[]
+  natures: string[]
   jobs: number[]
-) => {
+}) => {
   let query = ""
-  // todo useful at all or use current location works fine ?
   // todo refacto with map english key <=> french query param
   if (startDate) query += "&debut=" + startDate
   if (endDate) query += "&fin=" + endDate

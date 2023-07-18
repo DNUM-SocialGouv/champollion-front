@@ -1,7 +1,7 @@
 const isDevMode = import.meta.env.DEV
 
 type ErrorParams = {
-  field: string
+  field?: string
   value?: string | number
 }
 
@@ -14,7 +14,7 @@ type ApiErrorContext = {
 type ApiError = {
   message: string
   type: string
-  context: ApiErrorContext
+  context: ApiErrorContext | null
 }
 
 export type AppError = {
@@ -27,6 +27,8 @@ export type AppError = {
 
 const backendErrorFr: Record<string, (arg: ErrorParams) => string> = {
   not_found: () => `Données introuvables.`,
+  "forbidden.too_many_contracts_requested": () =>
+    "Votre demande concerne un trop grand nombre de contrats, ce qui entraîne un temps de calcul excessif. Veuillez ajouter des filtres pour réduire le nombre de contrats à analyser.",
   "type_error.integer": ({ field }: ErrorParams) =>
     `Le champ ${field} doit être un nombre.`,
   "value_error.any_str.max_length": ({ field, value }: ErrorParams) =>
@@ -37,6 +39,8 @@ const backendErrorFr: Record<string, (arg: ErrorParams) => string> = {
     `Le champ ${field} ne correspond pas au format requis.`,
   "value_error.date": ({ field }: ErrorParams) =>
     `Le champ ${field} doit être une date valide.`,
+  "value_error.missing": ({ field }: ErrorParams) =>
+    `Le champ ${field} doit être complété.`,
 }
 
 const fieldsFr: Record<string, string> = {
@@ -64,7 +68,9 @@ const isAppError = (x: unknown): x is AppError => {
 
 const isApiError = (x: unknown): x is ApiError => {
   return Boolean(
-    (x as ApiError)?.message && (x as ApiError)?.type && (x as ApiError)?.context
+    "message" in (x as ApiError) &&
+      "type" in (x as ApiError) &&
+      "context" in (x as ApiError)
   )
 }
 
@@ -72,7 +78,9 @@ const getErrorMessage = (error: unknown) => {
   let message, messageFr
   if (isApiError(error)) {
     const params: ErrorParams = {
-      field: fieldsFr[error.context.parameter] || error.context.parameter,
+      field: error.context
+        ? fieldsFr[error.context.parameter] || error.context.parameter
+        : undefined,
       value: error.context?.limit_value || error.context?.pattern,
     }
 

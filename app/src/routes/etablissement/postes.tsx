@@ -256,17 +256,30 @@ export default function EtabPostes() {
           </div>
         </Form>
 
-        <h2 className="fr-text--xl fr-mb-1w">Actions</h2>
+        <h2 className="fr-text--xl fr-mb-1w fr-mt-3w">Actions</h2>
         <hr />
-        <Tile
-          className="w-full md:w-1/3"
-          desc="Lancer le diagnostic d'emploi permanent"
-          enlargeLink
-          linkProps={{
-            to: "../recours-abusif",
-          }}
-          title="Recours abusif"
-        />
+        <div className="fr-grid-row fr-grid-row--gutters">
+          <div className="fr-col-12 fr-col-md-4">
+            <Tile
+              desc="Lancer le diagnostic d'emploi permanent"
+              enlargeLink
+              linkProps={{
+                to: "../recours-abusif",
+              }}
+              title="Recours abusif"
+            />
+          </div>
+          <div className="fr-col-12 fr-col-md-4">
+            <Tile
+              desc="Lancer le diagnostic d'anomalie des délais de carence"
+              enlargeLink
+              linkProps={{
+                to: { pathname: "../carence" },
+              }}
+              title="Délai de carence"
+            />
+          </div>
+        </div>
       </div>
     </>
   )

@@ -34,6 +34,7 @@ type AppMultiSelectProps = Controlled | Uncontrolled
 
 type Common = {
   className?: string
+  disabled?: boolean
   name?: string
   customComponents?: Partial<SelectComponents<Option, boolean, GroupBase<Option>>>
   hintText?: string
@@ -97,6 +98,7 @@ const MultiValue = (props: MultiValueProps<Option>) => {
         onClick={() => removeProps?.onClick && removeProps.onClick()}
         onTouchEnd={() => removeProps?.onTouchEnd && removeProps.onTouchEnd()}
         type="button"
+        disabled={props.isDisabled}
       >
         {selectedData.label}
       </button>
@@ -124,6 +126,7 @@ const AppMultiSelect = forwardRef(function AppMultiSelect(
     className,
     customComponents,
     defaultValue,
+    disabled,
     hintText,
     isMulti = true,
     label,
@@ -153,15 +156,24 @@ const AppMultiSelect = forwardRef(function AppMultiSelect(
 
   return (
     <div className={`fr-mb-3w ${className}`}>
-      <label className="fr-label" htmlFor={selectId}>
+      <label
+        className={`fr-label ${disabled && "text-tx-disabled-grey"}`}
+        htmlFor={selectId}
+      >
         {label}
         {hintText && <span className="fr-hint-text">{hintText}</span>}
       </label>
       <Select
         id={selectId}
         classNames={{
+          container: (state) =>
+            state.isDisabled ? "pointer-events-auto cursor-not-allowed" : "",
           control: (state) =>
-            `bg-bg-contrast-grey rounded-t rounded-b-none border-none shadow-input fr-mt-1w ${
+            `bg-bg-contrast-grey rounded-t rounded-b-none border-none fr-mt-1w  ${
+              state.isDisabled
+                ? "shadow-input-disabled text-tx-disabled-grey"
+                : "shadow-input"
+            } ${
               state.isFocused
                 ? "!outline !outline-2 outline-offset-2 !outline-outline" // react-select sets outline to "0!important" so important is necessary
                 : ""
@@ -179,6 +191,7 @@ const AppMultiSelect = forwardRef(function AppMultiSelect(
         }}
         closeMenuOnSelect={!isMulti}
         defaultValue={defaultValue}
+        isDisabled={disabled}
         hideSelectedOptions={false}
         isClearable
         isMulti={isMulti}
