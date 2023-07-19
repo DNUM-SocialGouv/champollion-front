@@ -4,6 +4,11 @@ import { Option } from "../components/AppMultiSelect"
 import { AppError, isAppError } from "./errors"
 import { JobMergedBadge } from "./contrats"
 
+export type MergeOptionObject = {
+  id: number | string
+  mergedOptions: Option[]
+}
+
 export const initJobOptions = (postes: EtablissementPoste[] | AppError) => {
   let options: Option[] = []
   if (!isAppError(postes)) {

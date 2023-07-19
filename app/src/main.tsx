@@ -27,6 +27,10 @@ import ETT, { loader as ettLoader } from "./routes/ett"
 import CGU, { loader as cguLoader } from "./routes/cgu"
 import Terms, { loader as termsLoader } from "./routes/terms"
 import PersonalData, { loader as personalDataLoader } from "./routes/personalData"
+import Labellisation, {
+  loader as labellisationLoader,
+  action as labellisationAction,
+} from "./routes/labellisation"
 
 // set localStorage expiration to 2 weeks (in seconds)
 ls.config.ttl = 1209600
@@ -116,6 +120,13 @@ const router = createBrowserRouter([
         element: <PersonalData />,
         errorElement: <Error />,
         loader: personalDataLoader,
+      },
+      {
+        path: "labellisation",
+        element: <Labellisation />,
+        errorElement: <Error />,
+        action: labellisationAction,
+        loader: labellisationLoader,
       },
     ],
   },

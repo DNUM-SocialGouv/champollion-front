@@ -23,6 +23,8 @@ fileignoreconfig:
   checksum: 320f195b51c0db2add624af322095ada208d51c77c2800ab6d5c81fc8e2fac1f
 - filename: app/src/routes/ett.tsx
   checksum: 6f6f88de3dcd5e7df5be553e884f21f09844443e7b9eb35e4d31d3d571506bc7
+- filename: app/src/routes/labellisation.tsx
+  checksum: 0ac5e095aeb96efaa63c70321c4fd0b883e83e70862a3525fdb0bd19b53a88e4
 - filename: src/components/AppTable.tsx
   checksum: 1849f36f5279b09b4bb3d34271616b44f5b9c405357b5029fbbd2cdd62dd28c8
 - filename: src/components/EtabFilters.tsx

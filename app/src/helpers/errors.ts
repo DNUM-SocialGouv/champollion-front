@@ -76,6 +76,13 @@ const isApiError = (x: unknown): x is ApiError => {
 
 const getErrorMessage = (error: unknown) => {
   let message, messageFr
+  if (error && typeof error === "object" && "message" in error) {
+    message = (error as { message: string }).message
+  }
+  if (error && typeof error === "object" && "messageFr" in error) {
+    messageFr = (error as { messageFr: string }).messageFr
+  }
+
   if (isApiError(error)) {
     const params: ErrorParams = {
       field: error.context
