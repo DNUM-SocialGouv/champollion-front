@@ -10,16 +10,17 @@ import ls from "localstorage-slim"
 import { v4 as uuid } from "uuid"
 
 import { getEtablissementsType, postPostes } from "../../api"
+import { EtablissementPoste } from "../../api/types"
 import { errorWording, isAppError } from "../../helpers/errors"
+import { findDuplicates, formatLocalMerges } from "../../helpers/format"
+import { JobMergedBadge } from "../../helpers/contrats"
+import { MergeOptionObject } from "../../helpers/postes"
 
 import { Alert, AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Tile } from "@codegouvfr/react-dsfr/Tile"
 import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
-import { findDuplicates, formatLocalMerges } from "../../helpers/format"
-import { EtablissementPoste } from "../../api/types"
-import { JobMergedBadge } from "../../helpers/contrats"
 
 type EtabPostesAction = {
   message?: string
@@ -31,11 +32,6 @@ type EtabPostesLoader = {
   jobList: EtablissementPoste[]
   options: Option[]
   savedMerges: MergeOptionObject[]
-}
-
-type MergeOptionObject = {
-  id: number | string
-  mergedOptions: Option[]
 }
 
 export async function action({
