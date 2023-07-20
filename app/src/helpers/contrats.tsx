@@ -182,10 +182,13 @@ const formatContrats = (
       const motive =
         contrat.codeNatureContrat === "01" ? "n/a" : contrat.libelleMotifRecours
 
+      let employee = `${contrat.prenoms} ${contrat.nomFamille}`
+      if (contrat.dateNaissance) employee += ` (${contrat.dateNaissance})`
+
       return {
         id: contrat.id,
         jobTitle,
-        employee: `${contrat.prenoms} ${contrat.nomFamille}`,
+        employee,
         startDate,
         endDate,
         contractType: getContractType(contrat.codeNatureContrat),

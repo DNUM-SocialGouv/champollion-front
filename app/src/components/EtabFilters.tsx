@@ -8,6 +8,8 @@ import { contractNatures, motiveOptions } from "../helpers/contrats"
 import Input from "@codegouvfr/react-dsfr/Input"
 import Checkbox from "@codegouvfr/react-dsfr/Checkbox"
 import Button from "@codegouvfr/react-dsfr/Button"
+import { Select } from "@codegouvfr/react-dsfr/Select"
+
 import AppMultiSelect, { MultiSelectInstance, Option } from "./AppMultiSelect"
 
 type EtabFiltersProps = {
@@ -17,6 +19,8 @@ type EtabFiltersProps = {
   natures?: string[]
   jobs?: number[]
   jobOptions?: Option[]
+  employee?: number
+  employeeOptions?: Option[]
   disabledFilters?: Record<string, boolean>
 }
 
@@ -33,6 +37,8 @@ export default function EtabFilters({
   motives,
   jobs,
   jobOptions,
+  employee,
+  employeeOptions,
   disabledFilters = defaultDisabledFilters,
 }: EtabFiltersProps) {
   const startDateRef = useRef<HTMLInputElement>(null)
@@ -40,11 +46,15 @@ export default function EtabFilters({
   const naturesRef = useRef<HTMLFieldSetElement>(null)
   const motivesRef = useRef<MultiSelectInstance<Option> | null>(null)
   const jobsRef = useRef<MultiSelectInstance<Option> | null>(null)
+  const employeesRef = useRef<HTMLSelectElement | null>(null)
 
   const [searchParams] = useSearchParams()
   const otherParamsToKeep: [string, string][] = []
   for (const entry of searchParams.entries()) {
-    if (!["debut", "fin", "motif", "nature", "poste", "page"].includes(entry[0]))
+    if (
+      !["debut", "fin", "motif", "nature", "poste", "page", "salarie"].includes(entry[0])
+    )
+      // keep filters outside of EtabFilters, such as unit in recours.tsx
       otherParamsToKeep.push(entry)
   }
 
@@ -131,6 +141,12 @@ export default function EtabFilters({
     }
   }, [jobs])
 
+  useEffect(() => {
+    if (employee && employeesRef.current) {
+      employeesRef.current.value = String(employee)
+    }
+  }, [employee])
+
   return (
     <Form
       reloadDocument // Todo remove reload document & fix filter reactivity (when nature or date change, contractDates are empty)
@@ -192,6 +208,27 @@ export default function EtabFilters({
           options={jobOptions ?? []}
           defaultValue={jobSelectedOptions ?? []}
         />
+        {Boolean(employeeOptions) && (
+          <Select
+            className="fr-col-12 fr-col-lg-6 fr-mb-1w"
+            label="Salarié"
+            nativeSelectProps={{
+              name: "salarie",
+              defaultValue: 0,
+              ref: employeesRef,
+            }}
+          >
+            <option key={0} value={0} className="italic text-tx-disabled-grey">
+              Sélectionnez un salarié
+            </option>
+            {employeeOptions &&
+              employeeOptions.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+          </Select>
+        )}
       </div>
       {otherParamsToKeep.length > 0 &&
         otherParamsToKeep.map((param) => (

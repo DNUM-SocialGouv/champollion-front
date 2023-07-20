@@ -69,11 +69,16 @@ const oneYearAgo = dayjs().subtract(1, "year").format("YYYY-MM-DD")
 const getQueryAsString = (searchParams: URLSearchParams, key: string) =>
   decodeURIComponent(searchParams.get(key) ?? "")
 
+const getQueryAsNumber = (searchParams: URLSearchParams, key: string) => {
+  const query = decodeURIComponent(searchParams.get(key) ?? "")
+  return query ? Number(query) : undefined
+}
+
 const getQueryAsArray = (searchParams: URLSearchParams, key: string) =>
   searchParams
     .getAll(key)
-    .filter(Boolean)
     .map((value) => decodeURIComponent(value))
+    .filter(Boolean)
 
 const getQueryAsNumberArray = (searchParams: URLSearchParams, key: string) =>
   searchParams
@@ -144,6 +149,18 @@ export const formatLocalOpenDays = (
   return formattedOpenDaysCode
 }
 
+export const addArrayParams = <T>(
+  params: string,
+  array: Array<T> | undefined,
+  key: string
+) => {
+  if (array && array.length > 0) {
+    const employeesParam = array.map((element) => `${key}=${element}`).join("&")
+    params += `&${employeesParam}`
+  }
+  return params
+}
+
 export {
   arrayEquals,
   capitalize,
@@ -151,6 +168,7 @@ export {
   findDuplicates,
   formatDate,
   getQueryAsArray,
+  getQueryAsNumber,
   getQueryAsNumberArray,
   getQueryAsString,
   getQueryPage,
