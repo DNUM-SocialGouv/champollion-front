@@ -1,4 +1,5 @@
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
+import { addArrayParams } from "../../helpers/format"
 import api from "../config"
 import { Infractions } from "../types"
 
@@ -24,20 +25,11 @@ export const postCarences = async ({
   try {
     let params = `etablissement_id=${id}`
 
-    if (postesIds && postesIds.length > 0) {
-      const postesParam = postesIds.map((poste) => `poste_ids=${poste}`).join("&")
-      params += `&${postesParam}`
-    }
-    if (openDaysCodes && openDaysCodes.length > 0) {
-      const openDaysParam = openDaysCodes
-        .map((day) => `jour_ouverture_ids=${day}`)
-        .join("&")
-      params += `&${openDaysParam}`
-    }
-
     if (startDate) params += `&start_date=${startDate}`
     if (endDate) params += `&end_date=${endDate}`
     if (legislation) params += `&legistation_carence=${legislation}`
+    params = addArrayParams(params, postesIds, "poste_ids")
+    params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
 
     let body = {}
 

@@ -2,6 +2,7 @@ import api from "../config"
 import { EttContrat, EtuContrat, MetaData } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import { motivesCodeDict } from "../../helpers/contrats"
+import { addArrayParams } from "../../helpers/format"
 
 type ContratsParams = {
   id: number
@@ -10,6 +11,7 @@ type ContratsParams = {
   motives?: number[]
   natures?: string[]
   postesIds?: number[]
+  employeesIds?: number[]
   page?: number
   per?: number
   mergedPostesIds?: number[][]
@@ -22,6 +24,7 @@ export const postContratsEtu = async ({
   motives,
   natures,
   postesIds,
+  employeesIds,
   mergedPostesIds,
   page = 1,
   per = 20,
@@ -43,17 +46,9 @@ export const postContratsEtu = async ({
       params += `&${motivesParam}`
     }
 
-    if (natures && natures.length > 0) {
-      const naturesParam = natures
-        .map((nature) => `nature_contrat_ids=${nature}`)
-        .join("&")
-      params += `&${naturesParam}`
-    }
-
-    if (postesIds && postesIds.length > 0) {
-      const postesParam = postesIds.map((poste) => `poste_ids=${poste}`).join("&")
-      params += `&${postesParam}`
-    }
+    params = addArrayParams(params, natures, "nature_contrat_ids")
+    params = addArrayParams(params, postesIds, "poste_ids")
+    params = addArrayParams(params, employeesIds, "salarie_ids")
 
     if (page) params += `&page=${page}`
     if (per) params += `&per_page=${per}`

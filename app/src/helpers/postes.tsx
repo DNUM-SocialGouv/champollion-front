@@ -1,4 +1,4 @@
-import { EtablissementPoste } from "../api/types"
+import { EtablissementPoste, Salarie } from "../api/types"
 import { components, MultiValueProps, OptionProps, SingleValueProps } from "react-select"
 import { Option } from "../components/AppMultiSelect"
 import { AppError, isAppError } from "./errors"
@@ -17,6 +17,20 @@ export const initJobOptions = (postes: EtablissementPoste[] | AppError) => {
         value: poste.posteId,
         label: poste.libellePoste,
         display: poste.merged ? "merge" : "",
+      } as Option
+    })
+  }
+
+  return options
+}
+
+export const initEmployeeOptions = (employees: Salarie[] | AppError) => {
+  let options: Option[] = []
+  if (!isAppError(employees)) {
+    options = employees.map((employee) => {
+      return {
+        value: employee.salarieId,
+        label: `${employee.nomFamille} ${employee.prenoms} – ${employee.dateNaissance}`,
       } as Option
     })
   }

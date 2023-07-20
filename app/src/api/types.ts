@@ -31,11 +31,19 @@ export type EtablissementPoste = {
   merged: MergedCode
 }
 
+export type Salarie = {
+  salarieId: number
+  nomFamille: string
+  prenoms: string
+  dateNaissance: string
+}
+
 export type EtuContrat = {
   id: number
   nomFamille: string | null
   nomUsage: string | null
   prenoms: string
+  dateNaissance: string | null
   posteId: string | null
   libellePoste: string
   merged: MergedCode

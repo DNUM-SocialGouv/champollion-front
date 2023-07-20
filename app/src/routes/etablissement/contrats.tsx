@@ -11,20 +11,21 @@ import {
   motiveOptions,
   contractNatures,
 } from "../../helpers/contrats"
-import { EtablissementPoste, EtuContrat, MetaData } from "../../api/types"
+import { EtablissementPoste, EtuContrat, MetaData, Salarie } from "../../api/types"
 import { AppError, errorWording, isAppError } from "../../helpers/errors"
 import {
   createFiltersQuery,
   formatDate,
   formatLocalMerges,
   getQueryAsArray,
+  getQueryAsNumber,
   getQueryAsNumberArray,
   getQueryAsString,
   getQueryPage,
   oneYearAgo,
   today,
 } from "../../helpers/format"
-import { initJobOptions } from "../../helpers/postes"
+import { initEmployeeOptions, initJobOptions } from "../../helpers/postes"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
@@ -34,6 +35,7 @@ import { Tile } from "@codegouvfr/react-dsfr/Tile"
 import AppTable from "../../components/AppTable"
 import EtabFilters from "../../components/EtabFilters"
 import { DateStatusBadge } from "../../helpers/contrats"
+import { getSalaries } from "../../api/routes/salaries"
 
 export async function loader({
   params,
@@ -46,6 +48,7 @@ export async function loader({
   const queryMotives = getQueryAsArray(searchParams, "motif")
   const queryNature = getQueryAsArray(searchParams, "nature")
   const queryJobs = getQueryAsNumberArray(searchParams, "poste")
+  const queryEmployee = getQueryAsNumber(searchParams, "salarie")
   const page = getQueryPage(searchParams)
   const motives = queryMotives.map((motive) => Number(motive))
 
@@ -62,6 +65,7 @@ export async function loader({
   const formattedMergesIds = formatLocalMerges(localMergesIds)
 
   const postes = await postPostes(etabType.id, formattedMergesIds)
+  const employeesList = await getSalaries(etabType.id)
   const contratsData = await postContratsEtu({
     startDate: queryStartDate,
     endDate: queryEndDate,
@@ -69,6 +73,7 @@ export async function loader({
     motives,
     id: etabType.id,
     postesIds: queryJobs,
+    employeesIds: queryEmployee ? [queryEmployee] : undefined,
     page,
     mergedPostesIds: formattedMergesIds,
   })
@@ -77,6 +82,8 @@ export async function loader({
     contratsData,
     page,
     postes,
+    employeesList,
+    queryEmployee,
     queryEndDate,
     queryStartDate,
     queryMotives,
@@ -95,6 +102,8 @@ type CarenceContratsLoader = {
       }
   page: number
   postes: AppError | EtablissementPoste[]
+  employeesList: AppError | Salarie[]
+  queryEmployee?: number
   queryStartDate: string
   queryEndDate: string
   queryMotives: string[]
@@ -108,6 +117,8 @@ export default function EtabContrats() {
     contratsData,
     page,
     postes,
+    employeesList,
+    queryEmployee,
     queryEndDate,
     queryMotives,
     queryNature,
@@ -124,6 +135,7 @@ export default function EtabContrats() {
   })
 
   const options = initJobOptions(postes)
+  const employeesOptions = initEmployeeOptions(employeesList)
 
   const formattedDates = {
     startDate: formatDate(queryStartDate),
@@ -144,6 +156,12 @@ export default function EtabContrats() {
               .map((jobId) => options.find((x) => x.value === Number(jobId))?.label)
               .filter(Boolean)
               .join(", ")}
+          </li>
+        )}
+        {Boolean(queryEmployee) && (
+          <li>
+            Salarié sélectionné :{" "}
+            {employeesOptions.find((x) => x.value === Number(queryEmployee))?.label}
           </li>
         )}
         {queryMotives.length > 0 && (
@@ -187,6 +205,8 @@ export default function EtabContrats() {
         motives={queryMotives}
         jobs={queryJobs}
         jobOptions={options}
+        employee={queryEmployee}
+        employeeOptions={employeesOptions}
       />
       <div className="flex justify-between">
         <h2 className="fr-text--xl fr-mb-1w">Liste des contrats</h2>
