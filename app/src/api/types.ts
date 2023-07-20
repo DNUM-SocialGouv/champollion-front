@@ -36,7 +36,6 @@ export type EtuContrat = {
   nomFamille: string | null
   nomUsage: string | null
   prenoms: string
-  civilite?: string | null
   posteId: string | null
   libellePoste: string
   merged: MergedCode
@@ -96,7 +95,6 @@ export type DateRange = { startDate: string; endDate: string }
 
 export type IllegalContract = {
   contratId: number
-  civilite?: string | null
   nomFamille: string | null
   prenoms: string
   dateDebut: string
@@ -115,7 +113,6 @@ export type IllegalContract = {
 export type CarenceContract = {
   carenceId: number
   contratId: number
-  civilite?: string | null
   nomFamille: string
   prenoms: string
   dateDebut: string

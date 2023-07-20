@@ -56,13 +56,10 @@ export const formatInfractions = (infractions: Infractions): FormattedInfraction
 }
 
 const formatIllegalContract = (contract: IllegalContract): FormattedIllegalContract => {
-  let employee = `${contract.prenoms} ${contract.nomFamille?.toUpperCase()}`
-  if (contract.civilite) employee = contract.civilite + " " + employee
-
   return {
     id: contract.contratId,
     jobTitle: contract.libellePoste,
-    employee,
+    employee: `${contract.prenoms} ${contract.nomFamille}`,
     startDate: formatDate(contract.dateDebut),
     endDate: formatDate(contract.dateFin),
   }
@@ -74,7 +71,7 @@ const formatCarenceContracts = (
   return previousContracts.map((contract): FormattedCarenceContract => {
     return {
       id: contract.carenceId,
-      employee: `${contract.prenoms} ${contract.nomFamille?.toUpperCase()}`,
+      employee: `${contract.prenoms} ${contract.nomFamille}`,
       startDate: formatDate(contract.dateDebut),
       endDate: formatDate(contract.dateFin),
       delay: `${contract.dureeCarence} ${unitCarence[contract.unitCarence]}`,
