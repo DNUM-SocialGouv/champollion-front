@@ -185,7 +185,7 @@ const formatContrats = (
       return {
         id: contrat.id,
         jobTitle,
-        employee: `${contrat.prenoms} ${contrat.nomFamille?.toUpperCase()}`,
+        employee: `${contrat.prenoms} ${contrat.nomFamille}`,
         startDate,
         endDate,
         contractType: getContractType(contrat.codeNatureContrat),
