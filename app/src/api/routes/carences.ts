@@ -27,7 +27,7 @@ export const postCarences = async ({
 
     if (startDate) params += `&start_date=${startDate}`
     if (endDate) params += `&end_date=${endDate}`
-    if (legislation) params += `&legistation_carence=${legislation}`
+    if (legislation) params += `&legislation_carence=${legislation}`
     params = addArrayParams(params, postesIds, "poste_ids")
     params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
 
