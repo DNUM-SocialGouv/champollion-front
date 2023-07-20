@@ -68,7 +68,9 @@ const isAppError = (x: unknown): x is AppError => {
 
 const isApiError = (x: unknown): x is ApiError => {
   return Boolean(
-    "message" in (x as ApiError) &&
+    x &&
+      typeof x === "object" &&
+      "message" in (x as ApiError) &&
       "type" in (x as ApiError) &&
       "context" in (x as ApiError)
   )
