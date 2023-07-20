@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react"
+import { FormEvent, Fragment, useState } from "react"
 import {
   ActionFunctionArgs,
   Form,
@@ -48,15 +48,6 @@ export async function action({
   let message = ""
   if (formattedJobMergesList.some((merge) => merge.length === 1))
     message = "Les fusions ne contenant qu'un seul libellé ne sont pas prises en compte."
-
-  const duplicatedPostes = findDuplicates(validJobMergesList.flat())
-  if (duplicatedPostes.length > 0)
-    return {
-      message: `Vous ne pouvez pas sélectionner un même libellé dans des fusions différentes :
-      ${duplicatedPostes.join(", ")}`,
-      severity: "error",
-      title: "Erreur",
-    }
 
   ls.set(`etab.${params.siret}.merges`, validJobMergesList)
   return {
@@ -131,6 +122,12 @@ export default function EtabPostes() {
   const savedState = useActionData() as EtabPostesAction
   const { jobList, options, savedMerges } = useLoaderData() as EtabPostesLoader
   const [merges, setMerges] = useState(savedMerges)
+  const [alertState, setAlertState] = useState(savedState)
+  const [prevSavedState, setPrevSavedState] = useState(savedState)
+  if (savedState !== prevSavedState) {
+    setPrevSavedState(savedState)
+    setAlertState(savedState)
+  }
 
   const { PostesListModal, postesListModalButtonProps } = createModal({
     name: "PostesList",
@@ -172,7 +169,24 @@ export default function EtabPostes() {
         </PostesListModal>
         <h2 className="fr-text--xl fr-mb-1w">Fusion de postes</h2>
         <hr />
-        <Form className="flex flex-col" method="post">
+        <Form
+          className="flex flex-col"
+          method="post"
+          onSubmit={(event: FormEvent) => {
+            const duplicatedPostes = findDuplicates(
+              merges.map((merge) => merge.mergedOptions).flat()
+            )
+            if (duplicatedPostes.length > 0) {
+              event.preventDefault()
+              setAlertState({
+                message: `Vous ne pouvez pas sélectionner un même libellé dans des fusions différentes :
+        ${duplicatedPostes.map((poste) => poste.label).join(", ")}`,
+                severity: "error",
+                title: "Erreur",
+              })
+            }
+          }}
+        >
           <p>
             Vous pouvez choisir de fusionner certains libellés de postes correspondant à
             la même identité de poste.
@@ -239,14 +253,17 @@ export default function EtabPostes() {
           >
             Ajouter une fusion
           </Button>
-          {savedState && Object.keys(savedState).length > 0 && (
-            <Alert
-              className="fr-mb-2w"
-              description={savedState?.message}
-              severity={savedState.severity}
-              title={savedState.title}
-            />
-          )}
+          {alertState &&
+            typeof alertState === "object" &&
+            Object.keys(alertState).length > 0 && (
+              <Alert
+                className="fr-mb-2w"
+                description={alertState?.message}
+                severity={alertState.severity}
+                title={alertState.title}
+              />
+            )}
+
           <div className="fr-mt-4w self-end">
             <Button type="submit">Sauvegarder</Button>
           </div>
