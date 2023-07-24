@@ -3,6 +3,7 @@ import { LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router
 import ls from "localstorage-slim"
 
 import { getEtablissementsType, postPostes, postContratsEtu } from "../../api"
+import { getSalaries } from "../../api/routes/salaries"
 import {
   formatContrats,
   headers,
@@ -26,16 +27,16 @@ import {
   today,
 } from "../../helpers/format"
 import { initEmployeeOptions, initJobOptions } from "../../helpers/postes"
+import { DateStatusBadge } from "../../helpers/contrats"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
-import { Tile } from "@codegouvfr/react-dsfr/Tile"
+
 import AppTable from "../../components/AppTable"
 import EtabFilters from "../../components/EtabFilters"
-import { DateStatusBadge } from "../../helpers/contrats"
-import { getSalaries } from "../../api/routes/salaries"
+import AppRebound from "../../components/AppRebound"
 
 export async function loader({
   params,
@@ -189,8 +190,8 @@ export default function EtabContrats() {
     ) as NonNullable<ReactNode>
   }
 
-  const { ExportModal, exportModalButtonProps } = createModal({
-    name: "Export",
+  const modal = createModal({
+    id: "export-modal",
     isOpenedByDefault: false,
   })
 
@@ -211,7 +212,7 @@ export default function EtabContrats() {
       <div className="flex justify-between">
         <h2 className="fr-text--xl fr-mb-1w">Liste des contrats</h2>
         <Button
-          {...exportModalButtonProps}
+          onClick={() => modal.open()}
           iconId="fr-icon-download-line"
           priority="tertiary no outline"
           type="button"
@@ -219,12 +220,12 @@ export default function EtabContrats() {
           Exporter
         </Button>
       </div>
-      <ExportModal title="Fonctionnalité d'export à venir">
+      <modal.Component title="Fonctionnalité d'export à venir">
         <p>La fonctionnalité d'export est en cours de développement.</p>
         <p>
           Elle permettra de télécharger les données des contrats sous format tableur .csv.
         </p>
-      </ExportModal>
+      </modal.Component>
       <hr />
       <p>Vous pouvez corriger les dates d'après vos observations.</p>
       <div className="fr-px-3w fr-py-2w fr-mb-2w bg-bg-alt-greyyyy border border-solid border-bd-default-grey">
@@ -278,9 +279,8 @@ export default function EtabContrats() {
       <hr />
       <div className="fr-grid-row fr-grid-row--gutters">
         <div className="fr-col-12 fr-col-md-4">
-          <Tile
+          <AppRebound
             desc="Lancer le diagnostic d'emploi permanent sur les contrats sélectionnés"
-            enlargeLink
             linkProps={{
               to: {
                 pathname: "../recours-abusif",
@@ -291,9 +291,8 @@ export default function EtabContrats() {
           />
         </div>
         <div className="fr-col-12 fr-col-md-4">
-          <Tile
+          <AppRebound
             desc="Lancer le diagnostic d'anomalies des délais de carence sur les contrats sélectionnés"
-            enlargeLink
             linkProps={{
               to: {
                 pathname: "../carence",

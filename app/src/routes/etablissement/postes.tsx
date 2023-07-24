@@ -19,7 +19,8 @@ import { MergeOptionObject } from "../../helpers/postes"
 import { Alert, AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
-import { Tile } from "@codegouvfr/react-dsfr/Tile"
+
+import AppRebound from "../../components/AppRebound"
 import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
 
 type EtabPostesAction = {
@@ -129,8 +130,8 @@ export default function EtabPostes() {
     setAlertState(savedState)
   }
 
-  const { PostesListModal, postesListModalButtonProps } = createModal({
-    name: "PostesList",
+  const modal = createModal({
+    id: "job-list-modal",
     isOpenedByDefault: false,
   })
 
@@ -143,17 +144,10 @@ export default function EtabPostes() {
       <div className="fr-mb-3w">
         <h2 className="fr-text--xl fr-mb-1w">Etat des lieux des postes</h2>
         <hr />
-        <Button {...postesListModalButtonProps} className="fr-mb-4w" type="button">
+        <Button onClick={() => modal.open()} className="fr-mb-4w">
           Consulter la liste des libellés de poste
         </Button>
-        <PostesListModal
-          title="Liste des postes de l'établissement"
-          buttons={[
-            {
-              children: "Fermer",
-            },
-          ]}
-        >
+        <modal.Component title="Liste des postes de l'établissement">
           <ul className="fr-pl-0">
             {jobList.map((job) => {
               return (
@@ -166,7 +160,7 @@ export default function EtabPostes() {
               )
             })}
           </ul>
-        </PostesListModal>
+        </modal.Component>
         <h2 className="fr-text--xl fr-mb-1w">Fusion de postes</h2>
         <hr />
         <Form
@@ -268,14 +262,12 @@ export default function EtabPostes() {
             <Button type="submit">Sauvegarder</Button>
           </div>
         </Form>
-
         <h2 className="fr-text--xl fr-mb-1w fr-mt-3w">Actions</h2>
         <hr />
         <div className="fr-grid-row fr-grid-row--gutters">
           <div className="fr-col-12 fr-col-md-4">
-            <Tile
+            <AppRebound
               desc="Lancer le diagnostic d'emploi permanent"
-              enlargeLink
               linkProps={{
                 to: "../recours-abusif",
               }}
@@ -283,9 +275,8 @@ export default function EtabPostes() {
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
-            <Tile
+            <AppRebound
               desc="Lancer le diagnostic d'anomalie des délais de carence"
-              enlargeLink
               linkProps={{
                 to: { pathname: "../carence" },
               }}

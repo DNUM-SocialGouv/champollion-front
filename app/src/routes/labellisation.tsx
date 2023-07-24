@@ -106,8 +106,8 @@ export default function Labellisation() {
     (poste) => ({ value: poste.posteId, label: poste.libellePoste } as Option)
   )
 
-  const { PostesListModal, postesListModalButtonProps } = createModal({
-    name: "PostesList",
+  const modal = createModal({
+    id: "job-list-modal",
     isOpenedByDefault: false,
   })
 
@@ -137,21 +137,10 @@ export default function Labellisation() {
             Voici une liste de libellés d'un nouvel établissement à labelliser.
           </p>
 
-          <Button {...postesListModalButtonProps} className="fr-mb-4w" type="button">
+          <Button onClick={() => modal.open()} className="fr-mb-4w">
             Consulter la liste des libellés de poste
           </Button>
-          <p className="italic">
-            ⚠️ Les modifications seront perdues en cas de rechargement de la page ou en
-            l'absence de validation.
-          </p>
-          <PostesListModal
-            title="Liste des postes de l'établissement"
-            buttons={[
-              {
-                children: "Fermer",
-              },
-            ]}
-          >
+          <modal.Component title="Liste des postes de l'établissement">
             <ul className="fr-pl-0">
               {jobList.map((job) => {
                 return (
@@ -161,7 +150,11 @@ export default function Labellisation() {
                 )
               })}
             </ul>
-          </PostesListModal>
+          </modal.Component>
+          <p className="italic">
+            ⚠️ Les modifications seront perdues en cas de rechargement de la page ou en
+            l'absence de validation.
+          </p>
 
           <LabellisationForm key={etabId} etabId={etabId} options={options} />
         </div>

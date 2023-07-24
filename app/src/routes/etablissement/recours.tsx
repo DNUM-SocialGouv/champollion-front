@@ -34,8 +34,9 @@ import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Select } from "@codegouvfr/react-dsfr/Select"
 import { Table } from "@codegouvfr/react-dsfr/Table"
-import { Tile } from "@codegouvfr/react-dsfr/Tile"
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
+
+import AppRebound from "../../components/AppRebound"
 import EffectifBarChart from "../../components/EffectifBarChart"
 import EtabFilters from "../../components/EtabFilters"
 
@@ -130,8 +131,8 @@ export default function EtabRecours() {
     setEffectifs(initialEffectifs)
   }
 
-  const { ExportModal, exportModalButtonProps } = createModal({
-    name: "Export",
+  const modal = createModal({
+    id: "export-modal",
     isOpenedByDefault: false,
   })
 
@@ -152,7 +153,7 @@ export default function EtabRecours() {
         <div className="flex justify-between">
           <h2 className="fr-text--xl fr-mb-1w">Évolution des effectifs</h2>
           <Button
-            {...exportModalButtonProps}
+            onClick={() => modal.open()}
             iconId="fr-icon-download-line"
             priority="tertiary no outline"
             type="button"
@@ -160,7 +161,7 @@ export default function EtabRecours() {
             Exporter
           </Button>
         </div>
-        <ExportModal title="Fonctionnalité d'export à venir">
+        <modal.Component title="Fonctionnalité d'export à venir">
           <p>
             La fonctionnalité d'export est en cours de développement. Elle permettra de
             copier l'histogramme en tant qu'image.
@@ -174,7 +175,7 @@ export default function EtabRecours() {
             via le bouton <i>Copier le tableau</i>, et le coller dans un logiciel de
             traitement de texte ou un tableur.
           </p>
-        </ExportModal>
+        </modal.Component>
         <hr />
 
         {isAppError(effectifs) ? (
@@ -192,9 +193,8 @@ export default function EtabRecours() {
         <hr />
         <div className="fr-grid-row fr-grid-row--gutters">
           <div className="fr-col-12 fr-col-md-4">
-            <Tile
+            <AppRebound
               desc="Consulter les contrats correspondant à l'histogramme"
-              enlargeLink
               linkProps={{
                 to: {
                   pathname: "../contrats",
@@ -205,9 +205,8 @@ export default function EtabRecours() {
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
-            <Tile
+            <AppRebound
               desc="Fusionner plusieurs libellés du même poste"
-              enlargeLink
               linkProps={{
                 to: "../postes",
               }}
@@ -215,9 +214,8 @@ export default function EtabRecours() {
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
-            <Tile
+            <AppRebound
               desc="Lancer le diagnostic d'anomalie des délais de carence sur les contrats sélectionnés"
-              enlargeLink
               linkProps={{
                 to: {
                   pathname: "../carence",
