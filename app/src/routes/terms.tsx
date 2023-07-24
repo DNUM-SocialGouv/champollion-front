@@ -1,6 +1,6 @@
 import { useLoaderData } from "react-router-dom"
 
-import { getTerms } from "../api/routes/juridiques"
+import { getTerms } from "../api"
 import { AppError, isAppError } from "../helpers/errors"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"

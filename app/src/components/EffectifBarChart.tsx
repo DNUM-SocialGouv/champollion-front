@@ -1,4 +1,7 @@
 import { useMemo, useState } from "react"
+
+import { capitalize } from "../helpers/format"
+
 import {
   Bar,
   BarChart,
@@ -14,7 +17,6 @@ import {
 import { TooltipProps } from "recharts/types/component/Tooltip"
 import { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent"
 import { DataKey } from "recharts/types/util/types"
-import { capitalize } from "../helpers/format"
 
 type EffectifBarChartType = {
   isStacked: boolean

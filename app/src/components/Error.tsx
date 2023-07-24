@@ -1,6 +1,6 @@
 import { useRouteError } from "react-router-dom"
-import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup"
 
+import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup"
 import artworkConnectionLost from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/system/connection-lost.svg"
 import artworkBackground from "@codegouvfr/react-dsfr/dsfr/artwork/background/ovoid.svg"
 

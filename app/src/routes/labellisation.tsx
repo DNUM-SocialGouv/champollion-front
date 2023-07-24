@@ -5,7 +5,8 @@ import { v4 as uuid } from "uuid"
 import {
   getLabellisations as getRandomJobs,
   postLabellisations as postLabellisationsMerges,
-} from "../api/routes/labellisations"
+} from "../api"
+import { EtablissementPoste } from "../api/types"
 import { getErrorMessage, isAppError } from "../helpers/errors"
 import { MergeOptionObject } from "../helpers/postes"
 import { findDuplicates } from "../helpers/format"
@@ -13,8 +14,8 @@ import { findDuplicates } from "../helpers/format"
 import { Alert, AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
+
 import AppMultiSelect, { Option } from "../components/AppMultiSelect"
-import { EtablissementPoste } from "../api/types"
 
 type LabellisationAction = {
   message?: string
@@ -106,8 +107,8 @@ export default function Labellisation() {
     (poste) => ({ value: poste.posteId, label: poste.libellePoste } as Option)
   )
 
-  const { PostesListModal, postesListModalButtonProps } = createModal({
-    name: "PostesList",
+  const modal = createModal({
+    id: "job-list-modal",
     isOpenedByDefault: false,
   })
 
@@ -137,21 +138,10 @@ export default function Labellisation() {
             Voici une liste de libellés d'un nouvel établissement à labelliser.
           </p>
 
-          <Button {...postesListModalButtonProps} className="fr-mb-4w" type="button">
+          <Button onClick={() => modal.open()} className="fr-mb-4w">
             Consulter la liste des libellés de poste
           </Button>
-          <p className="italic">
-            ⚠️ Les modifications seront perdues en cas de rechargement de la page ou en
-            l'absence de validation.
-          </p>
-          <PostesListModal
-            title="Liste des postes de l'établissement"
-            buttons={[
-              {
-                children: "Fermer",
-              },
-            ]}
-          >
+          <modal.Component title="Liste des postes de l'établissement">
             <ul className="fr-pl-0">
               {jobList.map((job) => {
                 return (
@@ -161,7 +151,11 @@ export default function Labellisation() {
                 )
               })}
             </ul>
-          </PostesListModal>
+          </modal.Component>
+          <p className="italic">
+            ⚠️ Les modifications seront perdues en cas de rechargement de la page ou en
+            l'absence de validation.
+          </p>
 
           <LabellisationForm key={etabId} etabId={etabId} options={options} />
         </div>

@@ -8,11 +8,13 @@ import {
   useNavigate,
   useOutletContext,
 } from "react-router-dom"
+
 import { getEtablissementsType } from "../../api"
+import { errorWording, isAppError } from "../../helpers/errors"
 
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs"
+
 import EtabBanner from "../../components/EtabBanner"
-import { errorWording, isAppError } from "../../helpers/errors"
 
 type EtabLoader = {
   etabId: number

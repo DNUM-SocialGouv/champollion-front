@@ -2,6 +2,8 @@ import ls from "localstorage-slim"
 import { LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router-dom"
 import { Fragment } from "react"
 
+import { getEtablissementsType, postCarences, postPostes } from "../../api"
+import { EtablissementPoste, Infractions } from "../../api/types"
 import {
   FormattedInfraction,
   FormattedCarenceContract,
@@ -9,7 +11,6 @@ import {
   getLegislationOptionFromKey,
   legislationOptions,
 } from "../../helpers/carence"
-import { postCarences } from "../../api/routes/carences"
 import {
   createFiltersQuery,
   formatLocalMerges,
@@ -20,10 +21,6 @@ import {
   today,
 } from "../../helpers/format"
 import { AppError, errorWording, isAppError } from "../../helpers/errors"
-import { getEtablissementsType, postPostes } from "../../api"
-import { EtablissementPoste, Infractions } from "../../api/types"
-
-import EtabFilters from "../../components/EtabFilters"
 import { initJobOptions } from "../../helpers/postes"
 
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
@@ -32,8 +29,10 @@ import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Select } from "@codegouvfr/react-dsfr/Select"
-import { Tile } from "@codegouvfr/react-dsfr/Tile"
+
+import AppRebound from "../../components/AppRebound"
 import AppTable, { Header } from "../../components/AppTable"
+import EtabFilters from "../../components/EtabFilters"
 
 export async function loader({
   params,
@@ -117,8 +116,8 @@ export default function EtabCarence() {
     jobs: queryJobs,
   })
 
-  const { ExportModal, exportModalButtonProps } = createModal({
-    name: "Export",
+  const modal = createModal({
+    id: "export-modal",
     isOpenedByDefault: false,
   })
 
@@ -140,8 +139,9 @@ export default function EtabCarence() {
           <h2 className="fr-text--xl fr-mb-1w">
             Infractions potentielles au délai de carence
           </h2>
+
           <Button
-            {...exportModalButtonProps}
+            onClick={() => modal.open()}
             iconId="fr-icon-download-line"
             priority="tertiary no outline"
             type="button"
@@ -149,10 +149,11 @@ export default function EtabCarence() {
             Exporter
           </Button>
         </div>
-        <ExportModal title="Fonctionnalité d'export à venir">
+        <modal.Component title="Fonctionnalité d'export à venir">
           <p>La fonctionnalité d'export est en cours de développement.</p>
           <p>Elle permettra de télécharger les tableaux d'infractions présumées.</p>
-        </ExportModal>
+        </modal.Component>
+
         <hr />
         {isAppError(infractions) ? (
           <Alert
@@ -171,9 +172,8 @@ export default function EtabCarence() {
         <hr />
         <div className="fr-grid-row fr-grid-row--gutters">
           <div className="fr-col-12 fr-col-md-4">
-            <Tile
+            <AppRebound
               desc="Fusionner plusieurs libellés du même poste"
-              enlargeLink
               linkProps={{
                 to: "../postes",
               }}
@@ -181,9 +181,8 @@ export default function EtabCarence() {
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
-            <Tile
+            <AppRebound
               desc="Consulter les contrats analysés"
-              enlargeLink
               linkProps={{
                 to: {
                   pathname: "../contrats",
@@ -194,9 +193,8 @@ export default function EtabCarence() {
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
-            <Tile
+            <AppRebound
               desc="Lancer le diagnostic d'emploi permanent sur les contrats sélectionnés"
-              enlargeLink
               linkProps={{
                 to: {
                   pathname: "../recours-abusif",
