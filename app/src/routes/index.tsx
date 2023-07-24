@@ -1,11 +1,12 @@
+import { useState } from "react"
+import { ActionFunctionArgs, Form, redirect, useActionData } from "react-router-dom"
+
 import { getEtablissementsType } from "../api"
+import { AppError, isAppError } from "../helpers/errors"
+
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Input } from "@codegouvfr/react-dsfr/Input"
-import { Form, redirect, useActionData } from "react-router-dom"
-import { ActionFunctionArgs } from "react-router-dom"
-import { useState } from "react"
-import { AppError, isAppError } from "../helpers/errors"
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData()

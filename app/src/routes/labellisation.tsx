@@ -5,7 +5,8 @@ import { v4 as uuid } from "uuid"
 import {
   getLabellisations as getRandomJobs,
   postLabellisations as postLabellisationsMerges,
-} from "../api/routes/labellisations"
+} from "../api"
+import { EtablissementPoste } from "../api/types"
 import { getErrorMessage, isAppError } from "../helpers/errors"
 import { MergeOptionObject } from "../helpers/postes"
 import { findDuplicates } from "../helpers/format"
@@ -13,8 +14,8 @@ import { findDuplicates } from "../helpers/format"
 import { Alert, AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
+
 import AppMultiSelect, { Option } from "../components/AppMultiSelect"
-import { EtablissementPoste } from "../api/types"
 
 type LabellisationAction = {
   message?: string

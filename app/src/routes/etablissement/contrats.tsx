@@ -2,8 +2,12 @@ import { ReactNode, useState } from "react"
 import { LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router-dom"
 import ls from "localstorage-slim"
 
-import { getEtablissementsType, postPostes, postContratsEtu } from "../../api"
-import { getSalaries } from "../../api/routes/salaries"
+import {
+  getEtablissementsType,
+  getSalaries,
+  postPostes,
+  postContratsEtu,
+} from "../../api"
 import {
   formatContrats,
   headers,

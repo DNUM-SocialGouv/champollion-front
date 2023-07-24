@@ -1,4 +1,6 @@
-import { LoaderFunctionArgs, redirect, useLoaderData } from "react-router-dom"
+import { ReactNode } from "react"
+import { Link, LoaderFunctionArgs, redirect, useLoaderData } from "react-router-dom"
+
 import {
   getEtablissementsInfo,
   getEtablissementsType,
@@ -6,16 +8,15 @@ import {
   getEffectifsLast,
 } from "../api"
 import { EtablissementInfo, EttContrat, LastEffectif, MetaData } from "../api/types"
+import { AppError, errorWording, isAppError } from "../helpers/errors"
+import { formatDate } from "../helpers/format"
 
-import { Link } from "react-router-dom"
+import { Alert } from "@codegouvfr/react-dsfr/Alert"
+import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
+
 import EtabBanner from "../components/EtabBanner"
 import EtabInfo from "../components/EtabInfo"
 import AppTable from "../components/AppTable"
-import { Alert } from "@codegouvfr/react-dsfr/Alert"
-import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
-import { ReactNode } from "react"
-import { AppError, errorWording, isAppError } from "../helpers/errors"
-import { formatDate } from "../helpers/format"
 
 export async function loader({
   params,

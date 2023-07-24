@@ -2,6 +2,8 @@ import ls from "localstorage-slim"
 import { LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router-dom"
 import { Fragment } from "react"
 
+import { getEtablissementsType, postCarences, postPostes } from "../../api"
+import { EtablissementPoste, Infractions } from "../../api/types"
 import {
   FormattedInfraction,
   FormattedCarenceContract,
@@ -9,7 +11,6 @@ import {
   getLegislationOptionFromKey,
   legislationOptions,
 } from "../../helpers/carence"
-import { postCarences } from "../../api/routes/carences"
 import {
   createFiltersQuery,
   formatLocalMerges,
@@ -20,10 +21,6 @@ import {
   today,
 } from "../../helpers/format"
 import { AppError, errorWording, isAppError } from "../../helpers/errors"
-import { getEtablissementsType, postPostes } from "../../api"
-import { EtablissementPoste, Infractions } from "../../api/types"
-
-import EtabFilters from "../../components/EtabFilters"
 import { initJobOptions } from "../../helpers/postes"
 
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
@@ -35,6 +32,7 @@ import { Select } from "@codegouvfr/react-dsfr/Select"
 
 import AppRebound from "../../components/AppRebound"
 import AppTable, { Header } from "../../components/AppTable"
+import EtabFilters from "../../components/EtabFilters"
 
 export async function loader({
   params,

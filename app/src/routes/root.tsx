@@ -1,12 +1,12 @@
-import { MuiDsfrThemeProvider } from "@codegouvfr/react-dsfr/mui"
-import { StyledEngineProvider } from "@mui/material/styles"
+import { useEffect } from "react"
 import { Outlet } from "react-router-dom"
 import { ScrollRestoration } from "react-router-dom"
 
+import { MuiDsfrThemeProvider } from "@codegouvfr/react-dsfr/mui"
+import { StyledEngineProvider } from "@mui/material/styles"
 import { headerFooterDisplayItem } from "@codegouvfr/react-dsfr/Display"
 import { Footer } from "@codegouvfr/react-dsfr/Footer"
 import { Header } from "@codegouvfr/react-dsfr/Header"
-import { useEffect } from "react"
 
 const logoutURL: string = import.meta.env.VITE_LOGOUT_URL as string
 const isProd: boolean = import.meta.env.PROD
