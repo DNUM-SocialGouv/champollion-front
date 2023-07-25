@@ -9,12 +9,13 @@ import {
 import { getEtablissementsInfo, getEtablissementsType, getEffectifsLast } from "../../api"
 import { EtablissementInfo, LastEffectif } from "../../api/types"
 import { AppError, errorWording, isAppError } from "../../helpers/errors"
+import { formatLocalOpenDays } from "../../helpers/format"
 
-import EtabInfo from "../../components/EtabInfo"
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
-import { formatLocalOpenDays } from "../../helpers/format"
+
+import EtabInfo from "../../components/EtabInfo"
 
 export async function action({
   params,

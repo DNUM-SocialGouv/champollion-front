@@ -8,7 +8,9 @@ fileignoreconfig:
 - filename: app/src/helpers/contrats.tsx
   checksum: cb5dd0123beb362fb6ac14e2fa3c4f0784ae2986e177fca14428750f9fd1ba10
 - filename: app/src/helpers/effectifs.ts
-  checksum: 26f3f907b249d22346fa9633357a06627af21e0920fd03111d4eea82304d0a54
+  checksum: 19d893315ec9d917d778ea490c2c86d4ef3ab7d87ffddebe422807311a10bf94
+- filename: app/src/helpers/effectifs.tsx
+  checksum: 36645f0a3967f381f96c76566ebcac100384f75b209e17493cb90067bd5dbbe7
 - filename: app/src/helpers/format.ts
   checksum: b1574cc2254ea15ef994298c8b5ce9b217225414e07076c644395ed00c5a84ac
 - filename: app/src/routes/etablissement/carence.tsx
@@ -18,7 +20,7 @@ fileignoreconfig:
 - filename: app/src/routes/etablissement/postes.tsx
   checksum: e3d95e0ac64a6088c700826e257d27114db9789746f9a84f317e3cf6837dee10
 - filename: app/src/routes/etablissement/recours.tsx
-  checksum: 29f464e31e7d5019a7f9f8ca6684b68e24bed92a92841dd4004e2ca39fb90eb9
+  checksum: 056b89a8ffda2d6a9dabe2bc3e4f2d3e9253da42c79602d7fe3fc81c8b61f31a
 - filename: app/src/routes/etablissement/synthese.tsx
   checksum: 320f195b51c0db2add624af322095ada208d51c77c2800ab6d5c81fc8e2fac1f
 - filename: app/src/routes/ett.tsx

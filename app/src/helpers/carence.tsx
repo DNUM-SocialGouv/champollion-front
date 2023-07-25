@@ -113,7 +113,6 @@ export const legislationOptions: {
     value: "idcc_176_2019",
     label: "IDCC 176 - 2019 (2020) - Industrie pharmaceutique",
   },
-  // { key: 3, value: "etp", label: "ETP (équivalent temps plein)" }, // etp not available yet from api
 ]
 
 export const getLegislationOptionFromKey = (key: number | string) =>
