@@ -9,7 +9,7 @@ const isDevMode = import.meta.env.DEV
 
 const api = axios.create({
   baseURL,
-  timeout: 5000,
+  // timeout: 5000, //todo set another tieout or remove altogether?
 }) as AxiosInstance
 
 api.interceptors.response.use(
