@@ -81,7 +81,7 @@ L'environnement de développement de l'application du projet Champollion est pr�
     4. Installer YARN et les dépendances
     
         ```bash
-        npm i --global yarn && yarn --cwd ${HOME}/${FRONT_REPOSITORY_PATH}/app/
+        npm i --global yarn && yarn --cwd ${FRONT_REPOSITORY_PATH}/app/
         ```
     
     5. Créez un fichier un .env.local
@@ -122,6 +122,6 @@ startapp () {
         esac
     done
 
-    VITE_API_BASE_URL=$api yarn --cwd ${HOME}/code/front-it/app/ dev
+    VITE_API_BASE_URL=$api yarn --cwd ${FRONT_REPOSITORY_PATH}/app/ dev
 }
 ```
