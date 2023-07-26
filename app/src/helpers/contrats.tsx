@@ -9,6 +9,7 @@ import { AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Input } from "@codegouvfr/react-dsfr/Input"
+
 import { Option } from "../components/AppMultiSelect"
 
 type FormattedContrat = {

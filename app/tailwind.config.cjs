@@ -9,10 +9,10 @@ const createColorObject = (colorNames, decisionPrefix) =>
   Object.fromEntries(colorNames.map((name) => [name, `var(--${decisionPrefix}-${name})`]))
 
 const background = createColorObject(
-  ["alt-grey", "contrast-grey", "contrast-info", "default-grey"],
+  ["alt-grey", "contrast-grey", "contrast-info", "default-grey", "flat-info", "flat-success", "flat-warning", "raised-grey"],
   "background"
 )
-const border = createColorObject(["default-grey"], "border")
+const border = createColorObject(["default-grey", "action-high-grey"], "border")
 const text = createColorObject(["mention-grey", "active-grey", "disabled-grey"], "text")
 const artwork = createColorObject([], "artwork")
 
@@ -23,6 +23,16 @@ module.exports = {
   },
   important: "#root",
   plugins: [],
+  safelist: [
+    //include classes from backend HTML
+    "bg-bg-flat-info",
+    "bg-bg-flat-success",
+    "bg-bg-flat-warning",
+    "border-collapse",
+    "text-bg-flat-info",
+    "text-bg-flat-success",
+    "text-bg-flat-warning",
+  ],
   theme: {
     screens: {
       sm: "576px",

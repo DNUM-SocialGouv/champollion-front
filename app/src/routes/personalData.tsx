@@ -25,7 +25,7 @@ export default function PersonalData() {
         {isAppError(personalData) ? (
           <Alert
             className="fr-mb-2w"
-            description="Problème lors de la récupération des CGU."
+            description="Problème lors de la récupération de la politique de confidentialité."
             severity="error"
             title="Erreur"
           />

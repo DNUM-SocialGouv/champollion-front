@@ -66,6 +66,11 @@ const formatDate = (date: string | null, format = "DD/MM/YYYY") =>
 const today = dayjs().format("YYYY-MM-DD")
 const oneYearAgo = dayjs().subtract(1, "year").format("YYYY-MM-DD")
 
+const formatNumber = (value: number | string) =>
+  value && Number(value)
+    ? value.toLocaleString("fr-FR", { maximumFractionDigits: 2 })
+    : value
+
 const getQueryAsString = (searchParams: URLSearchParams, key: string) =>
   decodeURIComponent(searchParams.get(key) ?? "")
 
@@ -167,6 +172,7 @@ export {
   createFiltersQuery,
   findDuplicates,
   formatDate,
+  formatNumber,
   getQueryAsArray,
   getQueryAsNumber,
   getQueryAsNumberArray,

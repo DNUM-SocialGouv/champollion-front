@@ -76,6 +76,13 @@ export default function Root() {
                 text: "Rechercher un établissement",
               },
               {
+                iconId: "fr-icon-questionnaire-line",
+                linkProps: {
+                  to: "/faq",
+                },
+                text: "FAQ",
+              },
+              {
                 iconId: "fr-icon-lock-line",
                 linkProps: {
                   to: logoutURL,
@@ -83,7 +90,6 @@ export default function Root() {
                 },
                 text: "Se déconnecter",
               },
-              headerFooterDisplayItem,
             ]}
           />
           <div className="flex flex-auto">
