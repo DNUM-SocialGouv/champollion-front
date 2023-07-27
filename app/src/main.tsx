@@ -7,7 +7,7 @@ import { Link } from "react-router-dom"
 import ls from "localstorage-slim"
 
 import Root from "./routes/root"
-import Index, { action as homeAction } from "./routes/index"
+import Index, { action as homeAction, loader as homeLoader } from "./routes/index"
 import Error from "./components/Error"
 import Etab, { loader as etabLoader } from "./routes/etablissement"
 import EtabSynthese, {
@@ -27,6 +27,7 @@ import ETT, { loader as ettLoader } from "./routes/ett"
 import FAQ, { loader as faqLoader } from "./routes/faq"
 import CGU, { loader as cguLoader } from "./routes/cgu"
 import LegalNotice, { loader as legalNoticeLoader } from "./routes/legalNotice"
+import News from "./routes/news"
 import PersonalData, { loader as personalDataLoader } from "./routes/personalData"
 import Labellisation, {
   loader as labellisationLoader,
@@ -60,6 +61,7 @@ const router = createBrowserRouter([
             index: true,
             element: <Index />,
             action: homeAction,
+            loader: homeLoader,
           },
         ],
       },
@@ -127,6 +129,11 @@ const router = createBrowserRouter([
         element: <PersonalData />,
         errorElement: <Error />,
         loader: personalDataLoader,
+      },
+      {
+        path: "nouveautes",
+        element: <News />,
+        errorElement: <Error />,
       },
       {
         path: "labellisation",

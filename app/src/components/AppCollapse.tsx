@@ -2,21 +2,25 @@ import { ReactNode, useCallback, useState } from "react"
 
 import { Button } from "@codegouvfr/react-dsfr/Button"
 
-export default function AppCollapse({
-  children,
-  defaultExpanded = false,
-  id = "app-collapse",
-  label = "Voir plus",
-  labelOpen: labelOpenProps,
-  shortDesc,
-}: {
+type AppCollapseProps = {
+  borderLeft?: boolean
   children: ReactNode
   defaultExpanded?: boolean
   id?: string
   label?: string
   labelOpen?: string
   shortDesc?: ReactNode
-}) {
+}
+
+export default function AppCollapse({
+  borderLeft,
+  children,
+  defaultExpanded = false,
+  id = "app-collapse",
+  label = "Voir plus",
+  labelOpen: labelOpenProps,
+  shortDesc,
+}: AppCollapseProps) {
   const labelOpen = labelOpenProps || "Voir moins"
   const collapseElementId = `${id}-collapse`
   const [expandedState, setExpandedState] = useState(defaultExpanded)
@@ -28,7 +32,11 @@ export default function AppCollapse({
     <>
       {shortDesc}
       <div
-        className="fr-pl-2w fr-collapse border-0 border-l border-solid border-bd-default-grey"
+        className={`fr-collapse ${
+          borderLeft
+            ? "fr-pl-2w border-0 border-l border-solid border-bd-default-grey"
+            : ""
+        }`}
         id={collapseElementId}
       >
         {children}

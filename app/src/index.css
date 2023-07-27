@@ -16,3 +16,7 @@ input[type="date"].fr-input {
 .fr-input-wrap.ri-calendar-line::before {
   content: none;
 }
+
+.fr-header__logo .fr-logo {
+  font-size: 0.6rem;
+}

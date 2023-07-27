@@ -13,13 +13,9 @@ const isProd: boolean = import.meta.env.PROD
 
 const brandTop = (
   <>
-    Ministère
+    Ministères
     <br />
-    du travail,
-    <br />
-    du plein emploi
-    <br />
-    et de l'insertion
+    sociaux
   </>
 )
 
@@ -92,9 +88,9 @@ export default function Root() {
               },
             ]}
           />
-          <div className="flex flex-auto">
+          <main role="main" id="content">
             <Outlet />
-          </div>
+          </main>
           <Footer
             accessibility="partially compliant"
             brandTop={brandTop}
