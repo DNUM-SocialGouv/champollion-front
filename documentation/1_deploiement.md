@@ -17,7 +17,7 @@ La procédure de déploiement consiste à build les images nécessaires au servi
 
 ## Build
 
-Pour vérifier s'il faut build les images pour lancer le service docker, rendez vous sur [le dépôt Nexus du projet Champollion](https://10.252.1.10/#browse/browse:Champollion:v2%2Fchampollion-dev)* pour voir les images disponibles.
+⚠️ **L'étape de build n'est pas nécessaire si vous n'avez pas modifier le code de l'application que vous souhaitez déployer.** Pour vérifier s'il faut build les images pour lancer le service docker, rendez vous sur [le dépôt Nexus du projet Champollion](https://10.252.1.10/#browse/browse:Champollion:v2%2Fchampollion-dev)* pour voir les images disponibles.
 
 **Listes des images nécessaires :**
  -  `front/app`
@@ -28,40 +28,35 @@ Pour vérifier s'il faut build les images pour lancer le service docker, rendez 
 
 1. Créez un fichier de variable d'environnement sur la base du [fichier d'exemple](../.env.example)
 
+    Les valeurs des variables sont dans l'excel sur l'espace Teams du projet Champollion : **`/Infrasctructure/env/environment_variables.xlsx`**
+
 2. Build et push les images sur les dépôt Nexus
     
+    > ⚠️ **Le build va récupérer le code présent localement, vérifiez que vous êtes sur la bonne branche et le bon commit que vous souhaitez déployer !**
     ```bash
     bash build.sh -e ENV_FILE_PATH -p
     ```
+    > 💡 L'argument -p permet de push les images. Même si vous déployez le service sur la VM de build (Lab) il est important de push les images build afin de sauvegarder les modifications.<br>
+    Pour vérifier que vous avez bien push les images avec les nouveaus tags, rendez vous sur sur [le dépôt Nexus du projet Champollion](https://10.252.1.10/#browse/browse:Champollion:v2%2Fchampollion-dev)*
 
-    > ⚠️ L'argument -p permet de push les images. Même si vous déployez le service sur la VM de build (Lab) il est important de push les images build afin de sauvegarder les modifications.
+    *\*Le nexus n'est accessible que depuis la PMAD.*
 
-## Run 
+## Run
 
-### 1. Récupérez le fichier docker-compose.yaml sur la VM où vous souhaitez déployer les containers (VM cible)
+1. Mettez à jour les fichiers `docker-compose.yaml` et `/champollion/.env` sur la VM où vous souhaitez déployer les containers (VM cible)
 
-Si vous déployez le service sur la VM Lab (OV1-APP-LAB-DEV-003) vous pouvez cloner le présent repository pour récupérer le fichier [docker-compose.yaml](../../database/docker-compose.yaml).
+    > ⚠️ Cette étape n'est pas nécessaire si vous n'avez pas modifié le  fichier [docker-compose.yaml](../docker-compose.yaml) et/ou si vous n'avez pas ajouter/retirer de variables d'environnement.
 
-### 2. Exportez les variables d'environnement nécessaires sur la VM cible
+    Si vous déployez le service sur la VM lab (OV1-APP-LAB-DEV-003) vous pouvez cloner le présent repository pour récupérer le fichier [docker-compose.yaml](../docker-compose.yaml).
 
+    > 💡 Le fichier de variable d'environnement doit être le même que celui créé pour le build.
 
-1. Créez un fichier de variables d'environnement sur la base du [fichier d'exemple](../.env.example) sur la VM cible. 
-
-    > ⚠️ Si vous avez préalablement build les images, il s'agit du même fichier qu'en étape 1. Vous pouvez copier ce fichier sur la VM cible.
-
-2. Exportez une variable d'environnement `ENV_FILE_PATH` indiquant le chemin d'accès à ce fichier.
+2. Run les images grâce au fichier docker-compose.yaml
 
     ```bash
-    export ENV_FILE_PATH=PATH
-
-    # example 
-    export ENV_FILE_PATH=/exploit/lguillaume/dev/.env.front
+    docker compose --env-file /champollion/.env stop && \
+    docker compose --env-file /champollion/.env rm -f && \
+    docker compose --env-file /champollion/.env up --detach
     ```
-    
-### 3. Run les images grâce au fichier docker-compose.yaml
 
-```bash
-docker compose --env-file ${ENV_FILE_PATH} stop && \
-docker compose --env-file ${ENV_FILE_PATH} rm -f && \
-docker compose --env-file ${ENV_FILE_PATH} up --detach
-```
+3. Vérifiez que le status des containers est "up" avec la commande `docker ps`
