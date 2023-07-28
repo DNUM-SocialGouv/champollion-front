@@ -1,12 +1,12 @@
 import { useLoaderData } from "react-router-dom"
 
-import { getTerms } from "../api"
+import { getLegalNotice } from "../api"
 import { AppError, isAppError } from "../helpers/errors"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 
 export async function loader() {
-  const legalNotice = await getTerms()
+  const legalNotice = await getLegalNotice()
 
   return legalNotice
 }

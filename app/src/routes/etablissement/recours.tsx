@@ -332,9 +332,10 @@ function EtabPostesEffectifs({
           initialUnitOption.value &&
           initialUnitOption.value in unitMoreInfo && (
             <AppCollapse
+              borderLeft
+              key={initialUnitOption.value}
               label="Plus d'informations sur l'unité"
               labelOpen="Moins d'informations sur l'unité"
-              key={initialUnitOption.value}
             >
               {unitMoreInfo[initialUnitOption.value]}
             </AppCollapse>

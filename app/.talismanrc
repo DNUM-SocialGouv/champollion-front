@@ -20,13 +20,17 @@ fileignoreconfig:
 - filename: app/src/routes/etablissement/postes.tsx
   checksum: e3d95e0ac64a6088c700826e257d27114db9789746f9a84f317e3cf6837dee10
 - filename: app/src/routes/etablissement/recours.tsx
-  checksum: 056b89a8ffda2d6a9dabe2bc3e4f2d3e9253da42c79602d7fe3fc81c8b61f31a
+  checksum: 30edf9e8811ed3ccbb1644e28e7508ed9f9fb3b4fcf83ab27bd95e8aac36b484
 - filename: app/src/routes/etablissement/synthese.tsx
   checksum: 320f195b51c0db2add624af322095ada208d51c77c2800ab6d5c81fc8e2fac1f
 - filename: app/src/routes/ett.tsx
   checksum: 6f6f88de3dcd5e7df5be553e884f21f09844443e7b9eb35e4d31d3d571506bc7
+- filename: app/src/routes/index.tsx
+  checksum: e0c0ad72076e34952abcba13b174b4ec5bcfe6e57e6efd61d3da49c779cfc26e
 - filename: app/src/routes/labellisation.tsx
   checksum: 0ac5e095aeb96efaa63c70321c4fd0b883e83e70862a3525fdb0bd19b53a88e4
+- filename: app/src/routes/news.tsx
+  checksum: 0e14b0ca30edb7f97d910e6cb3407ee5a45921ac9f8670ae36be21dfcff2b0f2
 - filename: src/components/AppTable.tsx
   checksum: 1849f36f5279b09b4bb3d34271616b44f5b9c405357b5029fbbd2cdd62dd28c8
 - filename: src/components/EtabFilters.tsx
