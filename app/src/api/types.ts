@@ -155,3 +155,11 @@ export type JobInfraction = {
 }
 
 export type Infractions = { [key: string]: JobInfraction }
+
+export type ExternalLink = {
+  key: string
+  desc: string
+  title: string
+  href: string
+  picto: string
+}

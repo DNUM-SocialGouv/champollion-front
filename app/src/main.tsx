@@ -7,7 +7,7 @@ import { Link } from "react-router-dom"
 import ls from "localstorage-slim"
 
 import Root from "./routes/root"
-import Index, { action as homeAction } from "./routes/index"
+import Index, { action as homeAction, loader as homeLoader } from "./routes/index"
 import Error from "./components/Error"
 import Etab, { loader as etabLoader } from "./routes/etablissement"
 import EtabSynthese, {
@@ -24,8 +24,10 @@ import EtabContrats, {
 import EtabRecours, { loader as etabRecoursLoader } from "./routes/etablissement/recours"
 import EtabCarence, { loader as etabCarenceLoader } from "./routes/etablissement/carence"
 import ETT, { loader as ettLoader } from "./routes/ett"
+import FAQ, { loader as faqLoader } from "./routes/faq"
 import CGU, { loader as cguLoader } from "./routes/cgu"
-import Terms, { loader as termsLoader } from "./routes/terms"
+import LegalNotice, { loader as legalNoticeLoader } from "./routes/legalNotice"
+import News from "./routes/news"
 import PersonalData, { loader as personalDataLoader } from "./routes/personalData"
 import Labellisation, {
   loader as labellisationLoader,
@@ -59,6 +61,7 @@ const router = createBrowserRouter([
             index: true,
             element: <Index />,
             action: homeAction,
+            loader: homeLoader,
           },
         ],
       },
@@ -104,6 +107,12 @@ const router = createBrowserRouter([
         loader: ettLoader,
       },
       {
+        path: "faq",
+        element: <FAQ />,
+        errorElement: <Error />,
+        loader: faqLoader,
+      },
+      {
         path: "cgu",
         element: <CGU />,
         errorElement: <Error />,
@@ -111,15 +120,20 @@ const router = createBrowserRouter([
       },
       {
         path: "mentions-legales",
-        element: <Terms />,
+        element: <LegalNotice />,
         errorElement: <Error />,
-        loader: termsLoader,
+        loader: legalNoticeLoader,
       },
       {
         path: "politique-confidentialite",
         element: <PersonalData />,
         errorElement: <Error />,
         loader: personalDataLoader,
+      },
+      {
+        path: "nouveautes",
+        element: <News />,
+        errorElement: <Error />,
       },
       {
         path: "labellisation",

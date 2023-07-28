@@ -14,6 +14,8 @@ import {
   formatEffectifs,
   unitsOptions,
   getUnitOptionFromKey,
+  unitMoreInfo,
+  getReadingNotes,
 } from "../../helpers/effectifs"
 import { AppError, errorWording, isAppError } from "../../helpers/errors"
 import {
@@ -31,14 +33,15 @@ import { initJobOptions } from "../../helpers/postes"
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
+import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Select } from "@codegouvfr/react-dsfr/Select"
 import { Table } from "@codegouvfr/react-dsfr/Table"
-import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
 
 import AppRebound from "../../components/AppRebound"
 import EffectifBarChart from "../../components/EffectifBarChart"
 import EtabFilters from "../../components/EtabFilters"
+import AppCollapse from "../../components/AppCollapse"
 
 export async function loader({
   params,
@@ -310,7 +313,7 @@ function EtabPostesEffectifs({
 
   return (
     <>
-      <div className="fr-mb-2w lg:columns-2">
+      <div className="fr-mb-2w">
         <Select
           className="md:w-3/4"
           label="Unité des effectifs mensuels"
@@ -325,13 +328,19 @@ function EtabPostesEffectifs({
             </option>
           ))}
         </Select>
-        <ToggleSwitch
-          label="Cumuler les effectifs CDD et CTT (intérim)"
-          checked={areTempContractsStacked}
-          onChange={(checked) => setAreTempContractsStacked(checked)}
-        />
+        {initialUnitOption &&
+          initialUnitOption.value &&
+          initialUnitOption.value in unitMoreInfo && (
+            <AppCollapse
+              borderLeft
+              key={initialUnitOption.value}
+              label="Plus d'informations sur l'unité"
+              labelOpen="Moins d'informations sur l'unité"
+            >
+              {unitMoreInfo[initialUnitOption.value]}
+            </AppCollapse>
+          )}
       </div>
-
       <div className="fr-mt-4w h-[550px]">
         <h3 className="fr-text--xl text-center">{initialUnitOption?.label}</h3>
         <EffectifBarChart
@@ -340,6 +349,26 @@ function EtabPostesEffectifs({
           data={effectifsData}
         />
       </div>
+      <Checkbox
+        className="fr-mt-4w"
+        options={[
+          {
+            label: "Cumuler les effectifs CDD et CTT (intérim)",
+            nativeInputProps: {
+              name: "stacked",
+              checked: areTempContractsStacked,
+              onChange: (event) => setAreTempContractsStacked(event.target.checked),
+            },
+          },
+        ]}
+      />
+      {initialUnitOption && initialUnitOption.value && effectifsData.length > 0 && (
+        <>
+          <h3 className="fr-text--md fr-mt-2w fr-mb-1v font-bold">Notes de lectures</h3>
+          <p>{getReadingNotes(effectifsData[0], initialUnitOption.value)}</p>
+        </>
+      )}
+
       <Accordion
         label="Afficher les effectifs sous forme de tableau"
         className="fr-mt-4w"

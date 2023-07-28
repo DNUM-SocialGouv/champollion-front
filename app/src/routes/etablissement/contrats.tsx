@@ -8,6 +8,7 @@ import {
   postPostes,
   postContratsEtu,
 } from "../../api"
+import { EtablissementPoste, EtuContrat, MetaData, Salarie } from "../../api/types"
 import {
   formatContrats,
   headers,
@@ -16,7 +17,6 @@ import {
   motiveOptions,
   contractNatures,
 } from "../../helpers/contrats"
-import { EtablissementPoste, EtuContrat, MetaData, Salarie } from "../../api/types"
 import { AppError, errorWording, isAppError } from "../../helpers/errors"
 import {
   createFiltersQuery,

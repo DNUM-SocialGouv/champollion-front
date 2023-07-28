@@ -1,18 +1,18 @@
 import { useLoaderData } from "react-router-dom"
 
-import { getTerms } from "../api"
+import { getLegalNotice } from "../api"
 import { AppError, isAppError } from "../helpers/errors"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 
 export async function loader() {
-  const terms = await getTerms()
+  const legalNotice = await getLegalNotice()
 
-  return terms
+  return legalNotice
 }
 
-export default function Terms() {
-  const terms = useLoaderData() as string | AppError
+export default function LegalNotice() {
+  const legalNotice = useLoaderData() as string | AppError
 
   return (
     <>
@@ -20,15 +20,15 @@ export default function Terms() {
         <h1 className="fr-h2 fr-pt-4w text-center">Mentions légales – Champollion</h1>
         <hr className="w-full" />
 
-        {isAppError(terms) ? (
+        {isAppError(legalNotice) ? (
           <Alert
             className="fr-mb-2w"
-            description="Problème lors de la récupération des CGU."
+            description="Problème lors de la récupération des mentions legales."
             severity="error"
             title="Erreur"
           />
         ) : (
-          <div dangerouslySetInnerHTML={{ __html: terms }}></div>
+          <div dangerouslySetInnerHTML={{ __html: legalNotice }}></div>
         )}
       </div>
     </>

@@ -13,13 +13,9 @@ const isProd: boolean = import.meta.env.PROD
 
 const brandTop = (
   <>
-    Ministère
+    Ministères
     <br />
-    du travail,
-    <br />
-    du plein emploi
-    <br />
-    et de l'insertion
+    sociaux
   </>
 )
 
@@ -76,6 +72,13 @@ export default function Root() {
                 text: "Rechercher un établissement",
               },
               {
+                iconId: "fr-icon-questionnaire-line",
+                linkProps: {
+                  to: "/faq",
+                },
+                text: "FAQ",
+              },
+              {
                 iconId: "fr-icon-lock-line",
                 linkProps: {
                   to: logoutURL,
@@ -83,12 +86,11 @@ export default function Root() {
                 },
                 text: "Se déconnecter",
               },
-              headerFooterDisplayItem,
             ]}
           />
-          <div className="flex flex-auto">
+          <main role="main" id="content">
             <Outlet />
-          </div>
+          </main>
           <Footer
             accessibility="partially compliant"
             brandTop={brandTop}
