@@ -31,9 +31,10 @@ export async function action({ request }: ActionFunctionArgs) {
   const etabType = await getEtablissementsType(siret)
 
   if (!isAppError(etabType)) {
-    const lsSirets = (ls.get("lastSirets") as string[][]) || []
-    if (lsSirets.length >= 10) lsSirets.splice(0, lsSirets.length - 9)
-    lsSirets.push([siret, etabType.raisonSociale])
+    let lsSirets = (ls.get("lastSirets") as string[][]) || []
+    lsSirets = lsSirets.filter((element) => element && element[0] !== siret)
+    lsSirets.unshift([siret, etabType.raisonSociale])
+    if (lsSirets.length >= 10) lsSirets.splice(9, lsSirets.length - 1)
     ls.set("lastSirets", lsSirets)
     const redirectTo = etabType.ett ? `/ett/${siret}` : `/etablissement/${siret}`
     return redirect(redirectTo)
@@ -106,7 +107,7 @@ export default function Index() {
                 />
               )}
             </div>
-            <div className="fr-px-3w fr-py-2w border border-solid border-bd-default-grey">
+            <div className="fr-px-3w fr-py-2w w-full border border-solid border-bd-default-grey">
               <SearchHistory searchHistory={searchHistory} />
             </div>
           </div>
