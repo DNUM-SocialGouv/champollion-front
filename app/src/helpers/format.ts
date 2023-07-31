@@ -103,7 +103,7 @@ const createFiltersQuery = ({
 }: {
   startDate: string
   endDate: string
-  motives: string[]
+  motives: number[]
   natures: string[]
   jobs: number[]
 }) => {

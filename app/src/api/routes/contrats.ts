@@ -1,20 +1,36 @@
 import api from "../config"
 import { EttContrat, EtuContrat, MetaData } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
-import { motivesCodeDict } from "../../helpers/contrats"
+import { CorrectedDates, motivesCodeDict } from "../../helpers/contrats"
 import { addArrayParams } from "../../helpers/format"
 
-type ContratsParams = {
-  id: number
-  startDate?: string
+type Common = {
+  employeesIds?: number[]
   endDate?: string
+  id: number
+  mergedPostesIds?: number[][]
   motives?: number[]
   natures?: string[]
-  postesIds?: number[]
-  employeesIds?: number[]
   page?: number
   per?: number
-  mergedPostesIds?: number[][]
+  postesIds?: number[]
+  startDate?: string
+}
+type ContratsParams = Common & {
+  page?: number
+  per?: number
+}
+
+type ExportParams = Common & {
+  isEtu?: boolean
+  companyName: string
+  correctedDates?: CorrectedDates
+  siret: string
+}
+
+type Body = {
+  corrected_dates?: CorrectedDates
+  merged_poste_ids?: number[][]
 }
 
 export const postContratsEtu = async ({
@@ -67,7 +83,7 @@ export const postContratsEtu = async ({
         contrats,
         meta,
       }
-    } else return handleUndefinedData("/contrats/ett")
+    } else return handleUndefinedData("/contrats/etu")
   } catch (err) {
     return handleEndpointError(err)
   }
@@ -103,6 +119,67 @@ export const getContratsEtt = async ({
         meta,
       }
     } else return handleUndefinedData("/contrats/ett")
+  } catch (err) {
+    return handleEndpointError(err)
+  }
+}
+
+export const postContratsExport = async ({
+  companyName,
+  correctedDates,
+  employeesIds,
+  endDate,
+  id,
+  isEtu = true,
+  mergedPostesIds,
+  motives,
+  natures,
+  postesIds,
+  siret,
+  startDate,
+}: ExportParams) => {
+  try {
+    let params = `etablissement_id=${id}&etu=${isEtu}`
+
+    const fileName = "Contrats_" + companyName.replace(" ", "_") + "_" + siret + ".ods"
+
+    if (endDate) params += `&end_date=${endDate}`
+    if (startDate) params += `&start_date=${startDate}`
+
+    if (motives && motives.length > 0) {
+      const motivesCodes = motives
+        .map((motive) => motivesCodeDict[motive])
+        .filter(Boolean)
+        .flat()
+      params = addArrayParams(params, motivesCodes, "motif_recours_ids")
+    }
+
+    params = addArrayParams(params, natures, "nature_contrat_ids")
+    params = addArrayParams(params, postesIds, "poste_ids")
+    params = addArrayParams(params, employeesIds, "salarie_ids")
+
+    const body: Body = {}
+
+    if (mergedPostesIds && mergedPostesIds?.length > 0)
+      body.merged_poste_ids = mergedPostesIds
+    if (correctedDates) body.corrected_dates = correctedDates
+
+    const response = await api.post(`/contrats/export?${params}`, body, {
+      responseType: "blob",
+    })
+
+    const odsBlob = new Blob([response.data], {
+      type: "application/vnd.oasis.opendocument.spreadsheet",
+    })
+
+    const tempUrl = URL.createObjectURL(odsBlob)
+
+    const downloadLink = document.createElement("a")
+    downloadLink.href = tempUrl
+    downloadLink.download = fileName
+    downloadLink.click()
+
+    URL.revokeObjectURL(tempUrl)
   } catch (err) {
     return handleEndpointError(err)
   }

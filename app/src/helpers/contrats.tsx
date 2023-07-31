@@ -329,6 +329,28 @@ const contractNatures = [
   { key: "ctt", code: "03", label: "CTT (intérim)" },
 ]
 
+export type CorrectedDates = Record<
+  number,
+  {
+    start_date?: string
+    end_date?: string
+  }
+>
+
+export const formatCorrectedDates = (contractsDates: Record<string, string>) => {
+  return Object.entries(contractsDates).reduce((acc, [key, value]) => {
+    const [id, dateType] = key.split("-")
+    const contractId = Number(id)
+    const dateTypeKey = `${dateType}_date`
+
+    if (contractId && ["start_date", "end_date"].includes(dateTypeKey)) {
+      const dateObj = { ...(acc[contractId] || {}), [dateTypeKey]: value }
+      acc[contractId] = dateObj
+    }
+    return acc
+  }, {} as CorrectedDates)
+}
+
 export {
   contractNatures,
   formatContrats,
