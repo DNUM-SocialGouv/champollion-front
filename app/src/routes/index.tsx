@@ -178,6 +178,11 @@ function SearchHistory({ searchHistory }: { searchHistory: string[][] }) {
     </li>
   )
 
+  const firstTwo = () =>
+    searchHistory
+      .slice(0, 2)
+      .map(([siret, raisonSociale]) => etablissement(siret, raisonSociale))
+
   return (
     <>
       <h2 className="fr-text--lg fr-mb-1w font-bold">
@@ -187,14 +192,12 @@ function SearchHistory({ searchHistory }: { searchHistory: string[][] }) {
         searchHistory.length > 2 ? (
           <>
             <ul className="fr-m-0">
-              {searchHistory
-                .slice(0, 2)
-                .map(([siret, raisonSociale]) => etablissement(siret, raisonSociale))}
-
-              <AppCollapse>
-                {searchHistory
-                  .slice(2)
-                  .map(([siret, raisonSociale]) => etablissement(siret, raisonSociale))}
+              <AppCollapse shortDesc={firstTwo()}>
+                <ul className="fr-pl-0 fr-my-0">
+                  {searchHistory
+                    .slice(2)
+                    .map(([siret, raisonSociale]) => etablissement(siret, raisonSociale))}
+                </ul>
               </AppCollapse>
             </ul>
           </>

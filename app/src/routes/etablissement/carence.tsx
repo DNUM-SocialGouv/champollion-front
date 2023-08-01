@@ -2,16 +2,24 @@ import ls from "localstorage-slim"
 import { type LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router-dom"
 import { Fragment } from "react"
 
-import { getEtablissementsType, postCarences, postPostes } from "../../api"
-import type { EtablissementPoste, Infractions } from "../../api/types"
+import {
+  getCarencesIdcc,
+  getEtablissementsType,
+  postCarences,
+  postPostes,
+} from "../../api"
+import type { EtablissementPoste, IDCC, Infractions } from "../../api/types"
 import type { FormattedInfraction, FormattedCarenceContract } from "../../helpers/carence"
 import {
   formatInfractions,
   getLegislationOptionFromKey,
+  legislationDetails,
   legislationOptions,
 } from "../../helpers/carence"
 import {
+  camelToSnakeCase,
   createFiltersQuery,
+  formatDate,
   formatLocalMerges,
   formatLocalOpenDays,
   getQueryAsNumberArray,
@@ -34,6 +42,7 @@ import AppRebound from "../../components/AppRebound"
 import AppTable from "../../components/AppTable"
 import type { Header } from "../../components/AppTable"
 import EtabFilters from "../../components/EtabFilters"
+import AppCollapse from "../../components/AppCollapse"
 
 export async function loader({
   params,
@@ -43,10 +52,13 @@ export async function loader({
   const queryStartDate = getQueryAsString(searchParams, "debut") || oneYearAgo
   const queryEndDate = getQueryAsString(searchParams, "fin") || today
   const queryJobs = getQueryAsNumberArray(searchParams, "poste")
-  const queryLegislation = getQueryAsString(searchParams, "legislation") || "droit_commun"
+  const queryLegislation = getQueryAsString(searchParams, "legislation") || "droitCommun"
 
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
+  const idccData = await getCarencesIdcc()
+
+  console.log(idccData)
 
   if (isAppError(etabType)) {
     throw new Response("", {
@@ -65,13 +77,14 @@ export async function loader({
     id: etabType.id,
     startDate: queryStartDate,
     endDate: queryEndDate,
-    legislation: queryLegislation,
+    legislation: camelToSnakeCase(queryLegislation),
     mergedPostesIds: formattedMergesIds,
     openDaysCodes: formattedOpenDays,
     postesIds: queryJobs,
   })
 
   return {
+    idccData,
     infractions,
     legislation: queryLegislation,
     postes,
@@ -82,6 +95,7 @@ export async function loader({
 }
 
 type EtabCarenceLoader = {
+  idccData: Record<string, IDCC> | AppError
   infractions: Infractions | AppError
   legislation: string
   postes: AppError | EtablissementPoste[]
@@ -101,10 +115,20 @@ const headers = [
 ] as Header<FormattedCarenceContract>[]
 
 export default function EtabCarence() {
-  const { infractions, legislation, postes, queryJobs, queryStartDate, queryEndDate } =
-    useLoaderData() as EtabCarenceLoader
+  const {
+    idccData,
+    infractions,
+    legislation,
+    postes,
+    queryJobs,
+    queryStartDate,
+    queryEndDate,
+  } = useLoaderData() as EtabCarenceLoader
 
   const jobOptions = initJobOptions(postes)
+
+  let legislationData = null
+  if (!isAppError(idccData)) legislationData = idccData
 
   const carenceMotives = [2]
   const carenceNatures = ["02", "03"]
@@ -136,6 +160,7 @@ export default function EtabCarence() {
           jobOptions={jobOptions}
           disabledFilters={{ natures: true, motives: true }}
         />
+
         <div className="flex justify-between">
           <h2 className="fr-text--xl fr-mb-1w">
             Infractions potentielles au délai de carence
@@ -166,7 +191,8 @@ export default function EtabCarence() {
         ) : (
           <EtabCarenceInfraction
             defaultData={infractions}
-            defautLegislation={legislation}
+            defaultLegislation={legislation}
+            legislationData={legislationData}
           />
         )}
         <h2 className="fr-text--xl fr-mb-1w fr-mt-3w">Actions</h2>
@@ -213,10 +239,12 @@ export default function EtabCarence() {
 
 function EtabCarenceInfraction({
   defaultData,
-  defautLegislation,
+  defaultLegislation,
+  legislationData,
 }: {
   defaultData: Infractions
-  defautLegislation: string
+  defaultLegislation: string
+  legislationData: Record<string, IDCC> | null
 }) {
   const formattedInfractions = formatInfractions(defaultData)
   const [searchParams, setSearchParams] = useSearchParams()
@@ -226,20 +254,55 @@ function EtabCarenceInfraction({
     0
   )
 
-  const initialLegislationOption = legislationOptions.find(
-    (option) => option.value === defautLegislation
+  const initialLegislationOption =
+    legislationData &&
+    legislationOptions(legislationData).find(
+      (option) => option.value === defaultLegislation
+    )
+
+  const selectedLegislationDetail =
+    legislationData &&
+    legislationDetails(legislationData).find((idcc) => idcc.key == defaultLegislation)
+
+  const detailElement = () => (
+    <div className="fr-p-2w fr-mb-2w rounded-2xl border border-solid border-bd-default-grey bg-bg-alt-grey">
+      <div>
+        <b>Nom de l'accord : </b> {selectedLegislationDetail?.fullTitle}
+      </div>
+      {selectedLegislationDetail?.idccDate && (
+        <div>
+          <b>Date de l'accord : </b>
+          {formatDate(selectedLegislationDetail.idccDate)}
+        </div>
+      )}
+      {selectedLegislationDetail?.idccExtensionDate && (
+        <div>
+          <b>Date de l'arrêté d'extension : </b>
+          {formatDate(selectedLegislationDetail.idccExtensionDate)}
+        </div>
+      )}
+      <div className="fr-mt-2w">
+        {selectedLegislationDetail?.description?.main}
+
+        {selectedLegislationDetail?.description?.details && (
+          <ul className="fr-my-0">
+            {selectedLegislationDetail.description.details.map((detail, index) => (
+              <li key={index}>{detail}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
   )
-  // const [prevEffectifs, setPrevEffectifs] = useState(defaultData)
-  // if (defaultData !== prevEffectifs) {
-  //   setPrevEffectifs(defaultData)
-  //   setEffectifsData(formatEffectifs(defaultData))
-  // }
+
   const handleLegislationSelected = async (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
     const newKey = Number(event.target.value)
-    const newLegislationOption = getLegislationOptionFromKey(newKey)
-    const legislationValue = newLegislationOption?.value || "droit_commun"
+    const newLegislationOption = legislationData
+      ? getLegislationOptionFromKey(newKey, legislationData)
+      : { value: "droitCommun" }
+    const legislationValue = newLegislationOption?.value
     searchParams.set("legislation", legislationValue)
     setSearchParams(searchParams)
   }
@@ -260,21 +323,38 @@ function EtabCarenceInfraction({
 
   return (
     <>
-      <Select
-        className="md:w-3/4"
-        label="Accord de branche étendu"
-        hint="Code - Date de l'accord (Date de signature) - Mots clés"
-        nativeSelectProps={{
-          onChange: handleLegislationSelected,
-          value: initialLegislationOption?.key || "1",
-        }}
-      >
-        {legislationOptions.map(({ key, label }) => (
-          <option key={key} value={key}>
-            {label}
-          </option>
-        ))}
-      </Select>
+      {legislationData !== null && (
+        <>
+          <Select
+            className="md:w-3/4"
+            label="Accord de branche étendu"
+            hint="Code - Date de l'accord (Date de signature) - Mots clés"
+            nativeSelectProps={{
+              onChange: handleLegislationSelected,
+              value: initialLegislationOption?.key || "0",
+            }}
+          >
+            {legislationOptions(legislationData).map(({ key, label }) => (
+              <option key={key} value={key}>
+                {label}
+              </option>
+            ))}
+          </Select>
+
+          {selectedLegislationDetail &&
+            Object.keys(selectedLegislationDetail).length > 0 && (
+              <>
+                <AppCollapse
+                  className="fr-mb-2w"
+                  label="Plus d'informations sur l'accord de branche"
+                  labelOpen="Moins d'informations sur l'accord de branche"
+                >
+                  {detailElement()}
+                </AppCollapse>
+              </>
+            )}
+        </>
+      )}
       <p>{totalInfractions} infractions potentielles.</p>
       <div className="fr-accordions-group">
         {formattedInfractions.map((infractionByJobTitle) => (

@@ -1,4 +1,4 @@
-import type { IllegalContract, Infractions, CarenceContract } from "../api/types"
+import type { IllegalContract, Infractions, CarenceContract, IDCC } from "../api/types"
 import { getContractType } from "./contrats"
 import { formatDate } from "./format"
 
@@ -82,7 +82,19 @@ const formatCarenceContracts = (
   })
 }
 
-export const legislationOptions: {
+export const legislationDetails = (data: Record<string, IDCC>) => {
+  return Object.entries(data).map(([key, value]) => ({ key, ...value }))
+}
+
+export const legislationOptions = (data: Record<string, IDCC>) => {
+  return Object.entries(data).map(([key, value], index) => ({
+    key: index,
+    label: value.shortTitle,
+    value: key,
+  }))
+}
+
+export const legislationOptions2: {
   key: number
   value: string | null
   label: string
@@ -115,6 +127,9 @@ export const legislationOptions: {
   },
 ]
 
-export const getLegislationOptionFromKey = (key: number | string) =>
-  legislationOptions.find((option) => String(option.key) == String(key)) ??
-  legislationOptions[0]
+export const getLegislationOptionFromKey = (
+  key: number | string,
+  data: Record<string, IDCC>
+) =>
+  legislationOptions(data).find((option) => String(option.key) == String(key)) ??
+  legislationOptions(data)[0]

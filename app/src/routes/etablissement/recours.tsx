@@ -329,7 +329,7 @@ function EtabPostesEffectifs({
           initialUnitOption.value in unitMoreInfo && (
             <AppCollapse
               borderLeft
-              key={initialUnitOption.value}
+              key={initialUnitOption.value} // add key to reinit open/closed state when new unit selected
               label="Plus d'informations sur l'unité"
               labelOpen="Moins d'informations sur l'unité"
             >
