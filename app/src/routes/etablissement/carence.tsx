@@ -105,7 +105,7 @@ export default function EtabCarence() {
 
   const jobOptions = initJobOptions(postes)
 
-  const carenceMotives = ["2"]
+  const carenceMotives = [2]
   const carenceNatures = ["02", "03"]
 
   const filtersQuery = createFiltersQuery({

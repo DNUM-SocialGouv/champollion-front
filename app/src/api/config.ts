@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios"
 import { AppError, defaultAxiosError, getErrorMessage } from "../helpers/errors"
 import { keysToCamel } from "../helpers/format"
@@ -15,9 +13,9 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) =>
     ({
-      headers: response.headers,
-      data: keysToCamel(response.data),
-    } as AxiosResponse<any, any>),
+      ...response,
+      data: response.data instanceof Blob ? response.data : keysToCamel(response.data),
+    } as AxiosResponse<unknown, unknown>),
   (error: Error | AxiosError) => {
     const err: AppError = { ...defaultAxiosError }
 

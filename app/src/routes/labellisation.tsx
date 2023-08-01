@@ -46,7 +46,6 @@ const parseAndFilterMergeStr = (
 export async function action({
   request,
 }: ActionFunctionArgs): Promise<LabellisationAction> {
-  console.log("action!")
   const formData = await request.formData()
   const etabId = Number(formData.get("etablissement-id"))
   const data = Object.fromEntries(formData)
@@ -81,7 +80,6 @@ type LabellisationLoader = {
 
 export async function loader(): Promise<LabellisationLoader> {
   const jobs = await getRandomJobs()
-  console.log("loader...")
 
   if (isAppError(jobs)) {
     throw new Response("", {

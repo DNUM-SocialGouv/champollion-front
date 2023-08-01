@@ -7,6 +7,7 @@ import {
   getSalaries,
   postPostes,
   postContratsEtu,
+  postContratsExport,
 } from "../../api"
 import { EtablissementPoste, EtuContrat, MetaData, Salarie } from "../../api/types"
 import {
@@ -16,6 +17,7 @@ import {
   ContratDatesState,
   motiveOptions,
   contractNatures,
+  formatCorrectedDates,
 } from "../../helpers/contrats"
 import { AppError, errorWording, isAppError } from "../../helpers/errors"
 import {
@@ -50,12 +52,11 @@ export async function loader({
 
   const queryStartDate = getQueryAsString(searchParams, "debut") || oneYearAgo
   const queryEndDate = getQueryAsString(searchParams, "fin") || today
-  const queryMotives = getQueryAsArray(searchParams, "motif")
+  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
   const queryNature = getQueryAsArray(searchParams, "nature")
   const queryJobs = getQueryAsNumberArray(searchParams, "poste")
   const queryEmployee = getQueryAsNumber(searchParams, "salarie")
   const page = getQueryPage(searchParams)
-  const motives = queryMotives.map((motive) => Number(motive))
 
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
@@ -75,7 +76,7 @@ export async function loader({
     startDate: queryStartDate,
     endDate: queryEndDate,
     natures: queryNature,
-    motives,
+    motives: queryMotives,
     id: etabType.id,
     postesIds: queryJobs,
     employeesIds: queryEmployee ? [queryEmployee] : undefined,
@@ -84,51 +85,61 @@ export async function loader({
   })
 
   return {
+    companyName: etabType.raisonSociale,
     contratsData,
+    employeesList,
+    etabId: etabType.id,
+    mergedPostesIds: formattedMergesIds,
     page,
     postes,
-    employeesList,
     queryEmployee,
     queryEndDate,
-    queryStartDate,
+    queryJobs,
     queryMotives,
     queryNature,
-    queryJobs,
+    queryStartDate,
     siret,
   }
 }
 
 type CarenceContratsLoader = {
+  companyName: string
   contratsData:
     | AppError
     | {
         contrats: EtuContrat[]
         meta: MetaData
       }
+  employeesList: AppError | Salarie[]
+  etabId: number
+  mergedPostesIds?: number[][]
   page: number
   postes: AppError | EtablissementPoste[]
-  employeesList: AppError | Salarie[]
   queryEmployee?: number
-  queryStartDate: string
   queryEndDate: string
-  queryMotives: string[]
-  queryNature: string[]
   queryJobs: number[]
+  queryMotives: number[]
+  queryNature: string[]
+  queryStartDate: string
   siret: string
 }
 
 export default function EtabContrats() {
   const {
+    companyName,
     contratsData,
+    employeesList,
+    etabId,
+    mergedPostesIds,
     page,
     postes,
-    employeesList,
     queryEmployee,
     queryEndDate,
+    queryJobs,
     queryMotives,
     queryNature,
-    queryJobs,
     queryStartDate,
+    siret,
   } = useLoaderData() as CarenceContratsLoader
 
   const filtersQuery = createFiltersQuery({
@@ -145,6 +156,25 @@ export default function EtabContrats() {
   const formattedDates = {
     startDate: formatDate(queryStartDate),
     endDate: formatDate(queryEndDate),
+  }
+  const downloadContracts = () => {
+    const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string>
+    const correctedDates = formatCorrectedDates(lsContrats)
+
+    postContratsExport({
+      companyName,
+      correctedDates,
+      employeesIds: queryEmployee ? [queryEmployee] : undefined,
+      endDate: queryEndDate,
+      id: etabId,
+      mergedPostesIds,
+      motives: queryMotives,
+      natures: queryNature,
+      page,
+      postesIds: queryJobs,
+      siret,
+      startDate: queryStartDate,
+    })
   }
   const warningList = () => {
     return (
@@ -224,10 +254,16 @@ export default function EtabContrats() {
           Exporter
         </Button>
       </div>
-      <modal.Component title="Fonctionnalité d'export à venir">
-        <p>La fonctionnalité d'export est en cours de développement.</p>
+      <modal.Component title="Exporter les contrats">
+        <p>Vous pouvez exporter les contrats au format tableur LibreOffice (.ods).</p>
         <p>
-          Elle permettra de télécharger les données des contrats sous format tableur .csv.
+          Tous les filtres sauvegardés, les fusions de postes et les corrections de date
+          seront pris en compte.
+        </p>
+        <Button onClick={() => downloadContracts()}>Télécharger</Button>
+        <p className="fr-mb-0 fr-mt-2w italic">
+          ⚠️ Si vous exportez un gros volume de contrats, le téléchargement peut durer
+          plusieurs secondes.
         </p>
       </modal.Component>
       <hr />

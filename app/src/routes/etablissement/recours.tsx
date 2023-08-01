@@ -22,7 +22,6 @@ import {
   createFiltersQuery,
   formatLocalMerges,
   formatLocalOpenDays,
-  getQueryAsArray,
   getQueryAsNumberArray,
   getQueryAsString,
   oneYearAgo,
@@ -50,7 +49,7 @@ export async function loader({
   const { searchParams } = new URL(request.url)
   const queryStartDate = getQueryAsString(searchParams, "debut") || oneYearAgo
   const queryEndDate = getQueryAsString(searchParams, "fin") || today
-  const queryMotives = getQueryAsArray(searchParams, "motif")
+  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
   const queryJobs = getQueryAsNumberArray(searchParams, "poste")
   const queryUnit = getQueryAsString(searchParams, "unit")
   const motives = queryMotives.map((motive) => Number(motive))
@@ -100,7 +99,7 @@ type EtabPostesLoader = {
   postes: AppError | EtablissementPoste[]
   queryStartDate: string
   queryEndDate: string
-  queryMotives: string[]
+  queryMotives: number[]
   queryJobs: number[]
   unit: EffectifUnit
 }
