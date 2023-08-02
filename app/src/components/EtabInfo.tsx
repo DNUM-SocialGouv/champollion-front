@@ -1,4 +1,4 @@
-import { EtablissementInfo, LastEffectif } from "../api/types"
+import type { EtablissementInfo, LastEffectif } from "../api/types"
 import { formatDate } from "../helpers/format"
 
 type EtabInfoProps = {

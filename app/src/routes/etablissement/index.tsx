@@ -1,6 +1,6 @@
 import { useState } from "react"
 import {
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   Outlet,
   redirect,
   useLoaderData,

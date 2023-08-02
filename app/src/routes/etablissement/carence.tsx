@@ -1,12 +1,11 @@
 import ls from "localstorage-slim"
-import { LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router-dom"
+import { type LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router-dom"
 import { Fragment } from "react"
 
 import { getEtablissementsType, postCarences, postPostes } from "../../api"
-import { EtablissementPoste, Infractions } from "../../api/types"
+import type { EtablissementPoste, Infractions } from "../../api/types"
+import type { FormattedInfraction, FormattedCarenceContract } from "../../helpers/carence"
 import {
-  FormattedInfraction,
-  FormattedCarenceContract,
   formatInfractions,
   getLegislationOptionFromKey,
   legislationOptions,
@@ -20,7 +19,8 @@ import {
   oneYearAgo,
   today,
 } from "../../helpers/format"
-import { AppError, errorWording, isAppError } from "../../helpers/errors"
+import type { AppError } from "../../helpers/errors"
+import { errorWording, isAppError } from "../../helpers/errors"
 import { initJobOptions } from "../../helpers/postes"
 
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
@@ -31,7 +31,8 @@ import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Select } from "@codegouvfr/react-dsfr/Select"
 
 import AppRebound from "../../components/AppRebound"
-import AppTable, { Header } from "../../components/AppTable"
+import AppTable from "../../components/AppTable"
+import type { Header } from "../../components/AppTable"
 import EtabFilters from "../../components/EtabFilters"
 
 export async function loader({

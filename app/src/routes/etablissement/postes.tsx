@@ -1,27 +1,23 @@
-import { FormEvent, Fragment, useState } from "react"
-import {
-  ActionFunctionArgs,
-  Form,
-  LoaderFunctionArgs,
-  useActionData,
-  useLoaderData,
-} from "react-router-dom"
+import { type FormEvent, Fragment, useState } from "react"
+import { Form, useActionData, useLoaderData } from "react-router-dom"
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router-dom"
 import ls from "localstorage-slim"
 import { v4 as uuid } from "uuid"
 
 import { getEtablissementsType, postPostes } from "../../api"
-import { EtablissementPoste } from "../../api/types"
+import type { EtablissementPoste } from "../../api/types"
 import { errorWording, isAppError } from "../../helpers/errors"
 import { findDuplicates, formatLocalMerges } from "../../helpers/format"
 import { JobMergedBadge } from "../../helpers/contrats"
-import { MergeOptionObject } from "../../helpers/postes"
+import type { MergeOptionObject } from "../../helpers/postes"
 
-import { Alert, AlertProps } from "@codegouvfr/react-dsfr/Alert"
+import { Alert } from "@codegouvfr/react-dsfr/Alert"
+import type { AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 
 import AppRebound from "../../components/AppRebound"
-import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
+import AppMultiSelect, { type Option } from "../../components/AppMultiSelect"
 
 type EtabPostesAction = {
   message?: string

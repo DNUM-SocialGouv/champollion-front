@@ -1,7 +1,7 @@
 import api from "../config"
-import { EttContrat, EtuContrat, MetaData } from "../types"
+import type { EttContrat, EtuContrat, MetaData } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
-import { CorrectedDates, motivesCodeDict } from "../../helpers/contrats"
+import { type CorrectedDates, motivesCodeDict } from "../../helpers/contrats"
 import { addArrayParams } from "../../helpers/format"
 
 type Common = {

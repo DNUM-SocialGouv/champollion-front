@@ -1,5 +1,6 @@
-import { ReactNode } from "react"
-import { Link, LoaderFunctionArgs, redirect, useLoaderData } from "react-router-dom"
+import type { ReactNode } from "react"
+import { Link, redirect, useLoaderData } from "react-router-dom"
+import type { LoaderFunctionArgs } from "react-router-dom"
 
 import {
   getEtablissementsInfo,
@@ -7,8 +8,9 @@ import {
   getContratsEtt,
   getEffectifsLast,
 } from "../api"
-import { EtablissementInfo, EttContrat, LastEffectif, MetaData } from "../api/types"
-import { AppError, errorWording, isAppError } from "../helpers/errors"
+import type { EtablissementInfo, EttContrat, LastEffectif, MetaData } from "../api/types"
+import type { AppError } from "../helpers/errors"
+import { errorWording, isAppError } from "../helpers/errors"
 import { formatDate } from "../helpers/format"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"

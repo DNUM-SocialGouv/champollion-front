@@ -1,17 +1,12 @@
 import { Fragment, useState } from "react"
-import {
-  ActionFunctionArgs,
-  Form,
-  Link,
-  redirect,
-  useActionData,
-  useLoaderData,
-} from "react-router-dom"
+import { Form, Link, redirect, useActionData, useLoaderData } from "react-router-dom"
+import type { ActionFunctionArgs } from "react-router-dom"
 import ls from "localstorage-slim"
 
 import { getEtablissementsType, getExternalLinks } from "../api"
-import { ExternalLink } from "../api/types"
-import { AppError, isAppError } from "../helpers/errors"
+import type { ExternalLink } from "../api/types"
+import type { AppError } from "../helpers/errors"
+import { isAppError } from "../helpers/errors"
 import { releaseNotes } from "../helpers/news"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"

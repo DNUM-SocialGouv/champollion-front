@@ -1,16 +1,16 @@
-import { Dispatch, FormEvent, ReactNode, SetStateAction } from "react"
+import type { Dispatch, FormEvent, ReactNode, SetStateAction } from "react"
 import { Link } from "react-router-dom"
 import ls from "localstorage-slim"
 
 import { formatDate } from "./format"
-import { EtuContrat } from "../api/types"
+import type { EtuContrat } from "../api/types"
 
 import { AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Input } from "@codegouvfr/react-dsfr/Input"
 
-import { Option } from "../components/AppMultiSelect"
+import type { Option } from "../components/AppMultiSelect"
 
 type FormattedContrat = {
   id: number

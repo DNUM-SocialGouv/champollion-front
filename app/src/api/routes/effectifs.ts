@@ -1,5 +1,5 @@
 import api from "../config"
-import { Effectif, EffectifUnit, LastEffectif } from "../types"
+import type { Effectif, EffectifUnit, LastEffectif } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import { motivesCodeDict } from "../../helpers/contrats"
 

@@ -1,6 +1,6 @@
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import api from "../config"
-import { EtablissementPoste } from "../types"
+import type { EtablissementPoste } from "../types"
 
 export const getLabellisations = async () => {
   try {

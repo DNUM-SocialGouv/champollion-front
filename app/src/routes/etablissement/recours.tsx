@@ -1,15 +1,11 @@
 import { useRef, useState } from "react"
-import { LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router-dom"
+import { type LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router-dom"
 import ls from "localstorage-slim"
 import { v4 as uuid } from "uuid"
 
 import { postEffectifs, postPostes, getEtablissementsType } from "../../api"
-import {
-  Effectif,
-  EffectifUnit,
-  EtablissementPoste,
-  isEffectifUnit,
-} from "../../api/types"
+import type { Effectif, EffectifUnit, EtablissementPoste } from "../../api/types"
+import { isEffectifUnit } from "../../api/types"
 import {
   formatEffectifs,
   unitsOptions,
@@ -17,7 +13,8 @@ import {
   unitMoreInfo,
   getReadingNotes,
 } from "../../helpers/effectifs"
-import { AppError, errorWording, isAppError } from "../../helpers/errors"
+import type { AppError } from "../../helpers/errors"
+import { errorWording, isAppError } from "../../helpers/errors"
 import {
   createFiltersQuery,
   formatLocalMerges,

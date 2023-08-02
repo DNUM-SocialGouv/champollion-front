@@ -1,4 +1,4 @@
-import { IllegalContract, Infractions, CarenceContract } from "../api/types"
+import type { IllegalContract, Infractions, CarenceContract } from "../api/types"
 import { getContractType } from "./contrats"
 import { formatDate } from "./format"
 
