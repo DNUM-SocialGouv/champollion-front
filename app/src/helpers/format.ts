@@ -38,6 +38,9 @@ const toCamel = (string: string) => {
     return $1.toUpperCase().replace("-", "").replace("_", "")
   })
 }
+const camelToSnakeCase = (string: string) =>
+  string.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+
 const keysToCamel = (input: any): any => {
   if (isObject(input)) {
     const res: Record<string, string> = {}
@@ -168,6 +171,7 @@ export const addArrayParams = <T>(
 
 export {
   arrayEquals,
+  camelToSnakeCase,
   capitalize,
   createFiltersQuery,
   findDuplicates,

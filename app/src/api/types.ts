@@ -163,3 +163,14 @@ export type ExternalLink = {
   href: string
   picto: string
 }
+
+export type IDCC = {
+  fullTitle: string
+  shortTitle: string
+  idccDate?: string
+  idccExtensionDate?: string
+  description: {
+    main: string
+    details?: string[]
+  }
+}
