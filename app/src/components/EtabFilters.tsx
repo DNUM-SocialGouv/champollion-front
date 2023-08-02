@@ -10,7 +10,8 @@ import Checkbox from "@codegouvfr/react-dsfr/Checkbox"
 import Button from "@codegouvfr/react-dsfr/Button"
 import { Select } from "@codegouvfr/react-dsfr/Select"
 
-import AppMultiSelect, { MultiSelectInstance, Option } from "./AppMultiSelect"
+import AppMultiSelect from "./AppMultiSelect"
+import type { MultiSelectInstance, Option } from "./AppMultiSelect"
 
 type EtabFiltersProps = {
   startDate: string

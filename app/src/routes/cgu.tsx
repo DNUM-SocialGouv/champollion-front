@@ -1,7 +1,7 @@
 import { useLoaderData } from "react-router-dom"
 
 import { getCgu } from "../api"
-import { AppError, isAppError } from "../helpers/errors"
+import { type AppError, isAppError } from "../helpers/errors"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 

@@ -1,21 +1,24 @@
-import { FormEvent, Fragment, useEffect, useState } from "react"
-import { ActionFunctionArgs, Form, useActionData, useLoaderData } from "react-router-dom"
+import { Fragment, useEffect, useState } from "react"
+import type { FormEvent } from "react"
+import { Form, useActionData, useLoaderData } from "react-router-dom"
+import type { ActionFunctionArgs } from "react-router-dom"
 import { v4 as uuid } from "uuid"
 
 import {
   getLabellisations as getRandomJobs,
   postLabellisations as postLabellisationsMerges,
 } from "../api"
-import { EtablissementPoste } from "../api/types"
+import type { EtablissementPoste } from "../api/types"
 import { getErrorMessage, isAppError } from "../helpers/errors"
-import { MergeOptionObject } from "../helpers/postes"
+import type { MergeOptionObject } from "../helpers/postes"
 import { findDuplicates } from "../helpers/format"
 
 import { Alert, AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 
-import AppMultiSelect, { Option } from "../components/AppMultiSelect"
+import AppMultiSelect from "../components/AppMultiSelect"
+import type { Option } from "../components/AppMultiSelect"
 
 type LabellisationAction = {
   message?: string

@@ -14,9 +14,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import { TooltipProps } from "recharts/types/component/Tooltip"
-import { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent"
-import { DataKey } from "recharts/types/util/types"
+import type { TooltipProps } from "recharts/types/component/Tooltip"
+import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent"
+import type { DataKey } from "recharts/types/util/types"
 
 type EffectifBarChartType = {
   isStacked: boolean

@@ -1,7 +1,7 @@
+import api from "../config"
+import type { Infractions } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import { addArrayParams } from "../../helpers/format"
-import api from "../config"
-import { Infractions } from "../types"
 
 type CarenceParams = {
   id: number

@@ -1,5 +1,5 @@
 import api from "../config"
-import { EtablissementPoste } from "../types"
+import type { EtablissementPoste } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 
 export const postPostes = async (id: number, mergedPostesIds?: number[][]) => {
