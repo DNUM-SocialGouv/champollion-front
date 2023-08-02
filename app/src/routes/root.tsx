@@ -13,9 +13,13 @@ const isProd: boolean = import.meta.env.PROD
 
 const brandTop = (
   <>
-    Ministères
+    Ministère
     <br />
-    sociaux
+    du travail,
+    <br />
+    du plein emploi
+    <br />
+    et de l'insertion
   </>
 )
 

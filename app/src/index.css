@@ -17,6 +17,18 @@ input[type="date"].fr-input {
   content: none;
 }
 
+.fr-header__logo {
+  padding: 0.75rem 1rem;
+}
+
 .fr-header__logo .fr-logo {
   font-size: 0.6rem;
+}
+
+/* divide DSFR values by 1.125 */
+.fr-header__logo .fr-logo::after {
+  min-width: 1.75rem;
+  background-size: 3.5rem 2.5rem;
+  padding-top: 1.4rem;
+  background-position: 0 calc(100% + 1.25rem);
 }
