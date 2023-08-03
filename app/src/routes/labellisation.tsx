@@ -10,7 +10,7 @@ import {
 } from "../api"
 import type { EtablissementPoste } from "../api/types"
 import { getErrorMessage, isAppError } from "../helpers/errors"
-import type { MergeOptionObject } from "../helpers/postes"
+import { parseAndFilterMergeStr, type MergeOptionObject } from "../helpers/postes"
 import { findDuplicates } from "../helpers/format"
 
 import { Alert, AlertProps } from "@codegouvfr/react-dsfr/Alert"
@@ -24,26 +24,6 @@ type LabellisationAction = {
   message?: string
   severity: AlertProps.Severity
   title: string
-}
-
-const parseAndFilterMergeStr = (
-  data: {
-    [k: string]: FormDataEntryValue
-  },
-  filterMergeKey: string
-): number[][] => {
-  return Object.entries(data)
-    .filter(([key]) => key.includes(filterMergeKey))
-    .map(
-      ([_, mergeStr]) =>
-        (typeof mergeStr === "string" &&
-          mergeStr
-            .split(",")
-            .map(Number)
-            .filter((num) => !isNaN(num))) ||
-        []
-    )
-    .filter((merge) => merge.length >= 2)
 }
 
 export async function action({

@@ -24,10 +24,14 @@ api.interceptors.response.use(
       if (error.code) err.code = error.code
       if (error.message) err.message = error.message
       if (error.response) {
+        const data = error.response.data
+        if (data && Array.isArray(data) && data[0]) {
+          const { message, messageFr } = getErrorMessage(data[0])
+          err.message = message
+          err.messageFr = messageFr
+          if (data[0]?.context) err.context = data[0]?.context
+        }
         if (error.response.status) err.status = error.response.status
-        const { message, messageFr } = getErrorMessage(error.response.data[0])
-        err.message = message
-        err.messageFr = messageFr
       } else if (error.request) {
         if (error.request?.status) err.status = error.request.status
 

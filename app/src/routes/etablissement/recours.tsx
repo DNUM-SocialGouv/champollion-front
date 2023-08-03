@@ -59,7 +59,7 @@ export async function loader({
   if (isAppError(etabType)) {
     throw new Response("", {
       status: etabType.status ?? undefined,
-      statusText: errorWording.etab,
+      statusText: etabType.messageFr ?? errorWording.etab,
     })
   }
 

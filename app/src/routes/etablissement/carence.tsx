@@ -58,12 +58,10 @@ export async function loader({
   const etabType = await getEtablissementsType(siret)
   const idccData = await getCarencesIdcc()
 
-  console.log(idccData)
-
   if (isAppError(etabType)) {
     throw new Response("", {
       status: etabType.status ?? undefined,
-      statusText: errorWording.etab,
+      statusText: etabType.messageFr ?? errorWording.etab,
     })
   }
 
