@@ -337,18 +337,20 @@ export type CorrectedDates = Record<
   }
 >
 
-export const formatCorrectedDates = (contractsDates: Record<string, string>) => {
-  return Object.entries(contractsDates).reduce((acc, [key, value]) => {
-    const [id, dateType] = key.split("-")
-    const contractId = Number(id)
-    const dateTypeKey = `${dateType}_date`
+export const formatCorrectedDates = (contractsDates: Record<string, string> | null) => {
+  if (contractsDates) {
+    return Object.entries(contractsDates).reduce((acc, [key, value]) => {
+      const [id, dateType] = key.split("-")
+      const contractId = Number(id)
+      const dateTypeKey = `${dateType}_date`
 
-    if (contractId && ["start_date", "end_date"].includes(dateTypeKey)) {
-      const dateObj = { ...(acc[contractId] || {}), [dateTypeKey]: value }
-      acc[contractId] = dateObj
-    }
-    return acc
-  }, {} as CorrectedDates)
+      if (contractId && ["start_date", "end_date"].includes(dateTypeKey)) {
+        const dateObj = { ...(acc[contractId] || {}), [dateTypeKey]: value }
+        acc[contractId] = dateObj
+      }
+      return acc
+    }, {} as CorrectedDates)
+  } else return undefined
 }
 
 export {
