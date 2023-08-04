@@ -1,4 +1,4 @@
-import { useRouteError } from "react-router-dom"
+import { Link, useRouteError } from "react-router-dom"
 
 import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup"
 import artworkConnectionLost from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/system/connection-lost.svg"
@@ -53,6 +53,12 @@ export default function Error() {
           ]}
           inlineLayoutWhen="md and up"
         />
+        {![502, 503].includes(Number(errorStatus)) && (
+          <p>
+            Pour consulter la liste des erreurs connues mais pas encore corrigées,{" "}
+            <Link to="/erreurs">cliquez ici</Link>
+          </p>
+        )}
       </div>
 
       <div className="flex lg:w-2/5">
