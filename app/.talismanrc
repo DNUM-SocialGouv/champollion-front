@@ -13,6 +13,8 @@ fileignoreconfig:
   checksum: 36645f0a3967f381f96c76566ebcac100384f75b209e17493cb90067bd5dbbe7
 - filename: app/src/helpers/format.ts
   checksum: b1574cc2254ea15ef994298c8b5ce9b217225414e07076c644395ed00c5a84ac
+- filename: app/src/helpers/postes.tsx
+  checksum: cd3d619b89c960a20bade6c5619bfdd9ba25283f157f90dbefbcc34f696eed6d
 - filename: app/src/routes/etablissement/carence.tsx
   checksum: 99ae163cda4707c7f0498ea8fc252c090bc621ae404b2fd0e13fa26ba8996aee
 - filename: app/src/routes/etablissement/contrats.tsx

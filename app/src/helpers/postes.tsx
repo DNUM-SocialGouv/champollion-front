@@ -81,3 +81,23 @@ export const MultiValueWithMerge = (props: MultiValueProps<Option>) => {
     </>
   )
 }
+
+export const parseAndFilterMergeStr = (
+  data: {
+    [k: string]: FormDataEntryValue
+  },
+  filterMergeKey: string
+): number[][] => {
+  return Object.entries(data)
+    .filter(([key]) => key.includes(filterMergeKey))
+    .map(
+      ([_, mergeStr]) =>
+        (typeof mergeStr === "string" &&
+          mergeStr
+            .split(",")
+            .map(Number)
+            .filter((num) => !isNaN(num))) ||
+        []
+    )
+    .filter((merge) => merge.length >= 2)
+}

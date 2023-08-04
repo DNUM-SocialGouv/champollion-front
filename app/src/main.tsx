@@ -14,10 +14,7 @@ import EtabSynthese, {
   loader as etabSyntheseLoader,
   action as etabSyntheseAction,
 } from "./routes/etablissement/synthese"
-import EtabPostes, {
-  loader as etabPostesLoader,
-  action as etabPostesAction,
-} from "./routes/etablissement/postes"
+import EtabPostes, { loader as etabPostesLoader } from "./routes/etablissement/postes"
 import EtabContrats, {
   loader as etabContratsLoader,
 } from "./routes/etablissement/contrats"
@@ -80,7 +77,6 @@ const router = createBrowserRouter([
           {
             path: "postes",
             element: <EtabPostes />,
-            action: etabPostesAction,
             loader: etabPostesLoader,
           },
           {
