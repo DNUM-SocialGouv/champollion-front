@@ -20,6 +20,51 @@ type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
   {
+    date: "2023-08-04",
+    news: [
+      {
+        category: "Liste des contrats",
+        list: [
+          {
+            type: "feat",
+            desc: "Export des contrats d'un établissement au format tableur LibreOffice",
+          },
+        ],
+      },
+      {
+        category: "Page d'accueil",
+        list: [
+          {
+            type: "feat",
+            desc: "Nouvelle page listant les erreurs connues que nous n'avons pas encore corrigées",
+          },
+          {
+            type: "ezwin",
+            desc: "Nouveau formulaire de satisfaction et de vote pour les prochaines améliorations à apporter au site.",
+          },
+        ],
+      },
+      {
+        category: "Postes",
+        list: [
+          {
+            type: "fix",
+            desc: "Correctif d'une erreur de sauvegarde des fusions de poste (lorsque de nouvelles fusions contenaient un libellé déjà sauvegardé auparavant dans une autre fusion)",
+          },
+        ],
+      },
+      {
+        category: "Délai de carence",
+        list: [
+          {
+            type: "ezwin",
+            desc: "Ajout des détails de calcul des délais de carence, et d'informations plus complètes sur l'accord de branche étendu sélectionné",
+          },
+        ],
+      },
+    ],
+  },
+  {
     date: "2023-07-28",
     news: [
       {
