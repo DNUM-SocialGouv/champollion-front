@@ -15,6 +15,8 @@ fileignoreconfig:
   checksum: b1574cc2254ea15ef994298c8b5ce9b217225414e07076c644395ed00c5a84ac
 - filename: app/src/helpers/postes.tsx
   checksum: cd3d619b89c960a20bade6c5619bfdd9ba25283f157f90dbefbcc34f696eed6d
+- filename: app/src/routes/bugs.tsx
+  checksum: e91d482a9b3da26bc38bd95c9f0d280f21dd00f1ed94567923bacdf3a159d61f
 - filename: app/src/routes/etablissement/carence.tsx
   checksum: 99ae163cda4707c7f0498ea8fc252c090bc621ae404b2fd0e13fa26ba8996aee
 - filename: app/src/routes/etablissement/contrats.tsx

@@ -24,6 +24,7 @@ import ETT, { loader as ettLoader } from "./routes/ett"
 import FAQ, { loader as faqLoader } from "./routes/faq"
 import CGU, { loader as cguLoader } from "./routes/cgu"
 import LegalNotice, { loader as legalNoticeLoader } from "./routes/legalNotice"
+import Bugs from "./routes/bugs"
 import News from "./routes/news"
 import PersonalData, { loader as personalDataLoader } from "./routes/personalData"
 import Labellisation, {
@@ -125,6 +126,11 @@ const router = createBrowserRouter([
         element: <PersonalData />,
         errorElement: <Error />,
         loader: personalDataLoader,
+      },
+      {
+        path: "erreurs",
+        element: <Bugs />,
+        errorElement: <Error />,
       },
       {
         path: "nouveautes",

@@ -12,6 +12,7 @@ import { releaseNotes } from "../helpers/news"
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Input } from "@codegouvfr/react-dsfr/Input"
+import { Notice } from "@codegouvfr/react-dsfr/Notice"
 import artworkDataViz from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/digital/data-visualization.svg"
 import artworkMail from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/digital/mail-send.svg"
 import artworkCommunity from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/leisure/community.svg"
@@ -52,6 +53,13 @@ export default function Index() {
   const error = useActionData() as AppError
   const externalLinks = useLoaderData() as ExternalLink[]
   const [input, setInput] = useState("")
+
+  const noticeBugs = () => (
+    <>
+      Pour consulter la liste des erreurs connues mais pas encore corrigées,{" "}
+      <Link to="/erreurs">cliquez ici</Link>
+    </>
+  )
 
   const externalLinksPicto: Record<string, string> = {
     dataviz: artworkDataViz,
@@ -134,6 +142,14 @@ export default function Index() {
           </div>
         </div>
       )}
+      <div className="fr-container">
+        <div className="fr-my-1w">
+          <Notice
+            classes={{ root: "fr-py-1w", title: "font-normal" }}
+            title={noticeBugs()}
+          />
+        </div>
+      </div>
 
       <div className="fr-container fr-mt-4w fr-mb-6w">
         <div className="fr-grid-row--center fr-grid-row">

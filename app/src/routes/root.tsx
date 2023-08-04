@@ -83,6 +83,13 @@ export default function Root() {
                 text: "FAQ",
               },
               {
+                iconId: "fr-icon-bug-fill",
+                linkProps: {
+                  to: "/erreurs",
+                },
+                text: "Erreurs connues",
+              },
+              {
                 iconId: "fr-icon-lock-line",
                 linkProps: {
                   to: logoutURL,
