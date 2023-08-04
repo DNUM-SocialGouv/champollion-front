@@ -158,11 +158,11 @@ export default function EtabContrats() {
     startDate: formatDate(queryStartDate),
     endDate: formatDate(queryEndDate),
   }
-  const downloadContracts = () => {
-    const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string>
+  const downloadContracts = async () => {
+    const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
     const correctedDates = formatCorrectedDates(lsContrats)
 
-    postContratsExport({
+    await postContratsExport({
       companyName,
       correctedDates,
       employeesIds: queryEmployee ? [queryEmployee] : undefined,
