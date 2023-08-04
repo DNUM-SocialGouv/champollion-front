@@ -1,21 +1,24 @@
-import { FormEvent, Fragment, useEffect, useState } from "react"
-import { ActionFunctionArgs, Form, useActionData, useLoaderData } from "react-router-dom"
+import { Fragment, useEffect, useState } from "react"
+import type { FormEvent } from "react"
+import { Form, useActionData, useLoaderData } from "react-router-dom"
+import type { ActionFunctionArgs } from "react-router-dom"
 import { v4 as uuid } from "uuid"
 
 import {
   getLabellisations as getRandomJobs,
   postLabellisations as postLabellisationsMerges,
 } from "../api"
-import { EtablissementPoste } from "../api/types"
+import type { EtablissementPoste } from "../api/types"
 import { getErrorMessage, isAppError } from "../helpers/errors"
-import { MergeOptionObject } from "../helpers/postes"
+import { parseAndFilterMergeStr, type MergeOptionObject } from "../helpers/postes"
 import { findDuplicates } from "../helpers/format"
 
 import { Alert, AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 
-import AppMultiSelect, { Option } from "../components/AppMultiSelect"
+import AppMultiSelect from "../components/AppMultiSelect"
+import type { Option } from "../components/AppMultiSelect"
 
 type LabellisationAction = {
   message?: string
@@ -23,30 +26,9 @@ type LabellisationAction = {
   title: string
 }
 
-const parseAndFilterMergeStr = (
-  data: {
-    [k: string]: FormDataEntryValue
-  },
-  filterMergeKey: string
-): number[][] => {
-  return Object.entries(data)
-    .filter(([key]) => key.includes(filterMergeKey))
-    .map(
-      ([_, mergeStr]) =>
-        (typeof mergeStr === "string" &&
-          mergeStr
-            .split(",")
-            .map(Number)
-            .filter((num) => !isNaN(num))) ||
-        []
-    )
-    .filter((merge) => merge.length >= 2)
-}
-
 export async function action({
   request,
 }: ActionFunctionArgs): Promise<LabellisationAction> {
-  console.log("action!")
   const formData = await request.formData()
   const etabId = Number(formData.get("etablissement-id"))
   const data = Object.fromEntries(formData)
@@ -81,7 +63,6 @@ type LabellisationLoader = {
 
 export async function loader(): Promise<LabellisationLoader> {
   const jobs = await getRandomJobs()
-  console.log("loader...")
 
   if (isAppError(jobs)) {
     throw new Response("", {

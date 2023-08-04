@@ -14,10 +14,7 @@ import EtabSynthese, {
   loader as etabSyntheseLoader,
   action as etabSyntheseAction,
 } from "./routes/etablissement/synthese"
-import EtabPostes, {
-  loader as etabPostesLoader,
-  action as etabPostesAction,
-} from "./routes/etablissement/postes"
+import EtabPostes, { loader as etabPostesLoader } from "./routes/etablissement/postes"
 import EtabContrats, {
   loader as etabContratsLoader,
 } from "./routes/etablissement/contrats"
@@ -27,6 +24,7 @@ import ETT, { loader as ettLoader } from "./routes/ett"
 import FAQ, { loader as faqLoader } from "./routes/faq"
 import CGU, { loader as cguLoader } from "./routes/cgu"
 import LegalNotice, { loader as legalNoticeLoader } from "./routes/legalNotice"
+import Bugs from "./routes/bugs"
 import News from "./routes/news"
 import PersonalData, { loader as personalDataLoader } from "./routes/personalData"
 import Labellisation, {
@@ -80,7 +78,6 @@ const router = createBrowserRouter([
           {
             path: "postes",
             element: <EtabPostes />,
-            action: etabPostesAction,
             loader: etabPostesLoader,
           },
           {
@@ -129,6 +126,11 @@ const router = createBrowserRouter([
         element: <PersonalData />,
         errorElement: <Error />,
         loader: personalDataLoader,
+      },
+      {
+        path: "erreurs",
+        element: <Bugs />,
+        errorElement: <Error />,
       },
       {
         path: "nouveautes",

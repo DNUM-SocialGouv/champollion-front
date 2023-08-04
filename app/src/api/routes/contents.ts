@@ -1,6 +1,6 @@
-import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import api from "../config"
-import { ExternalLink } from "../types"
+import type { ExternalLink } from "../types"
+import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 
 export const getCgu = async () => {
   try {

@@ -1,10 +1,11 @@
-import { ReactNode, useCallback, useState } from "react"
+import { type ReactNode, useCallback, useState } from "react"
 
 import { Button } from "@codegouvfr/react-dsfr/Button"
 
 type AppCollapseProps = {
   borderLeft?: boolean
   children: ReactNode
+  className?: string
   defaultExpanded?: boolean
   id?: string
   label?: string
@@ -14,6 +15,7 @@ type AppCollapseProps = {
 
 export default function AppCollapse({
   borderLeft,
+  className,
   children,
   defaultExpanded = false,
   id = "app-collapse",
@@ -43,6 +45,7 @@ export default function AppCollapse({
       </div>
 
       <Button
+        className={className}
         iconId="fr-icon-arrow-down-s-line"
         iconPosition="right"
         onClick={onExtendButtonClick}
@@ -50,7 +53,7 @@ export default function AppCollapse({
           "aria-expanded": expandedState,
           "aria-controls": collapseElementId,
           className:
-            " after:content-['*'] after:transition-transform  after:duration-500 after:aria-expanded:-rotate-180",
+            "after:content-['*'] after:transition-transform  after:duration-500 after:aria-expanded:-rotate-180",
         }}
         priority="tertiary no outline"
         size="small"

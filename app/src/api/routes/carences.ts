@@ -1,7 +1,7 @@
+import api from "../config"
+import type { IDCC, Infractions } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import { addArrayParams } from "../../helpers/format"
-import api from "../config"
-import { Infractions } from "../types"
 
 type CarenceParams = {
   id: number
@@ -38,6 +38,15 @@ export const postCarences = async ({
 
     const response = await api.post(`/carences/?${params}`, body)
     return (response.data.data as Infractions) ?? handleUndefinedData("/effectifs")
+  } catch (err) {
+    return handleEndpointError(err)
+  }
+}
+
+export const getCarencesIdcc = async () => {
+  try {
+    const response = await api.get(`/carences/idcc`)
+    return response.data.data as Record<string, IDCC>
   } catch (err) {
     return handleEndpointError(err)
   }

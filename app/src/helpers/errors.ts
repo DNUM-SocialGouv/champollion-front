@@ -9,6 +9,7 @@ type ApiErrorContext = {
   parameter: string
   limit_value?: number
   pattern?: string
+  poste_ids?: number[]
 }
 
 type ApiError = {
@@ -20,6 +21,7 @@ type ApiError = {
 export type AppError = {
   readonly isError: boolean
   code: string
+  context?: ApiErrorContext
   message: string
   messageFr: string
   status: number | null
@@ -27,6 +29,8 @@ export type AppError = {
 
 const backendErrorFr: Record<string, (arg: ErrorParams) => string> = {
   not_found: () => `Données introuvables.`,
+  "bad_request.duplicated_merged_postes": () =>
+    "Vous ne pouvez pas sélectionner un même libellé dans des fusions de poste différentes.",
   "forbidden.too_many_contracts_requested": () =>
     "Votre demande concerne un trop grand nombre de contrats, ce qui entraîne un temps de calcul excessif. Veuillez ajouter des filtres pour réduire le nombre de contrats à analyser.",
   "type_error.integer": ({ field }: ErrorParams) =>
@@ -92,8 +96,8 @@ const getErrorMessage = (error: unknown) => {
         : undefined,
       value: error.context?.limit_value || error.context?.pattern,
     }
-
-    messageFr = backendErrorFr[error?.type](params)
+    messageFr =
+      error?.type && !!backendErrorFr[error?.type] && backendErrorFr[error?.type](params)
     message = error.message
   }
 

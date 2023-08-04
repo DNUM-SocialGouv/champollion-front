@@ -1,5 +1,5 @@
 import api from "../config"
-import { EtablissementInfo, EtablissementType } from "../types"
+import type { EtablissementInfo, EtablissementType } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 
 export const getEtablissementsType = async (input: string) => {

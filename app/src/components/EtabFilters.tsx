@@ -10,12 +10,13 @@ import Checkbox from "@codegouvfr/react-dsfr/Checkbox"
 import Button from "@codegouvfr/react-dsfr/Button"
 import { Select } from "@codegouvfr/react-dsfr/Select"
 
-import AppMultiSelect, { MultiSelectInstance, Option } from "./AppMultiSelect"
+import AppMultiSelect from "./AppMultiSelect"
+import type { MultiSelectInstance, Option } from "./AppMultiSelect"
 
 type EtabFiltersProps = {
   startDate: string
   endDate: string
-  motives?: string[]
+  motives?: number[]
   natures?: string[]
   jobs?: number[]
   jobOptions?: Option[]
@@ -120,7 +121,7 @@ export default function EtabFilters({
   useEffect(() => {
     if (motives && motivesRef.current) {
       const areStateAndPropsEquals = arrayEquals(
-        motivesRef.current.state.selectValue.map((option) => String(option.value)),
+        motivesRef.current.state.selectValue.map((option) => option.value),
         motives
       )
       if (!areStateAndPropsEquals && motiveSelectedOptions) {

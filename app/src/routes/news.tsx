@@ -10,7 +10,7 @@ export default function News() {
         </h1>
         <hr className="fr-mb-2w w-full" />
         {releaseNotes.map((release) => (
-          <div className="fr-p-3w shadow-overlap" key={release.date}>
+          <div className="fr-p-3w fr-mb-3w shadow-overlap" key={release.date}>
             <h2 className="fr-h4">Nouveautés du {formatDate(release.date)}</h2>
             <ul>
               {release.news.map((page, pageIdx) => (

@@ -1,22 +1,18 @@
 import { Fragment, useState } from "react"
-import {
-  ActionFunctionArgs,
-  Form,
-  Link,
-  redirect,
-  useActionData,
-  useLoaderData,
-} from "react-router-dom"
+import { Form, Link, redirect, useActionData, useLoaderData } from "react-router-dom"
+import type { ActionFunctionArgs } from "react-router-dom"
 import ls from "localstorage-slim"
 
 import { getEtablissementsType, getExternalLinks } from "../api"
-import { ExternalLink } from "../api/types"
-import { AppError, isAppError } from "../helpers/errors"
+import type { ExternalLink } from "../api/types"
+import type { AppError } from "../helpers/errors"
+import { isAppError } from "../helpers/errors"
 import { releaseNotes } from "../helpers/news"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Input } from "@codegouvfr/react-dsfr/Input"
+import { Notice } from "@codegouvfr/react-dsfr/Notice"
 import artworkDataViz from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/digital/data-visualization.svg"
 import artworkMail from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/digital/mail-send.svg"
 import artworkCommunity from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/leisure/community.svg"
@@ -31,9 +27,10 @@ export async function action({ request }: ActionFunctionArgs) {
   const etabType = await getEtablissementsType(siret)
 
   if (!isAppError(etabType)) {
-    const lsSirets = (ls.get("lastSirets") as string[][]) || []
-    if (lsSirets.length >= 10) lsSirets.splice(0, lsSirets.length - 9)
-    lsSirets.push([siret, etabType.raisonSociale])
+    let lsSirets = (ls.get("lastSirets") as string[][]) || []
+    lsSirets = lsSirets.filter((element) => element && element[0] !== siret)
+    lsSirets.unshift([siret, etabType.raisonSociale])
+    if (lsSirets.length >= 10) lsSirets.splice(9, lsSirets.length - 1)
     ls.set("lastSirets", lsSirets)
     const redirectTo = etabType.ett ? `/ett/${siret}` : `/etablissement/${siret}`
     return redirect(redirectTo)
@@ -56,6 +53,13 @@ export default function Index() {
   const error = useActionData() as AppError
   const externalLinks = useLoaderData() as ExternalLink[]
   const [input, setInput] = useState("")
+
+  const noticeBugs = () => (
+    <>
+      Pour consulter la liste des erreurs connues mais pas encore corrigées,{" "}
+      <Link to="/erreurs">cliquez ici</Link>
+    </>
+  )
 
   const externalLinksPicto: Record<string, string> = {
     dataviz: artworkDataViz,
@@ -106,7 +110,7 @@ export default function Index() {
                 />
               )}
             </div>
-            <div className="fr-px-3w fr-py-2w border border-solid border-bd-default-grey">
+            <div className="fr-px-3w fr-py-2w w-full border border-solid border-bd-default-grey">
               <SearchHistory searchHistory={searchHistory} />
             </div>
           </div>
@@ -138,6 +142,14 @@ export default function Index() {
           </div>
         </div>
       )}
+      <div className="fr-container">
+        <div className="fr-my-1w">
+          <Notice
+            classes={{ root: "fr-py-1w", title: "font-normal" }}
+            title={noticeBugs()}
+          />
+        </div>
+      </div>
 
       <div className="fr-container fr-mt-4w fr-mb-6w">
         <div className="fr-grid-row--center fr-grid-row">
@@ -182,6 +194,11 @@ function SearchHistory({ searchHistory }: { searchHistory: string[][] }) {
     </li>
   )
 
+  const firstTwo = () =>
+    searchHistory
+      .slice(0, 2)
+      .map(([siret, raisonSociale]) => etablissement(siret, raisonSociale))
+
   return (
     <>
       <h2 className="fr-text--lg fr-mb-1w font-bold">
@@ -191,14 +208,12 @@ function SearchHistory({ searchHistory }: { searchHistory: string[][] }) {
         searchHistory.length > 2 ? (
           <>
             <ul className="fr-m-0">
-              {searchHistory
-                .slice(0, 2)
-                .map(([siret, raisonSociale]) => etablissement(siret, raisonSociale))}
-
-              <AppCollapse>
-                {searchHistory
-                  .slice(2)
-                  .map(([siret, raisonSociale]) => etablissement(siret, raisonSociale))}
+              <AppCollapse shortDesc={firstTwo()}>
+                <ul className="fr-pl-0 fr-my-0">
+                  {searchHistory
+                    .slice(2)
+                    .map(([siret, raisonSociale]) => etablissement(siret, raisonSociale))}
+                </ul>
               </AppCollapse>
             </ul>
           </>

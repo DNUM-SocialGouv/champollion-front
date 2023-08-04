@@ -1,10 +1,10 @@
-import { ReactNode } from "react"
+import type { ReactNode } from "react"
+import { Link } from "react-router-dom"
 
-import { Effectif, EffectifUnit } from "../api/types"
+import type { Effectif, EffectifUnit } from "../api/types"
 import { formatDate, formatNumber } from "./format"
 
-import { MonthData } from "../components/EffectifBarChart"
-import { Link } from "react-router-dom"
+import type { MonthData } from "../components/EffectifBarChart"
 
 const formatEffectifs = (effectifs: Effectif[]) =>
   effectifs.map(({ date, cdiCount, cddCount, cttCount }) => {

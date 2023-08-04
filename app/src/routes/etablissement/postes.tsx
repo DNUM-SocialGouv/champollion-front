@@ -1,61 +1,30 @@
-import { FormEvent, Fragment, useState } from "react"
-import {
-  ActionFunctionArgs,
-  Form,
-  LoaderFunctionArgs,
-  useActionData,
-  useLoaderData,
-} from "react-router-dom"
+import { type FormEvent, Fragment, useState } from "react"
+import { useLoaderData } from "react-router-dom"
+import type { LoaderFunctionArgs } from "react-router-dom"
 import ls from "localstorage-slim"
 import { v4 as uuid } from "uuid"
 
 import { getEtablissementsType, postPostes } from "../../api"
-import { EtablissementPoste } from "../../api/types"
+import type { EtablissementPoste } from "../../api/types"
 import { errorWording, isAppError } from "../../helpers/errors"
-import { findDuplicates, formatLocalMerges } from "../../helpers/format"
+import { formatLocalMerges } from "../../helpers/format"
 import { JobMergedBadge } from "../../helpers/contrats"
-import { MergeOptionObject } from "../../helpers/postes"
+import { parseAndFilterMergeStr, type MergeOptionObject } from "../../helpers/postes"
 
-import { Alert, AlertProps } from "@codegouvfr/react-dsfr/Alert"
+import { Alert } from "@codegouvfr/react-dsfr/Alert"
+import type { AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 
 import AppRebound from "../../components/AppRebound"
-import AppMultiSelect, { Option } from "../../components/AppMultiSelect"
-
-type EtabPostesAction = {
-  message?: string
-  severity: AlertProps.Severity
-  title: string
-}
+import AppMultiSelect, { type Option } from "../../components/AppMultiSelect"
 
 type EtabPostesLoader = {
+  etabId: number
   jobList: EtablissementPoste[]
   options: Option[]
   savedMerges: MergeOptionObject[]
-}
-
-export async function action({
-  params,
-  request,
-}: ActionFunctionArgs): Promise<EtabPostesAction> {
-  const formData = await request.formData()
-  const data = Object.fromEntries(formData)
-  const formattedJobMergesList = Object.values(data).map(
-    (merge) => (typeof merge === "string" && merge.split(",").map(Number)) || []
-  )
-  const validJobMergesList = formattedJobMergesList.filter((merge) => merge.length > 1)
-
-  let message = ""
-  if (formattedJobMergesList.some((merge) => merge.length === 1))
-    message = "Les fusions ne contenant qu'un seul libellé ne sont pas prises en compte."
-
-  ls.set(`etab.${params.siret}.merges`, validJobMergesList)
-  return {
-    title: "Sauvegardé",
-    severity: "success",
-    message,
-  }
+  siret: string
 }
 
 export async function loader({ params }: LoaderFunctionArgs): Promise<EtabPostesLoader> {
@@ -65,7 +34,7 @@ export async function loader({ params }: LoaderFunctionArgs): Promise<EtabPostes
   if (isAppError(etabType)) {
     throw new Response("", {
       status: etabType.status ?? undefined,
-      statusText: errorWording.etab,
+      statusText: etabType.messageFr ?? errorWording.etab,
     })
   }
 
@@ -73,7 +42,7 @@ export async function loader({ params }: LoaderFunctionArgs): Promise<EtabPostes
 
   if (isAppError(etabPostes)) {
     const responseParams: ResponseInit = {
-      statusText: errorWording.etab,
+      statusText: etabPostes.messageFr ?? errorWording.etab,
     }
     if (etabPostes.status) responseParams.status = etabPostes.status
     if (etabPostes.status == 404) responseParams.statusText = "Postes introuvables."
@@ -105,7 +74,7 @@ export async function loader({ params }: LoaderFunctionArgs): Promise<EtabPostes
 
   if (isAppError(jobListWithMerge)) {
     const responseParams: ResponseInit = {
-      statusText: errorWording.etab,
+      statusText: jobListWithMerge.messageFr ?? errorWording.etab,
     }
     if (jobListWithMerge.status) responseParams.status = jobListWithMerge.status
     if (jobListWithMerge.status == 404) responseParams.statusText = "Postes introuvables."
@@ -113,22 +82,29 @@ export async function loader({ params }: LoaderFunctionArgs): Promise<EtabPostes
   }
 
   return {
+    etabId: etabType.id,
     jobList: jobListWithMerge,
     options,
     savedMerges,
+    siret,
   }
 }
 
 export default function EtabPostes() {
-  const savedState = useActionData() as EtabPostesAction
-  const { jobList, options, savedMerges } = useLoaderData() as EtabPostesLoader
+  const {
+    etabId,
+    jobList: initialJobList,
+    options,
+    savedMerges,
+    siret,
+  } = useLoaderData() as EtabPostesLoader
   const [merges, setMerges] = useState(savedMerges)
-  const [alertState, setAlertState] = useState(savedState)
-  const [prevSavedState, setPrevSavedState] = useState(savedState)
-  if (savedState !== prevSavedState) {
-    setPrevSavedState(savedState)
-    setAlertState(savedState)
-  }
+  const [jobList, setJobList] = useState(initialJobList)
+  const [alertState, setAlertState] = useState<{
+    message?: string
+    severity: AlertProps.Severity
+    title: string
+  } | null>(null)
 
   const modal = createModal({
     id: "job-list-modal",
@@ -138,6 +114,47 @@ export default function EtabPostes() {
   const handleAddMerge = () => setMerges([...merges, { id: uuid(), mergedOptions: [] }])
   const handleDeleteMerge = (id: number | string) =>
     setMerges(merges.filter((merge) => merge.id !== id))
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    // it would probably be better to use state for formData instead of getting a FormData and parsing it,
+    // but it was the code inside the former route action so quicker to keep it as is
+    const formData = new FormData(event.currentTarget as HTMLFormElement)
+    const data = Object.fromEntries(formData)
+
+    const merges = parseAndFilterMergeStr(data, "merge")
+
+    const jobListWithMerge = await postPostes(etabId, merges)
+
+    let message = "Une erreur s'est produite, vos fusions n'ont pas pu être sauvegardées."
+    let severity: AlertProps.Severity = "error"
+    let title = "Erreur"
+
+    if (isAppError(jobListWithMerge)) {
+      if (jobListWithMerge?.context && jobListWithMerge.context?.poste_ids) {
+        const duplicatedJobsIds = jobListWithMerge.context?.poste_ids
+        const duplicatedJobsLabels = duplicatedJobsIds
+          .map((jobId) => options.find((job) => job.value === jobId)?.label)
+          .filter(Boolean)
+        message = `Vous ne pouvez pas sélectionner un même libellé dans des fusions différentes :
+        ${duplicatedJobsLabels.join(", ")}`
+      }
+      const responseParams: ResponseInit = {
+        statusText: jobListWithMerge.messageFr ?? errorWording.etab,
+      }
+      if (jobListWithMerge.status) responseParams.status = jobListWithMerge.status
+      if (jobListWithMerge.status == 404)
+        responseParams.statusText = "Postes introuvables."
+    } else {
+      ls.set(`etab.${siret}.merges`, merges)
+      setJobList(jobListWithMerge)
+      severity = "success"
+      title = "Sauvegardé"
+      message = "Les fusions ont bien été prises en compte."
+    }
+
+    setAlertState({ severity, title, message })
+  }
 
   return (
     <>
@@ -163,24 +180,7 @@ export default function EtabPostes() {
         </modal.Component>
         <h2 className="fr-text--xl fr-mb-1w">Fusion de postes</h2>
         <hr />
-        <Form
-          className="flex flex-col"
-          method="post"
-          onSubmit={(event: FormEvent) => {
-            const duplicatedPostes = findDuplicates(
-              merges.map((merge) => merge.mergedOptions).flat()
-            )
-            if (duplicatedPostes.length > 0) {
-              event.preventDefault()
-              setAlertState({
-                message: `Vous ne pouvez pas sélectionner un même libellé dans des fusions différentes :
-        ${duplicatedPostes.map((poste) => poste.label).join(", ")}`,
-                severity: "error",
-                title: "Erreur",
-              })
-            }
-          }}
-        >
+        <form className="flex flex-col" method="post" onSubmit={handleSubmit}>
           <p>
             Vous pouvez choisir de fusionner certains libellés de postes correspondant à
             la même identité de poste.
@@ -261,7 +261,7 @@ export default function EtabPostes() {
           <div className="fr-mt-4w self-end">
             <Button type="submit">Sauvegarder</Button>
           </div>
-        </Form>
+        </form>
         <h2 className="fr-text--xl fr-mb-1w fr-mt-3w">Actions</h2>
         <hr />
         <div className="fr-grid-row fr-grid-row--gutters">

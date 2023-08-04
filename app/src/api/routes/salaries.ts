@@ -1,5 +1,5 @@
 import api from "../config"
-import { Salarie } from "../types"
+import type { Salarie } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 
 export const getSalaries = async (id: number) => {

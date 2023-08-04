@@ -13,9 +13,13 @@ const isProd: boolean = import.meta.env.PROD
 
 const brandTop = (
   <>
-    Ministères
+    Ministère
     <br />
-    sociaux
+    du travail,
+    <br />
+    du plein emploi
+    <br />
+    et de l'insertion
   </>
 )
 
@@ -77,6 +81,13 @@ export default function Root() {
                   to: "/faq",
                 },
                 text: "FAQ",
+              },
+              {
+                iconId: "fr-icon-bug-fill",
+                linkProps: {
+                  to: "/erreurs",
+                },
+                text: "Erreurs connues",
               },
               {
                 iconId: "fr-icon-lock-line",

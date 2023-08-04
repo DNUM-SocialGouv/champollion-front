@@ -1,14 +1,14 @@
 import ls from "localstorage-slim"
 import {
-  ActionFunctionArgs,
+  type ActionFunctionArgs,
   Form,
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   useActionData,
   useLoaderData,
 } from "react-router-dom"
 import { getEtablissementsInfo, getEtablissementsType, getEffectifsLast } from "../../api"
-import { EtablissementInfo, LastEffectif } from "../../api/types"
-import { AppError, errorWording, isAppError } from "../../helpers/errors"
+import type { EtablissementInfo, LastEffectif } from "../../api/types"
+import { type AppError, errorWording, isAppError } from "../../helpers/errors"
 import { formatLocalOpenDays } from "../../helpers/format"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
@@ -44,7 +44,7 @@ export async function loader({
   if (isAppError(etabType)) {
     throw new Response("", {
       status: etabType.status ?? undefined,
-      statusText: errorWording.etab,
+      statusText: etabType.messageFr ?? errorWording.etab,
     })
   }
 

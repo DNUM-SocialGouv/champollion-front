@@ -1,12 +1,7 @@
-import {
-  CSSProperties,
-  ForwardedRef,
-  forwardRef,
-  useEffect,
-  useId,
-  useState,
-} from "react"
-import Select, {
+import type { CSSProperties, ForwardedRef } from "react"
+import { forwardRef, useEffect, useId, useState } from "react"
+import Select from "react-select"
+import type {
   ClearIndicatorProps,
   GroupBase,
   InputActionMeta,

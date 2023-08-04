@@ -1,6 +1,6 @@
 import { useState } from "react"
 import {
-  LoaderFunctionArgs,
+  type LoaderFunctionArgs,
   Outlet,
   redirect,
   useLoaderData,
@@ -30,7 +30,7 @@ export async function loader({
 
   if (isAppError(etabType)) {
     const responseParams: ResponseInit = {
-      statusText: errorWording.etab,
+      statusText: etabType.messageFr ?? errorWording.etab,
     }
     if (etabType.status) responseParams.status = etabType.status
     if (etabType.status == 404) responseParams.statusText = "SIRET introuvable."

@@ -1,16 +1,16 @@
-import { Dispatch, FormEvent, ReactNode, SetStateAction } from "react"
+import type { Dispatch, FormEvent, ReactNode, SetStateAction } from "react"
 import { Link } from "react-router-dom"
 import ls from "localstorage-slim"
 
 import { formatDate } from "./format"
-import { EtuContrat } from "../api/types"
+import type { EtuContrat } from "../api/types"
 
 import { AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Input } from "@codegouvfr/react-dsfr/Input"
 
-import { Option } from "../components/AppMultiSelect"
+import type { Option } from "../components/AppMultiSelect"
 
 type FormattedContrat = {
   id: number
@@ -328,6 +328,28 @@ const contractNatures = [
   { key: "cdd", code: "02", label: "CDD" },
   { key: "ctt", code: "03", label: "CTT (intérim)" },
 ]
+
+export type CorrectedDates = Record<
+  number,
+  {
+    start_date?: string
+    end_date?: string
+  }
+>
+
+export const formatCorrectedDates = (contractsDates: Record<string, string>) => {
+  return Object.entries(contractsDates).reduce((acc, [key, value]) => {
+    const [id, dateType] = key.split("-")
+    const contractId = Number(id)
+    const dateTypeKey = `${dateType}_date`
+
+    if (contractId && ["start_date", "end_date"].includes(dateTypeKey)) {
+      const dateObj = { ...(acc[contractId] || {}), [dateTypeKey]: value }
+      acc[contractId] = dateObj
+    }
+    return acc
+  }, {} as CorrectedDates)
+}
 
 export {
   contractNatures,
