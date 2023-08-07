@@ -6,7 +6,7 @@ networks:
 services:
   app:
     image: ${NEXUS_CHAMPOLLION_URL}/front/app:${APP_IMAGE_TAG}
-    container_name: champollion-front-app-${COMPOSE_PROJECT_NAME}
+    container_name: champollion-${COMPOSE_PROJECT_NAME}-front-app
     environment:
       API_URL: ${API_URL}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
@@ -14,11 +14,11 @@ services:
     networks:
       - champollion
     volumes:
-    - ${LOGS_STORAGE_PATH}/champollion-front-reverse-proxy-${COMPOSE_PROJECT_NAME}/app:/var/log/nginx
+    - ${LOGS_STORAGE_PATH}/champollion-front-app-${COMPOSE_PROJECT_NAME}/app:/var/log/nginx
   
   oauth2-proxy:
     image: ${NEXUS_CHAMPOLLION_URL}/front/oauth2-proxy:${OAUTH2_PROXY_IMAGE_TAG}
-    container_name: champollion-front-oauth2-proxy-${COMPOSE_PROJECT_NAME}
+    container_name: champollion-${COMPOSE_PROJECT_NAME}-front-oauth2-proxy
     restart: on-failure
     networks:
       - champollion
@@ -50,7 +50,7 @@ services:
 
   reverse-proxy:
     image: ${NEXUS_CHAMPOLLION_URL}/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG}
-    container_name: champollion-front-reverse-proxy-${COMPOSE_PROJECT_NAME}
+    container_name: champollion-front-${COMPOSE_PROJECT_NAME}-reverse-proxy
     restart: on-failure
     networks:
       - champollion
