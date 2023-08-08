@@ -3,7 +3,12 @@ import { type LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-r
 import ls from "localstorage-slim"
 import { v4 as uuid } from "uuid"
 
-import { postEffectifs, postPostes, getEtablissementsType } from "../../api"
+import {
+  postEffectifs,
+  postPostes,
+  getEtablissementsType,
+  getEtablissementsDefaultPeriod,
+} from "../../api"
 import type {
   Effectif,
   EffectifUnit,
@@ -28,9 +33,7 @@ import {
   getQueryAsNumberArray,
   getQueryAsString,
   nextMonth,
-  oneYearAgo,
   prevMonth,
-  today,
 } from "../../helpers/format"
 import { initJobOptions } from "../../helpers/postes"
 
@@ -46,20 +49,13 @@ import AppRebound from "../../components/AppRebound"
 import EffectifBarChart, { type GrayAreasInput } from "../../components/EffectifBarChart"
 import EtabFilters from "../../components/EtabFilters"
 import AppCollapse from "../../components/AppCollapse"
+import { getQueryDates } from "../../helpers/filters"
 
 export async function loader({
   params,
   request,
 }: LoaderFunctionArgs): Promise<EtabPostesLoader> {
   const { searchParams } = new URL(request.url)
-  const queryStartDate = getQueryAsString(searchParams, "debut") || oneYearAgo
-  const queryEndDate = getQueryAsString(searchParams, "fin") || today
-  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
-  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
-  const queryUnit = getQueryAsString(searchParams, "unit")
-  const motives = queryMotives.map((motive) => Number(motive))
-
-  const unit: EffectifUnit = isEffectifUnit(queryUnit) ? queryUnit : "tot"
 
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
@@ -70,6 +66,19 @@ export async function loader({
       statusText: etabType.messageFr ?? errorWording.etab,
     })
   }
+
+  const etabDefaultPeriod = await getEtablissementsDefaultPeriod(etabType.id)
+
+  const { queryStartDate, queryEndDate } = getQueryDates({
+    etabDefaultPeriod,
+    searchParams,
+  })
+  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
+  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
+  const queryUnit = getQueryAsString(searchParams, "unit")
+  const motives = queryMotives.map((motive) => Number(motive))
+
+  const unit: EffectifUnit = isEffectifUnit(queryUnit) ? queryUnit : "tot"
 
   const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
   const formattedMergesIds = formatLocalMerges(localMergesIds)
@@ -388,12 +397,15 @@ function EtabPostesEffectifs({
           },
         ]}
       />
-      {initialUnitOption && initialUnitOption.value && effectifsData.length > 0 && (
-        <>
-          <h3 className="fr-text--md fr-mt-2w fr-mb-1v font-bold">Notes de lectures</h3>
-          <p>{getReadingNotes(effectifsData[0], initialUnitOption.value)}</p>
-        </>
-      )}
+
+      {initialUnitOption &&
+        initialUnitOption.value &&
+        filteredEffectifsData.length > 0 && (
+          <>
+            <h3 className="fr-text--md fr-mt-2w fr-mb-1v font-bold">Notes de lectures</h3>
+            <p>{getReadingNotes(filteredEffectifsData[0], initialUnitOption.value)}</p>
+          </>
+        )}
 
       <Accordion
         label="Afficher les effectifs sous forme de tableau"

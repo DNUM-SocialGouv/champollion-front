@@ -13,6 +13,8 @@ fileignoreconfig:
   checksum: 19d893315ec9d917d778ea490c2c86d4ef3ab7d87ffddebe422807311a10bf94
 - filename: app/src/helpers/effectifs.tsx
   checksum: 36645f0a3967f381f96c76566ebcac100384f75b209e17493cb90067bd5dbbe7
+- filename: app/src/helpers/filters.ts
+  checksum: 47afe0e0b4c83833e565c6e67e20cae2fc8bdcbcff98f62e810b9ab57346e080
 - filename: app/src/helpers/format.ts
   checksum: b1574cc2254ea15ef994298c8b5ce9b217225414e07076c644395ed00c5a84ac
 - filename: app/src/helpers/postes.tsx

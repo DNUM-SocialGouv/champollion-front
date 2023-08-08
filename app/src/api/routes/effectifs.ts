@@ -1,7 +1,7 @@
 import api from "../config"
 import type { Effectif, EffectifUnit, IndicatorMetaData, LastEffectif } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
-import { motivesCodeDict } from "../../helpers/contrats"
+import { motivesCodeDict } from "../../helpers/filters"
 
 type EffectifsParams = {
   id: number

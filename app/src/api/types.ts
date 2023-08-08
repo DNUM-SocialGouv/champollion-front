@@ -30,6 +30,14 @@ export type EtablissementInfo = {
   libelleConventionCollective?: string
 }
 
+export type EtablissementDefaultPeriod = {
+  startDate: string | null
+  endDate: string | null
+  firstValidDate: string | null
+  lastValidDate: string | null
+  etablissementId: number
+}
+
 export type MergedCode = 0 | 1
 
 export type EtablissementPoste = {

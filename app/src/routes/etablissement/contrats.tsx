@@ -9,6 +9,7 @@ import {
   postPostes,
   postContratsEtu,
   postContratsExport,
+  getEtablissementsDefaultPeriod,
 } from "../../api"
 import type {
   EtablissementPoste,
@@ -17,13 +18,8 @@ import type {
   Salarie,
 } from "../../api/types"
 import type { EditableDate, ContratDatesState } from "../../helpers/contrats"
-import {
-  formatContrats,
-  headers,
-  motiveOptions,
-  contractNatures,
-  formatCorrectedDates,
-} from "../../helpers/contrats"
+import { formatContrats, headers, formatCorrectedDates } from "../../helpers/contrats"
+import { motiveOptions, contractNatures, getQueryDates } from "../../helpers/filters"
 import type { AppError } from "../../helpers/errors"
 import { errorWording, isAppError } from "../../helpers/errors"
 import {
@@ -33,10 +29,7 @@ import {
   getQueryAsArray,
   getQueryAsNumber,
   getQueryAsNumberArray,
-  getQueryAsString,
   getQueryPage,
-  oneYearAgo,
-  today,
 } from "../../helpers/format"
 import { initEmployeeOptions, initJobOptions } from "../../helpers/postes"
 import { DateStatusBadge } from "../../helpers/contrats"
@@ -56,14 +49,6 @@ export async function loader({
 }: LoaderFunctionArgs): Promise<CarenceContratsLoader> {
   const { searchParams } = new URL(request.url)
 
-  const queryStartDate = getQueryAsString(searchParams, "debut") || oneYearAgo
-  const queryEndDate = getQueryAsString(searchParams, "fin") || today
-  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
-  const queryNature = getQueryAsArray(searchParams, "nature")
-  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
-  const queryEmployee = getQueryAsNumber(searchParams, "salarie")
-  const page = getQueryPage(searchParams)
-
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
 
@@ -73,6 +58,19 @@ export async function loader({
       statusText: etabType.messageFr ?? errorWording.etab,
     })
   }
+
+  const etabDefaultPeriod = await getEtablissementsDefaultPeriod(etabType.id)
+
+  const { queryStartDate, queryEndDate } = getQueryDates({
+    etabDefaultPeriod,
+    searchParams,
+  })
+  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
+  const queryNature = getQueryAsArray(searchParams, "nature")
+  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
+  const queryEmployee = getQueryAsNumber(searchParams, "salarie")
+  const page = getQueryPage(searchParams)
+
   const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
   const formattedMergesIds = formatLocalMerges(localMergesIds)
 

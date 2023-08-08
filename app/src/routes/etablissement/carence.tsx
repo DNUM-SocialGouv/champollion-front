@@ -4,6 +4,7 @@ import { Fragment } from "react"
 
 import {
   getCarencesIdcc,
+  getEtablissementsDefaultPeriod,
   getEtablissementsType,
   postCarences,
   postPostes,
@@ -24,11 +25,10 @@ import {
   formatLocalOpenDays,
   getQueryAsNumberArray,
   getQueryAsString,
-  oneYearAgo,
-  today,
 } from "../../helpers/format"
 import type { AppError } from "../../helpers/errors"
 import { errorWording, isAppError } from "../../helpers/errors"
+import { getQueryDates } from "../../helpers/filters"
 import { initJobOptions } from "../../helpers/postes"
 
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
@@ -49,10 +49,6 @@ export async function loader({
   request,
 }: LoaderFunctionArgs): Promise<EtabCarenceLoader> {
   const { searchParams } = new URL(request.url)
-  const queryStartDate = getQueryAsString(searchParams, "debut") || oneYearAgo
-  const queryEndDate = getQueryAsString(searchParams, "fin") || today
-  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
-  const queryLegislation = getQueryAsString(searchParams, "legislation") || "droitCommun"
 
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
@@ -64,6 +60,14 @@ export async function loader({
       statusText: etabType.messageFr ?? errorWording.etab,
     })
   }
+  const etabDefaultPeriod = await getEtablissementsDefaultPeriod(etabType.id)
+
+  const { queryStartDate, queryEndDate } = getQueryDates({
+    etabDefaultPeriod,
+    searchParams,
+  })
+  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
+  const queryLegislation = getQueryAsString(searchParams, "legislation") || "droitCommun"
 
   const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
   const formattedMergesIds = formatLocalMerges(localMergesIds)
