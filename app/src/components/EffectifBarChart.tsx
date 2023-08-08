@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react"
 
+import { computeGrayAreasCoordinates } from "../helpers/effectifs"
 import { capitalize, formatNumber } from "../helpers/format"
 
 import {
@@ -9,6 +10,7 @@ import {
   CartesianGrid,
   Label,
   Legend,
+  ReferenceArea,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -22,7 +24,9 @@ type EffectifBarChartType = {
   isStacked: boolean
   unit: string
   data: MonthData[]
+  grayAreasData: GrayAreasInput
 }
+
 export type MonthData = {
   name: string
   date: string
@@ -30,17 +34,36 @@ export type MonthData = {
   cdd: number
   cdi: number
   ctt: number
+  isEmpty: boolean
+}
+
+export type GrayAreasInput = {
+  startRequestedDate: string | null
+  lastInvalidPastMonth: string | null
+  firstInvalidFutureMonth: string | null
+  endRequestedDate: string | null
+  maxHeight: number
 }
 
 export default function EffectifBarChart({
   isStacked = false,
   unit,
   data,
+  grayAreasData,
 }: EffectifBarChartType) {
   const [brushIndexes, setBrushIndexes] = useState({
     startIndex: 0,
     endIndex: data.length - 1,
   })
+  const brushStartDate = data[brushIndexes.startIndex]?.date
+  const brushEndDate = data[brushIndexes.endIndex]?.date
+
+  const { pastX1, pastX2, futureX1, futureX2 } = computeGrayAreasCoordinates({
+    grayAreasData,
+    brushStartDate,
+    brushEndDate,
+  })
+
   useMemo(
     () => setBrushIndexes({ ...brushIndexes, endIndex: data.length - 1 }),
     [data.length]
@@ -65,27 +88,43 @@ export default function EffectifBarChart({
     label,
   }: TooltipProps<ValueType, NameType>) => {
     if (active && payload && payload?.length > 0) {
-      const data = payload?.[0]?.payload
+      const data = payload?.[0]?.payload as MonthData
       const formattedDate = capitalize(data.name)
 
       return (
         <div className="fr-p-2w border border-solid border-bd-default-grey bg-bg-default-grey shadow-overlap">
           <p className="fr-mb-1w font-bold">{formattedDate || label}</p>
           <hr className="fr-pb-1v" />
-          <ul className="fr-p-0 list-outside list-none">
-            {payload.map(({ value, name, unit, color, stroke }) => {
-              const formattedValue =
-                value && Number(value) ? formatNumber(value as number) : value
+          {data?.isEmpty === true ? (
+            <>
+              {/* Text separated in different tags to keep the tooltip narrow */}
+              <p className="fr-m-0">Aucune donnée disponible</p>
+              <p className="fr-m-0 italic text-tx-mention-grey">
+                (DSN non prise en compte sur ce site{" "}
+              </p>
+              <p className="fr-m-0 italic text-tx-mention-grey">
+                ou non déclarée par l'établissement).
+              </p>
+            </>
+          ) : (
+            <ul className="fr-p-0 list-outside list-none">
+              {payload.map(({ value, name, unit, color, stroke }) => {
+                const formattedValue =
+                  value && Number(value) ? formatNumber(value as number) : value
 
-              return (
-                <li style={{ color: stroke || color }} key={name}>
-                  <span className="font-bold">{formattedValue} </span>{" "}
-                  {unit ? `${unit} en ` : ""}
-                  {name}
-                </li>
-              )
-            })}
-          </ul>
+                // @ts-ignore: Rechart types incorrect for ValueType
+                if (value === false) return null
+
+                return (
+                  <li style={{ color: stroke || color }} key={name}>
+                    <span className="font-bold">{formattedValue} </span>{" "}
+                    {unit ? `${unit} en ` : ""}
+                    {name}
+                  </li>
+                )
+              })}
+            </ul>
+          )}
         </div>
       )
     }
@@ -172,6 +211,7 @@ export default function EffectifBarChart({
             tickCount={8}
             allowDecimals={false}
             stroke="var(--text-mention-grey)"
+            type="number"
           >
             <Label
               value={capitalize(unit)}
@@ -189,13 +229,14 @@ export default function EffectifBarChart({
               fill: "var(--background-alt-grey)",
             }}
           />
+
           <Legend
             align="right"
             className="fr-ml-3w"
             iconSize={30}
             formatter={(value, entry) => {
               // @ts-ignore: Rechart types incorrect for payload
-              const color = entry?.payload?.stroke || entry.color
+              const color = entry?.payload?.stroke || "var(--text-mention-grey)"
               return <span style={{ color }}>{value}</span>
             }}
             layout="vertical"
@@ -204,13 +245,17 @@ export default function EffectifBarChart({
             verticalAlign="top"
             wrapperStyle={{ marginRight: "-1em", marginTop: "2em" }}
           />
+
           <Bar
             dataKey="cdi"
             fill="var(--artwork-minor-blue-cumulus)"
+            stroke="var(--artwork-minor-blue-cumulus)"
             fillOpacity={barOpacity.cdi}
             name="CDI"
+            stackId="fakeBarForLegend"
             unit={unit}
           />
+
           <Bar
             dataKey="cdd"
             fill="url(#diagonal-lines)"
@@ -233,6 +278,37 @@ export default function EffectifBarChart({
             strokeWidth={1}
             unit={unit}
           />
+
+          {/* The reference areas are gray areas displayed when no data is available (closed company or data not integrated yet) */}
+          <ReferenceArea
+            x1={pastX1}
+            x2={pastX2}
+            y1={0}
+            y2={grayAreasData.maxHeight}
+            ifOverflow="hidden"
+            fill="var(--background-contrast-grey)"
+            fillOpacity={100}
+          />
+          <ReferenceArea
+            x1={futureX1}
+            x2={futureX2}
+            y1={0}
+            y2={grayAreasData.maxHeight}
+            ifOverflow="hidden"
+            fill="var(--background-contrast-grey)"
+            fillOpacity={100}
+            isFront
+          />
+
+          {/* This is a "hack" bar, invisible, just to create a legend for the ReferenceAreas */}
+          <Bar
+            dataKey="isEmpty"
+            name="Aucune donnée"
+            legendType="rect"
+            fill="var(--background-contrast-grey)"
+            stackId="fakeBarForLegend"
+          />
+
           <Brush
             dataKey="label"
             endIndex={brushIndexes.endIndex}
@@ -247,7 +323,7 @@ export default function EffectifBarChart({
                 endIndex: Number(endIndex),
               })
             }}
-          ></Brush>
+          />
         </BarChart>
       </ResponsiveContainer>
     </>

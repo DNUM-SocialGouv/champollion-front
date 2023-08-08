@@ -63,11 +63,15 @@ const keysToCamel = (input: any): any => {
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
 
-const formatDate = (date: string | null, format = "DD/MM/YYYY") =>
+const formatDate = (date: string | dayjs.Dayjs | null, format = "DD/MM/YYYY") =>
   dayjs(date).isValid() ? dayjs(date).format(format) : ""
 
 const today = dayjs().format("YYYY-MM-DD")
 const oneYearAgo = dayjs().subtract(1, "year").format("YYYY-MM-DD")
+export const nextMonth = (date: string | null) =>
+  dayjs(date).isValid() ? dayjs(date).add(1, "month") : ""
+export const prevMonth = (date: string | null) =>
+  dayjs(date).isValid() ? dayjs(date).subtract(1, "month") : ""
 
 const formatNumber = (value: number | string) =>
   value && Number(value)

@@ -1,5 +1,5 @@
 import api from "../config"
-import type { Effectif, EffectifUnit, LastEffectif } from "../types"
+import type { Effectif, EffectifUnit, IndicatorMetaData, LastEffectif } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import { motivesCodeDict } from "../../helpers/contrats"
 
@@ -54,7 +54,15 @@ export const postEffectifs = async ({
       body = Object.assign(body, { merged_poste_ids: mergedPostesIds })
 
     const response = await api.post(`/effectifs/?${params}`, body)
-    return (response.data.data as Effectif[]) ?? handleUndefinedData("/effectifs")
+    const effectifs = response.data?.data as Effectif[]
+    const meta = response.data?.meta as IndicatorMetaData
+
+    if (effectifs && meta) {
+      return {
+        effectifs,
+        meta,
+      }
+    } else return handleUndefinedData("/effectifs/")
   } catch (err) {
     return handleEndpointError(err)
   }

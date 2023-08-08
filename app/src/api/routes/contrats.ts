@@ -1,5 +1,5 @@
 import api from "../config"
-import type { EttContrat, EtuContrat, MetaData } from "../types"
+import type { EttContrat, EtuContrat, PaginationMetaData } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import { type CorrectedDates, motivesCodeDict } from "../../helpers/contrats"
 import { addArrayParams } from "../../helpers/format"
@@ -76,7 +76,7 @@ export const postContratsEtu = async ({
 
     const response = await api.post(`/contrats/etu?${params}`, body)
     const contrats = response.data?.data as EtuContrat[]
-    const meta = response.data?.meta as MetaData
+    const meta = response.data?.meta as PaginationMetaData
 
     if (contrats && meta) {
       return {
@@ -111,7 +111,7 @@ export const getContratsEtt = async ({
 
     const response = await api.post(`/contrats/ett?${params}`)
     const contrats = response.data?.data as EttContrat[]
-    const meta = response.data?.meta as MetaData
+    const meta = response.data?.meta as PaginationMetaData
 
     if (contrats && meta) {
       return {

@@ -8,7 +8,12 @@ import {
   getContratsEtt,
   getEffectifsLast,
 } from "../api"
-import type { EtablissementInfo, EttContrat, LastEffectif, MetaData } from "../api/types"
+import type {
+  EtablissementInfo,
+  EttContrat,
+  LastEffectif,
+  PaginationMetaData,
+} from "../api/types"
 import type { AppError } from "../helpers/errors"
 import { errorWording, isAppError } from "../helpers/errors"
 import { formatDate } from "../helpers/format"
@@ -69,7 +74,7 @@ type ETTLoader = {
     | AppError
     | {
         contrats: EttContrat[]
-        meta: MetaData
+        meta: PaginationMetaData
       }
 }
 
@@ -146,7 +151,13 @@ export default function ETT() {
   )
 }
 
-function ETTContrats({ contrats, meta }: { contrats: EttContrat[]; meta: MetaData }) {
+function ETTContrats({
+  contrats,
+  meta,
+}: {
+  contrats: EttContrat[]
+  meta: PaginationMetaData
+}) {
   const { page, siret } = useLoaderData() as ETTLoader
 
   const formatContrats = (items: EttContrat[]) =>

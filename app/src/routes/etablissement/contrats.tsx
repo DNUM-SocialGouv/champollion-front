@@ -10,7 +10,12 @@ import {
   postContratsEtu,
   postContratsExport,
 } from "../../api"
-import type { EtablissementPoste, EtuContrat, MetaData, Salarie } from "../../api/types"
+import type {
+  EtablissementPoste,
+  EtuContrat,
+  PaginationMetaData,
+  Salarie,
+} from "../../api/types"
 import type { EditableDate, ContratDatesState } from "../../helpers/contrats"
 import {
   formatContrats,
@@ -109,7 +114,7 @@ type CarenceContratsLoader = {
     | AppError
     | {
         contrats: EtuContrat[]
-        meta: MetaData
+        meta: PaginationMetaData
       }
   employeesList: AppError | Salarie[]
   etabId: number
@@ -348,7 +353,13 @@ export default function EtabContrats() {
   )
 }
 
-function ContratsTable({ contrats, meta }: { contrats: EtuContrat[]; meta: MetaData }) {
+function ContratsTable({
+  contrats,
+  meta,
+}: {
+  contrats: EtuContrat[]
+  meta: PaginationMetaData
+}) {
   const [searchParams] = useSearchParams()
   const { siret } = useLoaderData() as CarenceContratsLoader
 

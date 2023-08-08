@@ -4,19 +4,75 @@ import { Link } from "react-router-dom"
 import type { Effectif, EffectifUnit } from "../api/types"
 import { formatDate, formatNumber } from "./format"
 
-import type { MonthData } from "../components/EffectifBarChart"
+import type { GrayAreasInput, MonthData } from "../components/EffectifBarChart"
 
-const formatEffectifs = (effectifs: Effectif[]) =>
+const xAxisFormat = "MMM YYYY"
+
+const formatEffectifs = (
+  effectifs: Effectif[],
+  firstValidDate: string | null,
+  lastValidDate: string | null
+) =>
   effectifs.map(({ date, cdiCount, cddCount, cttCount }) => {
-    return {
+    let monthData: MonthData = {
       date,
-      label: formatDate(date, "MMM YYYY"),
+      label: formatDate(date, xAxisFormat),
       name: formatDate(date, "MMMM YYYY"),
       cdd: cddCount,
       cdi: cdiCount,
       ctt: cttCount,
-    } as MonthData
+      isEmpty: false,
+    }
+    if (
+      (firstValidDate && firstValidDate > date) ||
+      (lastValidDate && date > lastValidDate)
+    ) {
+      monthData = { ...monthData, cdi: 0, cdd: 0, ctt: 0, isEmpty: true }
+    }
+    return monthData
   })
+
+export const computeGrayAreasCoordinates = ({
+  grayAreasData,
+  brushStartDate,
+  brushEndDate,
+}: {
+  grayAreasData: GrayAreasInput
+  brushStartDate: string
+  brushEndDate: string
+}) => {
+  /*
+    The coordinates of the 2 gray areas (anterior to valid period, posterior to valid period)
+    depend on the filter dates (= requested dates), the dynamic Brush period, and the validity
+    dates.
+  */
+  const pastX1Date =
+    grayAreasData.startRequestedDate && grayAreasData.startRequestedDate > brushStartDate
+      ? grayAreasData.startRequestedDate
+      : brushStartDate
+  const pastX2Date =
+    grayAreasData.lastInvalidPastMonth &&
+    grayAreasData.lastInvalidPastMonth < brushEndDate
+      ? grayAreasData.lastInvalidPastMonth
+      : brushEndDate
+
+  const futureX1Date =
+    grayAreasData.firstInvalidFutureMonth &&
+    grayAreasData.firstInvalidFutureMonth > brushStartDate
+      ? grayAreasData.firstInvalidFutureMonth
+      : brushStartDate
+  const futureX2Date =
+    grayAreasData.endRequestedDate && grayAreasData.endRequestedDate < brushEndDate
+      ? grayAreasData.endRequestedDate
+      : brushEndDate
+
+  return {
+    pastX1: formatDate(pastX1Date, xAxisFormat),
+    pastX2: formatDate(pastX2Date, xAxisFormat),
+    futureX1: formatDate(futureX1Date, xAxisFormat),
+    futureX2: formatDate(futureX2Date, xAxisFormat),
+  }
+}
 
 const unitsOptions: {
   key: number
