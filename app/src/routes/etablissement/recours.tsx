@@ -3,8 +3,18 @@ import { type LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-r
 import ls from "localstorage-slim"
 import { v4 as uuid } from "uuid"
 
-import { postEffectifs, postPostes, getEtablissementsType } from "../../api"
-import type { Effectif, EffectifUnit, EtablissementPoste } from "../../api/types"
+import {
+  postEffectifs,
+  postPostes,
+  getEtablissementsType,
+  getEtablissementsDefaultPeriod,
+} from "../../api"
+import type {
+  Effectif,
+  EffectifUnit,
+  EtablissementPoste,
+  IndicatorMetaData,
+} from "../../api/types"
 import { isEffectifUnit } from "../../api/types"
 import {
   formatEffectifs,
@@ -17,12 +27,13 @@ import type { AppError } from "../../helpers/errors"
 import { errorWording, isAppError } from "../../helpers/errors"
 import {
   createFiltersQuery,
+  formatDate,
   formatLocalMerges,
   formatLocalOpenDays,
   getQueryAsNumberArray,
   getQueryAsString,
-  oneYearAgo,
-  today,
+  nextMonth,
+  prevMonth,
 } from "../../helpers/format"
 import { initJobOptions } from "../../helpers/postes"
 
@@ -35,23 +46,16 @@ import { Select } from "@codegouvfr/react-dsfr/Select"
 import { Table } from "@codegouvfr/react-dsfr/Table"
 
 import AppRebound from "../../components/AppRebound"
-import EffectifBarChart from "../../components/EffectifBarChart"
+import EffectifBarChart, { type GrayAreasInput } from "../../components/EffectifBarChart"
 import EtabFilters from "../../components/EtabFilters"
 import AppCollapse from "../../components/AppCollapse"
+import { getQueryDates } from "../../helpers/filters"
 
 export async function loader({
   params,
   request,
 }: LoaderFunctionArgs): Promise<EtabPostesLoader> {
   const { searchParams } = new URL(request.url)
-  const queryStartDate = getQueryAsString(searchParams, "debut") || oneYearAgo
-  const queryEndDate = getQueryAsString(searchParams, "fin") || today
-  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
-  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
-  const queryUnit = getQueryAsString(searchParams, "unit")
-  const motives = queryMotives.map((motive) => Number(motive))
-
-  const unit: EffectifUnit = isEffectifUnit(queryUnit) ? queryUnit : "tot"
 
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
@@ -63,13 +67,26 @@ export async function loader({
     })
   }
 
+  const etabDefaultPeriod = await getEtablissementsDefaultPeriod(etabType.id)
+
+  const { queryStartDate, queryEndDate } = getQueryDates({
+    etabDefaultPeriod,
+    searchParams,
+  })
+  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
+  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
+  const queryUnit = getQueryAsString(searchParams, "unit")
+  const motives = queryMotives.map((motive) => Number(motive))
+
+  const unit: EffectifUnit = isEffectifUnit(queryUnit) ? queryUnit : "tot"
+
   const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
   const formattedMergesIds = formatLocalMerges(localMergesIds)
   const openDays = ls.get(`etab.${params.siret}.openDays`)
   const formattedOpenDays = formatLocalOpenDays(openDays)
 
   const postes = await postPostes(etabType.id, formattedMergesIds)
-  const effectifs = await postEffectifs({
+  const effectifsData = await postEffectifs({
     id: etabType.id,
     startDate: queryStartDate,
     endDate: queryEndDate,
@@ -81,7 +98,7 @@ export async function loader({
   })
 
   return {
-    effectifs,
+    effectifsData,
     postes,
     queryEndDate,
     queryJobs,
@@ -92,7 +109,7 @@ export async function loader({
 }
 
 type EtabPostesLoader = {
-  effectifs: Effectif[] | AppError
+  effectifsData: AppError | { effectifs: Effectif[]; meta: IndicatorMetaData }
   postes: AppError | EtablissementPoste[]
   queryStartDate: string
   queryEndDate: string
@@ -103,7 +120,7 @@ type EtabPostesLoader = {
 
 export default function EtabRecours() {
   const {
-    effectifs: initialEffectifs,
+    effectifsData: initialEffectifs,
     postes,
     queryEndDate,
     queryJobs,
@@ -234,19 +251,39 @@ function EtabPostesEffectifs({
   defaultData,
   defaultUnit,
 }: {
-  defaultData: Effectif[]
+  defaultData: { effectifs: Effectif[]; meta: IndicatorMetaData }
   defaultUnit: EffectifUnit
 }) {
+  const { effectifs: defaultEffectifs, meta } = defaultData
   const [searchParams, setSearchParams] = useSearchParams()
   const [areTempContractsStacked, setAreTempContractsStacked] = useState(false)
   const initialUnitOption = unitsOptions.find((option) => option.value === defaultUnit)
-  const [effectifsData, setEffectifsData] = useState(formatEffectifs(defaultData))
+  const [effectifsData, setEffectifsData] = useState(
+    formatEffectifs(defaultEffectifs, meta.firstValidDate, meta.lastValidDate)
+  )
   const tableRefs = useRef<HTMLDivElement[]>([])
+  const lastInvalidPastMonth = formatDate(prevMonth(meta.firstValidDate), "YYYY-MM-DD")
+  const firstInvalidFutureMonth = formatDate(nextMonth(meta.lastValidDate), "YYYY-MM-DD")
 
-  const [prevEffectifs, setPrevEffectifs] = useState(defaultData)
-  if (defaultData !== prevEffectifs) {
-    setPrevEffectifs(defaultData)
-    setEffectifsData(formatEffectifs(defaultData))
+  const maxEffectif = effectifsData.reduce(
+    (acc, current) => Math.max(acc, Math.max(current.cdi, current.cdd, current.ctt)),
+    0
+  )
+
+  const grayAreasData: GrayAreasInput = {
+    startRequestedDate: meta.startDate,
+    lastInvalidPastMonth: lastInvalidPastMonth,
+    firstInvalidFutureMonth: firstInvalidFutureMonth,
+    endRequestedDate: meta.endDate,
+    maxHeight: maxEffectif * 1.2, // max height of gray areas = max effectif + 20% margin
+  }
+
+  const [prevEffectifs, setPrevEffectifs] = useState(defaultEffectifs)
+  if (defaultEffectifs !== prevEffectifs) {
+    setPrevEffectifs(defaultEffectifs)
+    setEffectifsData(
+      formatEffectifs(defaultEffectifs, meta.firstValidDate, meta.lastValidDate)
+    )
   }
 
   const handleUnitSelected = async (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -265,7 +302,8 @@ function EtabPostesEffectifs({
     data: (string | number)[][]
   }
   const nbMonthsPerTable = 12
-  const nbSubTables = Math.ceil(effectifsData.length / nbMonthsPerTable)
+  const filteredEffectifsData = effectifsData.filter((monthData) => !monthData.isEmpty)
+  const nbSubTables = Math.ceil(filteredEffectifsData.length / nbMonthsPerTable)
   const tablesContent: TableContent[] = []
   const formatNumber = (effectif: number) =>
     (Math.round(effectif * 100) / 100).toLocaleString("fr-FR")
@@ -275,7 +313,7 @@ function EtabPostesEffectifs({
     const cdiArray: Array<string | number> = ["CDI"]
     const cddArray: Array<string | number> = ["CDD"]
     const cttArray: Array<string | number> = ["CTT"]
-    effectifsData
+    filteredEffectifsData
       .slice(i * nbMonthsPerTable, (i + 1) * nbMonthsPerTable)
       .forEach((month) => {
         headers.push(month.label)
@@ -343,6 +381,7 @@ function EtabPostesEffectifs({
           isStacked={areTempContractsStacked}
           unit="contrats"
           data={effectifsData}
+          grayAreasData={grayAreasData}
         />
       </div>
       <Checkbox
@@ -358,12 +397,15 @@ function EtabPostesEffectifs({
           },
         ]}
       />
-      {initialUnitOption && initialUnitOption.value && effectifsData.length > 0 && (
-        <>
-          <h3 className="fr-text--md fr-mt-2w fr-mb-1v font-bold">Notes de lectures</h3>
-          <p>{getReadingNotes(effectifsData[0], initialUnitOption.value)}</p>
-        </>
-      )}
+
+      {initialUnitOption &&
+        initialUnitOption.value &&
+        filteredEffectifsData.length > 0 && (
+          <>
+            <h3 className="fr-text--md fr-mt-2w fr-mb-1v font-bold">Notes de lectures</h3>
+            <p>{getReadingNotes(filteredEffectifsData[0], initialUnitOption.value)}</p>
+          </>
+        )}
 
       <Accordion
         label="Afficher les effectifs sous forme de tableau"

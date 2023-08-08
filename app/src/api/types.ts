@@ -1,10 +1,17 @@
-export type MetaData = {
+export type PaginationMetaData = {
   currentPage: number | null
   nextPage: number | null
   perPage: number | null
   prevPage: number | null
   totalPages: number
   totalCount: number
+}
+
+export type IndicatorMetaData = {
+  startDate: string | null
+  endDate: string | null
+  firstValidDate: string | null
+  lastValidDate: string | null
 }
 
 export type EtablissementType = {
@@ -21,6 +28,14 @@ export type EtablissementInfo = {
   commune: string
   complementAdresse?: string
   libelleConventionCollective?: string
+}
+
+export type EtablissementDefaultPeriod = {
+  startDate: string | null
+  endDate: string | null
+  firstValidDate: string | null
+  lastValidDate: string | null
+  etablissementId: number
 }
 
 export type MergedCode = 0 | 1

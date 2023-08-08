@@ -118,7 +118,7 @@ export default function EtabSynthese() {
         />
       )}
       <div className="fr-py-3w flex w-full flex-col">
-        <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Jours d'ouverture</h2>
+        <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Modifier les jours d'ouverture</h2>
         <hr />
         <Form className="flex flex-col" method="post">
           <p>
