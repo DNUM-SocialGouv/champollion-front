@@ -12,7 +12,7 @@ const background = createColorObject(
   ["alt-grey", "alt-blue-france", "contrast-grey", "contrast-info", "default-grey", "flat-info", "flat-success", "flat-warning", "raised-grey"],
   "background"
 )
-const border = createColorObject(["default-grey", "action-high-grey"], "border")
+const border = createColorObject(["default-grey", "default-blue-cumulus", "default-purple-glycine", "default-pink-tuile"], "border")
 const text = createColorObject(["mention-grey", "active-grey", "disabled-grey"], "text")
 const artwork = createColorObject([], "artwork")
 
@@ -47,6 +47,10 @@ module.exports = {
       tx: text,
       aw: artwork,
       outline: "#0a76f6",
+    },
+    backgroundImage: {
+      'diagonal-purple-glycine': "repeating-linear-gradient(45deg, var(--background-action-low-purple-glycine), var(--background-action-low-purple-glycine) 5px, var(--artwork-minor-purple-glycine) 5px, var(--artwork-minor-purple-glycine) 9px)",
+      'vertical-pink-tuile': "repeating-linear-gradient(90deg, var(--border-action-low-pink-tuile), var(--border-action-low-pink-tuile) 4px, var(--artwork-minor-pink-tuile) 4px, var(--artwork-minor-pink-tuile) 8px)",
     },
     boxShadow: {
       overlap: "var(--overlap-shadow)",
