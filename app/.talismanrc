@@ -30,7 +30,7 @@ fileignoreconfig:
 - filename: app/src/routes/etablissement/recours.tsx
   checksum: da36cf6c3a88e1cdbdfd3a50c320e0826d3c0c3b21fe18d32bdc714a77459ef9
 - filename: app/src/routes/etablissement/synthese.tsx
-  checksum: 320f195b51c0db2add624af322095ada208d51c77c2800ab6d5c81fc8e2fac1f
+  checksum: 7b9a2399ee504537333fb2ed03134ae205005d43add56a1729ffc57597e40bd9
 - filename: app/src/routes/ett.tsx
   checksum: 6f6f88de3dcd5e7df5be553e884f21f09844443e7b9eb35e4d31d3d571506bc7
 - filename: app/src/routes/index.tsx

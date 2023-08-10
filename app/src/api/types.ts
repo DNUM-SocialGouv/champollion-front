@@ -189,3 +189,9 @@ export type IDCC = {
     details?: string[]
   }
 }
+
+export type Indicator1 = {
+  nbCdi: number
+  nbCdd: number
+  nbCtt: number
+}

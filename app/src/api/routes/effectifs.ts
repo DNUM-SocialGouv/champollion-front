@@ -57,12 +57,8 @@ export const postEffectifs = async ({
     const effectifs = response.data?.data as Effectif[]
     const meta = response.data?.meta as IndicatorMetaData
 
-    if (effectifs && meta) {
-      return {
-        effectifs,
-        meta,
-      }
-    } else return handleUndefinedData("/effectifs/")
+    if (effectifs && meta) return { effectifs, meta }
+    else return handleUndefinedData("/effectifs/")
   } catch (err) {
     return handleEndpointError(err)
   }

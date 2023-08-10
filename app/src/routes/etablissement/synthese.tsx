@@ -5,11 +5,22 @@ import {
   type LoaderFunctionArgs,
   useActionData,
   useLoaderData,
+  Link,
 } from "react-router-dom"
-import { getEtablissementsInfo, getEtablissementsType, getEffectifsLast } from "../../api"
-import type { EtablissementInfo, LastEffectif } from "../../api/types"
+import {
+  getEtablissementsInfo,
+  getEtablissementsType,
+  getEffectifsLast,
+  getIndicateur1,
+} from "../../api"
+import type {
+  EtablissementInfo,
+  Indicator1,
+  IndicatorMetaData,
+  LastEffectif,
+} from "../../api/types"
 import { type AppError, errorWording, isAppError } from "../../helpers/errors"
-import { formatLocalOpenDays } from "../../helpers/format"
+import { formatDate, formatLocalOpenDays } from "../../helpers/format"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
@@ -50,6 +61,8 @@ export async function loader({
 
   const etabId = etabType.id
 
+  const headcountIndicator = await getIndicateur1({ id: etabId })
+
   const localOpenDays = ls.get(`etab.${params.siret}.openDays`)
   const savedOpenDaysCodes = formatLocalOpenDays(localOpenDays)
 
@@ -57,10 +70,11 @@ export async function loader({
     getEtablissementsInfo(etabId),
     getEffectifsLast(etabId),
   ])
-  return { info, lastEffectif, savedOpenDaysCodes, siret }
+  return { headcountIndicator, info, lastEffectif, savedOpenDaysCodes, siret }
 }
 
 type EtabSyntheseLoader = {
+  headcountIndicator: { headcount: Indicator1; meta: IndicatorMetaData } | AppError
   info: EtablissementInfo | AppError
   lastEffectif: LastEffectif | AppError
   savedOpenDaysCodes: string[] | undefined
@@ -68,7 +82,7 @@ type EtabSyntheseLoader = {
 }
 
 export default function EtabSynthese() {
-  const { info, lastEffectif, savedOpenDaysCodes, siret } =
+  const { headcountIndicator, info, lastEffectif, savedOpenDaysCodes, siret } =
     useLoaderData() as EtabSyntheseLoader
   const checkboxState = useActionData() as EtabSyntheseAction
 
@@ -138,6 +152,97 @@ export default function EtabSynthese() {
             Sauvegarder
           </Button>
         </Form>
+        {!isAppError(headcountIndicator) && (
+          <HeadcountIndicator
+            headcount={headcountIndicator.headcount}
+            meta={headcountIndicator.meta}
+          />
+        )}
+      </div>
+    </>
+  )
+}
+
+type HeadcountIndicatorProps = {
+  headcount: Indicator1
+  meta: IndicatorMetaData
+}
+
+function HeadcountIndicator({ headcount, meta }: HeadcountIndicatorProps) {
+  const data = [
+    {
+      key: "cdi",
+      label: "CDI",
+      value: headcount.nbCdi,
+      classes: "bg-[var(--artwork-minor-blue-cumulus)] border-bd-default-blue-cumulus", // add border to display a thin line when count is 0
+    },
+    {
+      key: "cdd",
+      label: "CDD",
+      value: headcount.nbCdd,
+      classes:
+        "bg-diagonal-purple-glycine border border-solid border-bd-default-purple-glycine",
+    },
+    {
+      key: "ctt",
+      label: "CTT (intérim)",
+      value: headcount.nbCtt,
+      classes: "bg-vertical-pink-tuile border border-solid border-bd-default-pink-tuile",
+    },
+  ]
+  const maxValue = Math.max(...data.map((item) => item.value))
+
+  const start = formatDate(meta.startDate, "MMMM YYYY")
+  const end = formatDate(meta.endDate, "MMMM YYYY")
+  const countCdi = `${headcount.nbCdi.toLocaleString("fr-FR")} CDI`
+  return (
+    <>
+      <div className="fr-my-3w">
+        <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Chiffres clés</h2>
+        <hr />
+        {/* Todo: add subtitles when there will be several indicators on this page
+         <h3 className="fr-text--md underline underline-offset-4">Effectifs</h3> */}
+
+        <h3 className="fr-text--md">
+          Nombre de contrats en vigueur entre {start} et {end} :
+        </h3>
+        <p></p>
+
+        <div className="fr-mb-2w flex h-40 items-baseline">
+          {data.map((item) => {
+            const barHeight = (item.value / maxValue) * 100 // Scale the bar heights
+            const barStyle = {
+              height: `${barHeight}%`,
+            }
+
+            return (
+              <div key={item.key} className="fr-mr-3w flex h-full items-baseline">
+                <div aria-hidden className={`w-6 ${item.classes}`} style={barStyle}></div>
+                <div className="fr-px-1w">
+                  <span className="text-3xl font-bold">
+                    {item.value.toLocaleString("fr-FR")}{" "}
+                  </span>
+                  {item.label}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+        <h4 className="fr-text--md fr-mt-3w fr-mb-1v font-bold">Note de lecture</h4>
+        <p className="fr-text--sm fr-mb-1w">
+          De {start} à {end}, {countCdi} ont été en vigueur sur toute ou une partie de la
+          période.
+          <br />
+          En d'autres termes, de {start} à {end}, {countCdi} ont été effectifs.
+        </p>
+        <p className="fr-mt-2w fr-mb-0">
+          <span
+            className="fr-icon-arrow-right-line fr-icon--sm"
+            aria-hidden="true"
+          ></span>
+          Pour en savoir plus et consulter l'histogramme des effectifs, consultez la page{" "}
+          <Link to={"recours-abusif"}>Recours abusif</Link>.
+        </p>
       </div>
     </>
   )

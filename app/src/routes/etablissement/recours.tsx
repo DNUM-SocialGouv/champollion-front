@@ -402,7 +402,7 @@ function EtabPostesEffectifs({
         initialUnitOption.value &&
         filteredEffectifsData.length > 0 && (
           <>
-            <h3 className="fr-text--md fr-mt-2w fr-mb-1v font-bold">Notes de lectures</h3>
+            <h3 className="fr-text--md fr-mt-2w fr-mb-1v font-bold">Note de lecture</h3>
             <p>{getReadingNotes(filteredEffectifsData[0], initialUnitOption.value)}</p>
           </>
         )}
