@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 import ls from "localstorage-slim"
 
 import { formatDate } from "./format"
-import type { EtuContrat } from "../api/types"
+import type { EtuContrat, FileExtension } from "../api/types"
 
 import { AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
@@ -330,5 +330,20 @@ export const formatCorrectedDates = (contractsDates: Record<string, string> | nu
     }, {} as CorrectedDates)
   } else return undefined
 }
+
+const fileExtensionLabel: Record<FileExtension, string> = {
+  ods: "Fichier LibreOffice .ods",
+  xlsx: "Fichier Excel .xlsx",
+  csv: "Fichier tableur CSV .csv",
+}
+export const extensions: FileExtension[] = ["ods", "xlsx", "csv"]
+export const radioBtnOptions = extensions.map((key) => ({
+  label: fileExtensionLabel[key],
+  nativeInputProps: {
+    value: key,
+    defaultChecked: key === "ods",
+    // note: I'm using uncontrolled radio component because the controlled one closes the modal on click
+  },
+}))
 
 export { formatContrats, getContractType, headers }

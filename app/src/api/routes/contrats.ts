@@ -1,5 +1,5 @@
 import api from "../config"
-import type { EttContrat, EtuContrat, PaginationMetaData } from "../types"
+import type { EttContrat, EtuContrat, FileExtension, PaginationMetaData } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import type { CorrectedDates } from "../../helpers/contrats"
 import { motivesCodeDict } from "../../helpers/filters"
@@ -24,6 +24,7 @@ type ContratsParams = Common & {
 
 type ExportParams = Common & {
   isEtu?: boolean
+  format: FileExtension
   companyName: string
   correctedDates?: CorrectedDates
   siret: string
@@ -130,6 +131,7 @@ export const postContratsExport = async ({
   correctedDates,
   employeesIds,
   endDate,
+  format = "ods",
   id,
   isEtu = true,
   mergedPostesIds,
@@ -140,9 +142,9 @@ export const postContratsExport = async ({
   startDate,
 }: ExportParams) => {
   try {
-    let params = `etablissement_id=${id}&etu=${isEtu}`
+    let params = `etablissement_id=${id}&etu=${isEtu}&format=${format}`
 
-    const fileName = "Contrats_" + companyName.replace(" ", "_") + "_" + siret + ".ods"
+    const fileName = `Contrats_${companyName.replace(" ", "_")}_${siret}.${format}`
 
     if (endDate) params += `&end_date=${endDate}`
     if (startDate) params += `&start_date=${startDate}`
@@ -170,7 +172,7 @@ export const postContratsExport = async ({
     })
 
     const odsBlob = new Blob([response.data], {
-      type: "application/vnd.oasis.opendocument.spreadsheet",
+      type: response.headers["content-type"],
     })
 
     const tempUrl = URL.createObjectURL(odsBlob)

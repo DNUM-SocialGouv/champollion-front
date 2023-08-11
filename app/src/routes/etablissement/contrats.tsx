@@ -1,4 +1,5 @@
-import { type ReactNode, useState } from "react"
+import { useState } from "react"
+import type { ReactNode, FormEvent } from "react"
 import { useLoaderData, useSearchParams } from "react-router-dom"
 import type { LoaderFunctionArgs } from "react-router-dom"
 import ls from "localstorage-slim"
@@ -14,11 +15,18 @@ import {
 import type {
   EtablissementPoste,
   EtuContrat,
+  FileExtension,
   PaginationMetaData,
   Salarie,
 } from "../../api/types"
 import type { EditableDate, ContratDatesState } from "../../helpers/contrats"
-import { formatContrats, headers, formatCorrectedDates } from "../../helpers/contrats"
+import {
+  formatContrats,
+  headers,
+  formatCorrectedDates,
+  extensions,
+  radioBtnOptions,
+} from "../../helpers/contrats"
 import { motiveOptions, contractNatures, getQueryDates } from "../../helpers/filters"
 import type { AppError } from "../../helpers/errors"
 import { errorWording, isAppError } from "../../helpers/errors"
@@ -38,6 +46,7 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
+import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons"
 
 import AppTable from "../../components/AppTable"
 import EtabFilters from "../../components/EtabFilters"
@@ -161,7 +170,16 @@ export default function EtabContrats() {
     startDate: formatDate(queryStartDate),
     endDate: formatDate(queryEndDate),
   }
-  const downloadContracts = async () => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    const formData = new FormData(event.currentTarget)
+    const fileExtension = formData.get("file-extension") as FileExtension
+    const format: FileExtension =
+      typeof fileExtension === "string" && extensions.includes(fileExtension)
+        ? fileExtension
+        : "ods"
+
     const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
     const correctedDates = formatCorrectedDates(lsContrats)
 
@@ -170,6 +188,7 @@ export default function EtabContrats() {
       correctedDates,
       employeesIds: queryEmployee ? [queryEmployee] : undefined,
       endDate: queryEndDate,
+      format,
       id: etabId,
       mergedPostesIds,
       motives: queryMotives,
@@ -259,12 +278,21 @@ export default function EtabContrats() {
         </Button>
       </div>
       <modal.Component title="Exporter les contrats">
-        <p>Vous pouvez exporter les contrats au format tableur LibreOffice (.ods).</p>
+        <p>
+          Vous pouvez exporter les contrats au format tableur (Excel, LibreOffice ou CSV).
+        </p>
         <p>
           Tous les filtres sauvegardés, les fusions de postes et les corrections de date
           seront pris en compte.
         </p>
-        <Button onClick={() => downloadContracts()}>Télécharger</Button>
+        <form onSubmit={handleSubmit}>
+          <RadioButtons
+            legend="Sélectionnez le format de fichier :"
+            name="file-extension"
+            options={radioBtnOptions}
+          />
+          <Button type="submit">Télécharger</Button>
+        </form>
         <p className="fr-mb-0 fr-mt-2w italic">
           ⚠️ Si vous exportez un gros volume de contrats, le téléchargement peut durer
           plusieurs secondes.
