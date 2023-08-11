@@ -190,6 +190,8 @@ export type IDCC = {
   }
 }
 
+export type FileExtension = "ods" | "xlsx" | "csv"
+
 export type Indicator1 = {
   nbCdi: number
   nbCdd: number
