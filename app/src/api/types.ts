@@ -197,3 +197,11 @@ export type Indicator1 = {
   nbCdd: number
   nbCtt: number
 }
+
+export type Indicator2 = Record<
+  "cdi" | "cdd" | "ctt",
+  {
+    absNb: number
+    relNb: number
+  }
+>

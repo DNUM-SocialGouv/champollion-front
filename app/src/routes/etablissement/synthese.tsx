@@ -12,10 +12,12 @@ import {
   getEtablissementsType,
   getEffectifsLast,
   getIndicateur1,
+  getIndicateur2,
 } from "../../api"
 import type {
   EtablissementInfo,
   Indicator1,
+  Indicator2,
   IndicatorMetaData,
   LastEffectif,
 } from "../../api/types"
@@ -27,6 +29,7 @@ import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 
 import EtabInfo from "../../components/EtabInfo"
+import ContractsPieChart from "../../components/ContractsPieChart"
 
 export async function action({
   params,
@@ -61,16 +64,25 @@ export async function loader({
 
   const etabId = etabType.id
 
-  const headcountIndicator = await getIndicateur1({ id: etabId })
-
   const localOpenDays = ls.get(`etab.${params.siret}.openDays`)
   const savedOpenDaysCodes = formatLocalOpenDays(localOpenDays)
 
-  const [info, lastEffectif] = await Promise.all([
-    getEtablissementsInfo(etabId),
-    getEffectifsLast(etabId),
-  ])
-  return { headcountIndicator, info, lastEffectif, savedOpenDaysCodes, siret }
+  const [info, lastEffectif, headcountIndicator, workedDaysIndicator] = await Promise.all(
+    [
+      getEtablissementsInfo(etabId),
+      getEffectifsLast(etabId),
+      getIndicateur1({ id: etabId }),
+      getIndicateur2({ id: etabId, openDaysCodes: savedOpenDaysCodes }),
+    ]
+  )
+  return {
+    headcountIndicator,
+    info,
+    lastEffectif,
+    savedOpenDaysCodes,
+    siret,
+    workedDaysIndicator,
+  }
 }
 
 type EtabSyntheseLoader = {
@@ -79,11 +91,18 @@ type EtabSyntheseLoader = {
   lastEffectif: LastEffectif | AppError
   savedOpenDaysCodes: string[] | undefined
   siret: string
+  workedDaysIndicator: { workedDays: Indicator2; meta: IndicatorMetaData } | AppError
 }
 
 export default function EtabSynthese() {
-  const { headcountIndicator, info, lastEffectif, savedOpenDaysCodes, siret } =
-    useLoaderData() as EtabSyntheseLoader
+  const {
+    headcountIndicator,
+    info,
+    lastEffectif,
+    savedOpenDaysCodes,
+    siret,
+    workedDaysIndicator,
+  } = useLoaderData() as EtabSyntheseLoader
   const checkboxState = useActionData() as EtabSyntheseAction
 
   const initialOpenDays = [
@@ -152,10 +171,18 @@ export default function EtabSynthese() {
             Sauvegarder
           </Button>
         </Form>
+        <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Chiffres clés</h2>
+        <hr />
         {!isAppError(headcountIndicator) && (
           <HeadcountIndicator
             headcount={headcountIndicator.headcount}
             meta={headcountIndicator.meta}
+          />
+        )}
+        {!isAppError(workedDaysIndicator) && (
+          <WorkedDaysIndicator
+            workedDays={workedDaysIndicator.workedDays}
+            meta={workedDaysIndicator.meta}
           />
         )}
       </div>
@@ -197,53 +224,78 @@ function HeadcountIndicator({ headcount, meta }: HeadcountIndicatorProps) {
   const countCdi = `${headcount.nbCdi.toLocaleString("fr-FR")} CDI`
   return (
     <>
-      <div className="fr-my-3w">
-        <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Chiffres clés</h2>
-        <hr />
-        {/* Todo: add subtitles when there will be several indicators on this page
-         <h3 className="fr-text--md underline underline-offset-4">Effectifs</h3> */}
+      <h3 className="fr-text--md underline underline-offset-4">Effectifs</h3>
 
-        <h3 className="fr-text--md">
-          Nombre de contrats en vigueur entre {start} et {end} :
-        </h3>
-        <p></p>
+      <h4 className="fr-text--md">
+        Nombre de contrats en vigueur entre {start} et {end} :
+      </h4>
+      <p></p>
 
-        <div className="fr-mb-2w flex h-40 items-baseline">
-          {data.map((item) => {
-            const barHeight = (item.value / maxValue) * 100 // Scale the bar heights
-            const barStyle = {
-              height: `${barHeight}%`,
-            }
+      <div className="fr-mb-2w flex h-40 items-baseline">
+        {data.map((item) => {
+          const barHeight = (item.value / maxValue) * 100 // Scale the bar heights
+          const barStyle = {
+            height: `${barHeight}%`,
+          }
 
-            return (
-              <div key={item.key} className="fr-mr-3w flex h-full items-baseline">
-                <div aria-hidden className={`w-6 ${item.classes}`} style={barStyle}></div>
-                <div className="fr-px-1w">
-                  <span className="text-3xl font-bold">
-                    {item.value.toLocaleString("fr-FR")}{" "}
-                  </span>
-                  {item.label}
-                </div>
+          return (
+            <div key={item.key} className="fr-mr-3w flex h-full items-baseline">
+              <div aria-hidden className={`w-6 ${item.classes}`} style={barStyle}></div>
+              <div className="fr-px-1w">
+                <span className="text-3xl font-bold">
+                  {item.value.toLocaleString("fr-FR")}{" "}
+                </span>
+                {item.label}
               </div>
-            )
-          })}
-        </div>
-        <h4 className="fr-text--md fr-mt-3w fr-mb-1v font-bold">Note de lecture</h4>
-        <p className="fr-text--sm fr-mb-1w">
-          De {start} à {end}, {countCdi} ont été en vigueur sur toute ou une partie de la
-          période.
-          <br />
-          En d'autres termes, de {start} à {end}, {countCdi} ont été effectifs.
-        </p>
-        <p className="fr-mt-2w fr-mb-0">
-          <span
-            className="fr-icon-arrow-right-line fr-icon--sm"
-            aria-hidden="true"
-          ></span>
-          Pour en savoir plus et consulter l'histogramme des effectifs, consultez la page{" "}
-          <Link to={"recours-abusif"}>Recours abusif</Link>.
-        </p>
+            </div>
+          )
+        })}
       </div>
+      <h5 className="fr-text--md fr-mt-3w fr-mb-1v font-bold">Note de lecture</h5>
+      <p className="fr-text--sm fr-mb-1w">
+        De {start} à {end}, {countCdi} ont été en vigueur sur toute ou une partie de la
+        période.
+        <br />
+        En d'autres termes, de {start} à {end}, {countCdi} ont été effectifs.
+      </p>
+      <p className="fr-mt-2w">
+        <span className="fr-icon-arrow-right-line fr-icon--sm" aria-hidden="true"></span>
+        Pour en savoir plus et consulter l'histogramme des effectifs, consultez la page{" "}
+        <Link to={"recours-abusif"}>Recours abusif</Link>.
+      </p>
+    </>
+  )
+}
+type WorkedDaysIndicatorProps = {
+  workedDays: Indicator2
+  meta: IndicatorMetaData
+}
+
+function WorkedDaysIndicator({ workedDays, meta }: WorkedDaysIndicatorProps) {
+  const start = formatDate(meta.startDate, "MMMM YYYY")
+  const end = formatDate(meta.endDate, "MMMM YYYY")
+  const cdiPercent = `${workedDays.cdi.relNb.toLocaleString("fr-FR")}`
+  const data = Object.entries(workedDays).map(([key, value]) => ({
+    name: key,
+    value: value.absNb,
+    percent: value.relNb,
+  }))
+  return (
+    <>
+      <h3 className="fr-text--md underline underline-offset-4">Jours travaillés</h3>
+
+      <h4 className="fr-text--md">
+        Répartition des jours travaillés par nature de contrat entre {start} et {end} :
+      </h4>
+      <p></p>
+      <div className="h-56 w-full">
+        <ContractsPieChart data={data} />
+      </div>
+      <h5 className="fr-text--md fr-mt-3w fr-mb-1v font-bold">Note de lecture</h5>
+      <p className="fr-text--sm fr-mb-1w">
+        De {start} à {end}, les jours travaillés en CDI représentent {cdiPercent} % des
+        jours travaillés en CDI, CDD et CTT.
+      </p>
     </>
   )
 }
