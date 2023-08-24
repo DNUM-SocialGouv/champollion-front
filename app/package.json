@@ -28,7 +28,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.6.2",
     "react-select": "^5.7.0",
-    "recharts": "^2.3.2",
+    "recharts": "^2.7.3",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

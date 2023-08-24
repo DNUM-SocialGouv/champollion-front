@@ -12,6 +12,7 @@ export type IndicatorMetaData = {
   endDate: string | null
   firstValidDate: string | null
   lastValidDate: string | null
+  count?: number | null
 }
 
 export type EtablissementType = {
@@ -201,6 +202,16 @@ export type Indicator1 = {
 export type Indicator2 = Record<
   "cdi" | "cdd" | "ctt",
   {
+    absNb: number
+    relNb: number
+  }
+>
+
+export type Indicator3 = Record<
+  number | string,
+  {
+    libellePoste: string | null
+    merged: number
     absNb: number
     relNb: number
   }
