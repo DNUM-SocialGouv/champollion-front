@@ -33,3 +33,10 @@ input[type="date"].fr-input::-webkit-calendar-picker-indicator {
   padding-top: 1.4rem;
   background-position: 0 calc(100% + 1.25rem);
 }
+
+.fr-table.app-table--thin td {
+  padding: 0 1rem;
+}
+.fr-table.app-table--thin th {
+  padding: 0.25rem 1rem;
+}

@@ -2,7 +2,7 @@ fileignoreconfig:
 - filename: app/src/api/types.ts
   checksum: 8446ffa06211b4b813694f84fb130e4fcfd2fe3936d4a544c7359a805365d5a1
 - filename: app/src/components/ContractsPieChart.tsx
-  checksum: 69ae880c06a75987a867cb6db8dbdb01aac3fcff8ce9297ec14e7b3b1bb6ba82
+  checksum: c54d63fe42bd91c16311dd57920d77dc5adba8d9f191ff6b5830c505c717eed9
 - filename: app/src/components/EffectifBarChart.tsx
   checksum: a3c7443b73d65e5de5f88ce3a72cec2f05337b91b91d29b1ce06714ba26ea51a
 - filename: app/src/components/EtabFilters.tsx
@@ -32,7 +32,7 @@ fileignoreconfig:
 - filename: app/src/routes/etablissement/recours.tsx
   checksum: da36cf6c3a88e1cdbdfd3a50c320e0826d3c0c3b21fe18d32bdc714a77459ef9
 - filename: app/src/routes/etablissement/synthese.tsx
-  checksum: b33370531bab6657551b2f87632cf4f70d404db4e93e354fb02a4f498739e27f
+  checksum: 64c3c0ce7fcec3dfbfd88dc1f8c062188c1542be8391c2896634cfb1053da597
 - filename: app/src/routes/ett.tsx
   checksum: 6f6f88de3dcd5e7df5be553e884f21f09844443e7b9eb35e4d31d3d571506bc7
 - filename: app/src/routes/index.tsx

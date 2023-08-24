@@ -10,7 +10,7 @@ type ApiErrorContext = {
   limit_value?: number
   pattern?: string
   poste_ids?: number[]
-}
+} & Record<string, string | number | string[] | number[]>
 
 type ApiError = {
   message: string
@@ -118,7 +118,7 @@ const handleEndpointError = (err: unknown) => {
 }
 
 const handleUndefinedData = (endpoint: string) => {
-  throw new Error(`Api error: no data returned in ${endpoint}`)
+  throw new Error(`Api error: no data (or meta) returned in ${endpoint}`)
 }
 
 export {
