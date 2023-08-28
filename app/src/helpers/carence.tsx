@@ -1,5 +1,5 @@
 import type { IllegalContract, Infractions, CarenceContract, IDCC } from "../api/types"
-import { getContractType } from "./contrats"
+import { getContractNature } from "./contrats"
 import { formatDate } from "./format"
 
 export type FormattedCarenceContract = {
@@ -10,7 +10,7 @@ export type FormattedCarenceContract = {
   delay: string
   nextPossibleDate: string
   motive: string | null
-  contractType: string
+  nature: string
 }
 
 type FormattedIllegalContract = {
@@ -77,7 +77,7 @@ const formatCarenceContracts = (
       delay: `${contract.dureeCarence} ${unitCarence[contract.unitCarence]}`,
       nextPossibleDate: formatDate(contract.jourPostCarence),
       motive: contract.libelleMotifRecours,
-      contractType: getContractType(contract.codeNatureContrat),
+      nature: getContractNature(contract.codeNatureContrat),
     }
   })
 }

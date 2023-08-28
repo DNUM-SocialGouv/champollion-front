@@ -113,7 +113,7 @@ const headers = [
   { key: "delay", label: "Délai de carence", width: "10%" },
   { key: "nextPossibleDate", label: "Date de prochain contrat possible", width: "15%" },
   { key: "motive", label: "Motif de recours", width: "20%" },
-  { key: "contractType", label: "Nature de contrat", width: "10%" },
+  { key: "nature", label: "Nature de contrat", width: "10%" },
 ] as Header<FormattedCarenceContract>[]
 
 export default function EtabCarence() {
@@ -204,7 +204,10 @@ export default function EtabCarence() {
             <AppRebound
               desc="Fusionner plusieurs libellés du même poste"
               linkProps={{
-                to: "../postes",
+                to: {
+                  pathname: "../postes",
+                  search: filtersQuery ? `?${filtersQuery}` : "",
+                },
               }}
               title="Fusion de postes"
             />

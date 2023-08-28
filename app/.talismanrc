@@ -1,6 +1,8 @@
 fileignoreconfig:
 - filename: app/src/api/types.ts
   checksum: 8446ffa06211b4b813694f84fb130e4fcfd2fe3936d4a544c7359a805365d5a1
+- filename: app/src/components/ContractNatureIndicator.tsx
+  checksum: 6a440c4543b42096c0cf2c5ae25389a05d7fe04fc47eb7c7e7693958e5e50e16
 - filename: app/src/components/ContractsPieChart.tsx
   checksum: c54d63fe42bd91c16311dd57920d77dc5adba8d9f191ff6b5830c505c717eed9
 - filename: app/src/components/EffectifBarChart.tsx
@@ -10,7 +12,7 @@ fileignoreconfig:
 - filename: app/src/helpers/carence.tsx
   checksum: 68161bf4d8d91747f6ee2be759a98239eec29ee0d294c0122aa3eb48c0aa195b
 - filename: app/src/helpers/contrats.tsx
-  checksum: 98b6d0a4e56127b8ebc80e71e1b184de8d8b34a197f33c1dc3e77d57f617342d
+  checksum: 2f81ac0319a5f373317a093b2796ebde4a7653e2fa7508450f6d24cd2607c164
 - filename: app/src/helpers/effectifs.ts
   checksum: 19d893315ec9d917d778ea490c2c86d4ef3ab7d87ffddebe422807311a10bf94
 - filename: app/src/helpers/effectifs.tsx
@@ -24,7 +26,7 @@ fileignoreconfig:
 - filename: app/src/routes/bugs.tsx
   checksum: e91d482a9b3da26bc38bd95c9f0d280f21dd00f1ed94567923bacdf3a159d61f
 - filename: app/src/routes/etablissement/carence.tsx
-  checksum: 99ae163cda4707c7f0498ea8fc252c090bc621ae404b2fd0e13fa26ba8996aee
+  checksum: 0926df9bed2e0a8f79f9d78407d58b776aa1d128cf10da9c50286976f04d6321
 - filename: app/src/routes/etablissement/contrats.tsx
   checksum: b352ad4378ea7fd0ae1fda24bf51d6d662f236bc4f9d09f143748a7fe63b5a0f
 - filename: app/src/routes/etablissement/postes.tsx

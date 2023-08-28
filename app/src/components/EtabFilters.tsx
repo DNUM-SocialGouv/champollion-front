@@ -197,18 +197,21 @@ export default function EtabFilters({
           defaultValue={motiveSelectedOptions}
           disabled={disabledFilters?.motives ?? false}
         />
-        <AppMultiSelect
-          className="fr-col-12 fr-col-lg-6 fr-mb-1w"
-          customComponents={{
-            Option: OptionWithMerge,
-            MultiValue: MultiValueWithMerge,
-          }}
-          label="Postes"
-          name="poste"
-          ref={jobsRef}
-          options={jobOptions ?? []}
-          defaultValue={jobSelectedOptions ?? []}
-        />
+        {Boolean(jobOptions) && (
+          <AppMultiSelect
+            className="fr-col-12 fr-col-lg-6 fr-mb-1w"
+            customComponents={{
+              Option: OptionWithMerge,
+              MultiValue: MultiValueWithMerge,
+            }}
+            label="Postes"
+            name="poste"
+            ref={jobsRef}
+            options={jobOptions ?? []}
+            defaultValue={jobSelectedOptions ?? []}
+            disabled={disabledFilters?.jobs ?? false}
+          />
+        )}
         {Boolean(employeeOptions) && (
           <Select
             className="fr-col-12 fr-col-lg-6 fr-mb-1w"

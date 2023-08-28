@@ -8,23 +8,26 @@ import {
   postPostes,
   getEtablissementsType,
   getEtablissementsDefaultPeriod,
+  postIndicateur2,
 } from "../../api"
 import type {
   Effectif,
   EffectifUnit,
   EtablissementPoste,
+  Indicator2,
   IndicatorMetaData,
 } from "../../api/types"
 import { isEffectifUnit } from "../../api/types"
 import {
   formatEffectifs,
-  unitsOptions,
+  getReadingNotes,
   getUnitOptionFromKey,
   unitMoreInfo,
-  getReadingNotes,
+  unitsOptions,
 } from "../../helpers/effectifs"
 import type { AppError } from "../../helpers/errors"
 import { errorWording, isAppError } from "../../helpers/errors"
+import { getQueryDates } from "../../helpers/filters"
 import {
   createFiltersQuery,
   formatDate,
@@ -35,6 +38,7 @@ import {
   nextMonth,
   prevMonth,
 } from "../../helpers/format"
+import { errorDescription } from "../../helpers/indicators"
 import { initJobOptions } from "../../helpers/postes"
 
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
@@ -45,11 +49,11 @@ import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Select } from "@codegouvfr/react-dsfr/Select"
 import { Table } from "@codegouvfr/react-dsfr/Table"
 
+import AppCollapse from "../../components/AppCollapse"
 import AppRebound from "../../components/AppRebound"
+import ContractNatureIndicator from "../../components/ContractNatureIndicator"
 import EffectifBarChart, { type GrayAreasInput } from "../../components/EffectifBarChart"
 import EtabFilters from "../../components/EtabFilters"
-import AppCollapse from "../../components/AppCollapse"
-import { getQueryDates } from "../../helpers/filters"
 
 export async function loader({
   params,
@@ -76,7 +80,6 @@ export async function loader({
   const queryMotives = getQueryAsNumberArray(searchParams, "motif")
   const queryJobs = getQueryAsNumberArray(searchParams, "poste")
   const queryUnit = getQueryAsString(searchParams, "unit")
-  const motives = queryMotives.map((motive) => Number(motive))
 
   const unit: EffectifUnit = isEffectifUnit(queryUnit) ? queryUnit : "tot"
 
@@ -85,19 +88,29 @@ export async function loader({
   const openDays = ls.get(`etab.${params.siret}.openDays`)
   const formattedOpenDays = formatLocalOpenDays(openDays)
 
-  const postes = await postPostes(etabType.id, formattedMergesIds)
-  const effectifsData = await postEffectifs({
-    id: etabType.id,
-    startDate: queryStartDate,
-    endDate: queryEndDate,
-    unit,
-    motives,
-    postesIds: queryJobs,
-    mergedPostesIds: formattedMergesIds,
-    openDaysCodes: formattedOpenDays,
-  })
+  const [postes, effectifsData, contractNatureIndicator] = await Promise.all([
+    postPostes(etabType.id, formattedMergesIds),
+    postEffectifs({
+      id: etabType.id,
+      startDate: queryStartDate,
+      endDate: queryEndDate,
+      unit,
+      motives: queryMotives,
+      postesIds: queryJobs,
+      mergedPostesIds: formattedMergesIds,
+      openDaysCodes: formattedOpenDays,
+    }),
+    postIndicateur2({
+      id: etabType.id,
+      motives: queryMotives,
+      postesIds: queryJobs,
+      mergedPostesIds: formattedMergesIds,
+      openDaysCodes: formattedOpenDays,
+    }),
+  ])
 
   return {
+    contractNatureIndicator,
     effectifsData,
     postes,
     queryEndDate,
@@ -109,6 +122,9 @@ export async function loader({
 }
 
 type EtabPostesLoader = {
+  contractNatureIndicator:
+    | { workedDaysByNature: Indicator2; meta: IndicatorMetaData }
+    | AppError
   effectifsData: AppError | { effectifs: Effectif[]; meta: IndicatorMetaData }
   postes: AppError | EtablissementPoste[]
   queryStartDate: string
@@ -120,6 +136,7 @@ type EtabPostesLoader = {
 
 export default function EtabRecours() {
   const {
+    contractNatureIndicator,
     effectifsData: initialEffectifs,
     postes,
     queryEndDate,
@@ -205,6 +222,25 @@ export default function EtabRecours() {
           <EtabPostesEffectifs defaultData={effectifs} defaultUnit={unit} />
         )}
 
+        <h2 className="fr-text--xl fr-mb-1w fr-mt-3w">
+          Natures de contrat les plus utilisées
+        </h2>
+        <hr />
+        {isAppError(contractNatureIndicator) ? (
+          <Alert
+            className="fr-mb-2w"
+            severity="warning"
+            title={contractNatureIndicator.messageFr}
+            description={errorDescription(contractNatureIndicator)}
+          />
+        ) : (
+          <ContractNatureIndicator
+            workedDaysByNature={contractNatureIndicator.workedDaysByNature}
+            meta={contractNatureIndicator.meta}
+            hasMotives={queryMotives.length > 0}
+            hasJobs={queryJobs.length > 0}
+          />
+        )}
         <h2 className="fr-text--xl fr-mb-1w fr-mt-3w">Actions</h2>
         <hr />
         <div className="fr-grid-row fr-grid-row--gutters">
@@ -224,7 +260,10 @@ export default function EtabRecours() {
             <AppRebound
               desc="Fusionner plusieurs libellés du même poste"
               linkProps={{
-                to: "../postes",
+                to: {
+                  pathname: "../postes",
+                  search: filtersQuery ? `?${filtersQuery}` : "",
+                },
               }}
               title="Fusion de postes"
             />

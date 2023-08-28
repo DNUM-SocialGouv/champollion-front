@@ -108,11 +108,11 @@ const createFiltersQuery = ({
   natures,
   jobs,
 }: {
-  startDate: string
-  endDate: string
-  motives: number[]
-  natures: string[]
-  jobs: number[]
+  startDate?: string
+  endDate?: string
+  motives?: number[]
+  natures?: string[]
+  jobs?: number[]
 }) => {
   let query = ""
   // todo refacto with map english key <=> french query param

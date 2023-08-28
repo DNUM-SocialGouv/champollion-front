@@ -2,6 +2,7 @@ import api from "../config"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import type { Indicator1, Indicator2, Indicator3, IndicatorMetaData } from "../types"
 import { addArrayParams } from "../../helpers/format"
+import { motivesCodeDict } from "../../helpers/filters"
 
 type Indicateur1Params = {
   id: number
@@ -9,13 +10,17 @@ type Indicateur1Params = {
   endDate?: string
 }
 
-type Indicateur2Params = Indicateur1Params & {
+type Filters = {
+  mergedPostesIds?: number[][]
+  motives?: number[]
+  natures?: string[]
   openDaysCodes?: string[]
+  postesIds?: number[]
 }
 
-type Indicateur3Params = Indicateur2Params & {
-  mergedPostesIds?: number[][]
-}
+type Indicateur2Params = Indicateur1Params & Omit<Filters, "natures">
+
+type Indicateur3Params = Indicateur1Params & Omit<Filters, "postesIds">
 
 export async function getIndicateur1({ id, startDate, endDate }: Indicateur1Params) {
   try {
@@ -38,15 +43,33 @@ export async function postIndicateur2({
   id,
   startDate,
   endDate,
+  mergedPostesIds,
+  motives,
+  postesIds,
   openDaysCodes,
 }: Indicateur2Params) {
   try {
     let params = `etablissement_id=${id}`
     if (endDate) params += `&end_date=${endDate}`
     if (startDate) params += `&start_date=${startDate}`
+    if (motives && motives.length > 0) {
+      const motivesCodes = motives
+        .map((motive) => motivesCodeDict[motive])
+        .filter(Boolean)
+        .flat()
+      const motivesParam = motivesCodes
+        .map((motive) => `motif_recours_ids=${motive}`)
+        .join("&")
+      params += `&${motivesParam}`
+    }
     params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
+    params = addArrayParams(params, postesIds, "poste_ids")
 
-    const response = await api.post(`indicateurs/2?${params}`)
+    let body = {}
+    if (mergedPostesIds && mergedPostesIds?.length > 0)
+      body = Object.assign(body, { merged_poste_ids: mergedPostesIds })
+
+    const response = await api.post(`indicateurs/2?${params}`, body)
     const workedDaysByNature = response.data?.data as Indicator2
     const meta = response.data?.meta as IndicatorMetaData
 
@@ -63,12 +86,25 @@ export async function postIndicateur3({
   endDate,
   openDaysCodes,
   mergedPostesIds,
+  natures,
+  motives,
 }: Indicateur3Params) {
   try {
     let params = `etablissement_id=${id}`
 
     if (endDate) params += `&end_date=${endDate}`
     if (startDate) params += `&start_date=${startDate}`
+    if (motives && motives.length > 0) {
+      const motivesCodes = motives
+        .map((motive) => motivesCodeDict[motive])
+        .filter(Boolean)
+        .flat()
+      const motivesParam = motivesCodes
+        .map((motive) => `motif_recours_ids=${motive}`)
+        .join("&")
+      params += `&${motivesParam}`
+    }
+    params = addArrayParams(params, natures, "nature_contrat_ids")
     params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
 
     let body = {}
