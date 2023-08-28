@@ -95,7 +95,7 @@ export default function ContractsPieChart({
         <path
           d={`M${startLineX},${startLineY}L${startLineX},${middleLineY}L${endLineX},${middleLineY}`}
           fill="none"
-          stroke="black"
+          stroke="var(--text-default-grey)"
           strokeWidth={1.5}
         />
         <text
@@ -103,7 +103,7 @@ export default function ContractsPieChart({
           y={textY}
           fontSize={fontSize}
           textAnchor={textAnchor}
-          fill="black"
+          fill="var(--text-default-grey)"
         >
           {textContent}
         </text>

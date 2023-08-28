@@ -24,23 +24,16 @@ import type {
   LastEffectif,
 } from "../../api/types"
 import { type AppError, errorWording, isAppError } from "../../helpers/errors"
-import {
-  formatDate,
-  formatLocalMerges,
-  formatLocalOpenDays,
-  formatNumber,
-} from "../../helpers/format"
+import { formatDate, formatLocalMerges, formatLocalOpenDays } from "../../helpers/format"
+import { errorDescription } from "../../helpers/indicators"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
-import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
 
 import EtabInfo from "../../components/EtabInfo"
-import ContractsPieChart, { PieSlice } from "../../components/ContractsPieChart"
-import Table from "@codegouvfr/react-dsfr/Table"
-import { useState } from "react"
-import { JobMergedBadge } from "../../helpers/contrats"
+import ContractNatureIndicator from "../../components/ContractNatureIndicator"
+import JobProportionIndicator from "../../components/JobProportionIndicator"
 
 export async function action({
   params,
@@ -99,17 +92,20 @@ export async function loader({
   ])
 
   return {
+    contractNatureIndicator,
     headcountIndicator,
     info,
     jobProportionIndicator,
     lastEffectif,
     savedOpenDaysCodes,
     siret,
-    contractNatureIndicator: contractNatureIndicator,
   }
 }
 
 type EtabSyntheseLoader = {
+  contractNatureIndicator:
+    | { workedDaysByNature: Indicator2; meta: IndicatorMetaData }
+    | AppError
   headcountIndicator: { headcount: Indicator1; meta: IndicatorMetaData } | AppError
   info: EtablissementInfo | AppError
   jobProportionIndicator:
@@ -118,9 +114,6 @@ type EtabSyntheseLoader = {
   lastEffectif: LastEffectif | AppError
   savedOpenDaysCodes: string[] | undefined
   siret: string
-  contractNatureIndicator:
-    | { workedDaysByNature: Indicator2; meta: IndicatorMetaData }
-    | AppError
 }
 
 export default function EtabSynthese() {
@@ -131,7 +124,7 @@ export default function EtabSynthese() {
     lastEffectif,
     savedOpenDaysCodes,
     siret,
-    contractNatureIndicator: contractNatureIndicator,
+    contractNatureIndicator,
   } = useLoaderData() as EtabSyntheseLoader
   const checkboxState = useActionData() as EtabSyntheseAction
 
@@ -159,22 +152,6 @@ export default function EtabSynthese() {
       },
     }
   })
-
-  const errorDescription = (appErrorData: AppError) => {
-    if (
-      appErrorData.context &&
-      appErrorData.context?.start_date &&
-      typeof appErrorData.context.start_date === "string" &&
-      appErrorData.context?.end_date &&
-      typeof appErrorData.context.end_date === "string"
-    ) {
-      const start = formatDate(appErrorData.context.start_date, "MMMM YYYY")
-      const end = formatDate(appErrorData.context.end_date, "MMMM YYYY")
-      return `Aucun contrat dans cet établissement entre ${start} et ${end}.`
-    }
-
-    return `Erreur ${appErrorData.status}`
-  }
 
   return (
     <>
@@ -263,6 +240,7 @@ export default function EtabSynthese() {
           <JobProportionIndicator
             workedDaysByJob={jobProportionIndicator.workedDaysByJob}
             meta={jobProportionIndicator.meta}
+            showLearnMore
           />
         )}
       </div>
@@ -341,157 +319,6 @@ function HeadcountIndicator({ headcount, meta }: HeadcountIndicatorProps) {
         <span className="fr-icon-arrow-right-line fr-icon--sm" aria-hidden="true"></span>
         Pour en savoir plus et consulter l'histogramme des effectifs, consultez la page{" "}
         <Link to={"recours-abusif"}>Recours abusif</Link>.
-      </p>
-    </>
-  )
-}
-type ContractNatureIndicatorProps = {
-  workedDaysByNature: Indicator2
-  meta: IndicatorMetaData
-}
-
-function ContractNatureIndicator({
-  workedDaysByNature,
-  meta,
-}: ContractNatureIndicatorProps) {
-  const start = formatDate(meta.startDate, "MMMM YYYY")
-  const end = formatDate(meta.endDate, "MMMM YYYY")
-  const cdiPercent = `${workedDaysByNature.cdi.relNb.toLocaleString("fr-FR")}`
-  const data: PieSlice[] = Object.entries(workedDaysByNature).map(([key, value]) => ({
-    name: key.toUpperCase(),
-    value: value.absNb,
-    percent: value.relNb,
-  }))
-  return (
-    <>
-      <h4 className="fr-text--md">
-        Répartition des jours travaillés par nature de contrat entre {start} et {end} :
-      </h4>
-      <div className="h-60 w-full">
-        <ContractsPieChart data={data} sortData showLegend />
-      </div>
-      <h5 className="fr-text--md fr-mt-3w fr-mb-1v font-bold">Note de lecture</h5>
-      <p className="fr-text--sm">
-        De {start} à {end}, les jours travaillés en CDI représentent {cdiPercent} % des
-        jours travaillés en CDI, CDD et CTT.
-      </p>
-    </>
-  )
-}
-
-type JobProportionIndicatorProps = {
-  workedDaysByJob: Indicator3
-  meta: IndicatorMetaData
-}
-
-type Data = {
-  merged: number
-  name: string | null
-  value: number
-  percent: number
-}
-
-type ReducedData = {
-  largestEl: Data[]
-  groupedList: Data[]
-  groupedValue: number
-  groupedPercent: number
-}
-
-function JobProportionIndicator({ workedDaysByJob, meta }: JobProportionIndicatorProps) {
-  const [showTable, setShowTable] = useState(false)
-  const start = formatDate(meta.startDate, "MMMM YYYY")
-  const end = formatDate(meta.endDate, "MMMM YYYY")
-  const firstJob = Object.values(workedDaysByJob).reduce((prev, curr) => {
-    if (prev.absNb > curr.absNb) return prev
-    else return curr
-  })
-
-  const firstJobPercent = firstJob.relNb.toLocaleString("fr-FR")
-  const data: Data[] = Object.values(workedDaysByJob)
-    .map((job) => ({
-      name: job.libellePoste,
-      merged: job.merged,
-      value: job.absNb,
-      percent: job.relNb,
-    }))
-    .sort((a, b) => b.percent - a.percent)
-
-  const reducedData = data.reduce(
-    (acc: ReducedData, curr) => {
-      const minShare = 2.3
-      return {
-        largestEl: curr.percent > minShare ? [...acc.largestEl, curr] : acc.largestEl,
-        groupedList: curr.percent > minShare ? [] : [...acc.groupedList, curr],
-        groupedValue: curr.percent > minShare ? 0 : acc.groupedValue + curr.value,
-        groupedPercent:
-          curr.percent > minShare ? 0 : acc.groupedPercent + curr.percent * 10, // use integers to prevent js from adding extra fraction digits
-      }
-    },
-    {
-      largestEl: [] as Data[],
-      groupedList: [] as Data[],
-      groupedValue: 0,
-      groupedPercent: 0,
-    }
-  )
-
-  const groupedData = [
-    ...reducedData.largestEl,
-    {
-      name: "Autres",
-      percent: reducedData.groupedPercent / 10,
-      value: reducedData.groupedValue,
-      merged: 0,
-    },
-  ]
-
-  const headers = ["Libellé de poste", "Proportion de jours travaillés"]
-  const tableData = groupedData.map((job) => {
-    const jobName = (
-      <>
-        {job.name}
-        <JobMergedBadge merged={job.merged === 1} />
-      </>
-    )
-    const jobShare = formatNumber(job.percent) + " %"
-
-    return [jobName, jobShare]
-  })
-
-  return (
-    <>
-      <h4 className="fr-text--md fr-mb-0">
-        Répartition des jours travaillés en fonction des libellés de poste entre {start}{" "}
-        et {end} :
-      </h4>
-      <p className="fr-text--sm italic">
-        Par souci de lisibilité, les parts inférieures à 2 % ne sont pas affichées, et
-        regroupées sous le libellé "Autres".
-      </p>
-
-      {showTable ? (
-        <Table className="app-table--thin fr-mb-2w" headers={headers} data={tableData} />
-      ) : (
-        <div className="fr-mb-2w h-60 w-full">
-          <ContractsPieChart data={groupedData} />
-        </div>
-      )}
-      <ToggleSwitch
-        label="Afficher les données sous forme de tableau"
-        checked={showTable}
-        onChange={(checked) => setShowTable(checked)}
-        classes={{ label: "w-full" }}
-      />
-      <h5 className="fr-text--md fr-mb-1v font-bold">Note de lecture</h5>
-      <p className="fr-text--sm fr-mb-1w">
-        De {start} à {end}, les contrats avec le libellé de poste "{firstJob.libellePoste}
-        " ont représenté {firstJobPercent} % des jours travaillés en CDI, CDD et CTT.
-      </p>
-      <p className="fr-mt-2w">
-        <span className="fr-icon-arrow-right-line fr-icon--sm" aria-hidden="true"></span>
-        Pour en savoir plus et pour fusionner des libellés de postes, consultez la page{" "}
-        <Link to={"postes"}>Postes</Link>.
       </p>
     </>
   )

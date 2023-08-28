@@ -16,7 +16,7 @@ type FormattedContrat = {
   employee: string
   startDate: ReactNode
   endDate: ReactNode
-  contractType: string
+  nature: string
   motive: string | null
   ett: ReactNode
   conventionCode: string | null
@@ -29,7 +29,7 @@ type Column =
   | "employee"
   | "startDate"
   | "endDate"
-  | "contractType"
+  | "nature"
   | "motive"
   | "ett"
   | "conventionCode"
@@ -45,20 +45,20 @@ const headers = [
   { key: "employee", label: "Salarié", width: "15%" },
   { key: "startDate", label: "Date de début", width: "15%" },
   { key: "endDate", label: "Date de fin", width: "15%" },
-  { key: "contractType", label: "Nature contrat", width: "5%" },
+  { key: "nature", label: "Nature contrat", width: "5%" },
   { key: "motive", label: "Motif de recours", width: "15%" },
   { key: "ett", label: "ETT", width: "15%" },
   { key: "conventionCode", label: "Conv. collective", width: "5%" },
 ] as ContratsHeader<Column>[]
 
-const contractTypeShort = [
+const contractNatureShort = [
   { code: "01", label: "CDI" },
   { code: "02", label: "CDD" },
   { code: "03", label: "CTT" },
 ]
 
-const getContractType = (contractCode: string) =>
-  contractTypeShort.find((item) => item.code === contractCode)?.label || "Autre"
+const getContractNature = (contractCode: string) =>
+  contractNatureShort.find((item) => item.code === contractCode)?.label || "Autre"
 
 export type DateStatus = "declared" | "computed" | "validated" | "unknown"
 
@@ -190,7 +190,7 @@ const formatContrats = (
         employee,
         startDate,
         endDate,
-        contractType: getContractType(contrat.codeNatureContrat),
+        nature: getContractNature(contrat.codeNatureContrat),
         motive,
         conventionCode: contrat.codeConventionCollective,
         ett,
@@ -346,4 +346,4 @@ export const radioBtnOptions = extensions.map((key) => ({
   },
 }))
 
-export { formatContrats, getContractType, headers }
+export { formatContrats, getContractNature, headers }

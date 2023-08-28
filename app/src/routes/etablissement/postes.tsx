@@ -4,10 +4,23 @@ import type { LoaderFunctionArgs } from "react-router-dom"
 import ls from "localstorage-slim"
 import { v4 as uuid } from "uuid"
 
-import { getEtablissementsType, postPostes } from "../../api"
-import type { EtablissementPoste } from "../../api/types"
-import { errorWording, isAppError } from "../../helpers/errors"
-import { formatLocalMerges } from "../../helpers/format"
+import {
+  getEtablissementsDefaultPeriod,
+  getEtablissementsType,
+  postIndicateur3,
+  postPostes,
+} from "../../api"
+import type { EtablissementPoste, Indicator3, IndicatorMetaData } from "../../api/types"
+import { AppError, errorWording, isAppError } from "../../helpers/errors"
+import { getQueryDates } from "../../helpers/filters"
+import {
+  createFiltersQuery,
+  formatLocalMerges,
+  formatLocalOpenDays,
+  getQueryAsArray,
+  getQueryAsNumberArray,
+} from "../../helpers/format"
+import { errorDescription } from "../../helpers/indicators"
 import { JobMergedBadge } from "../../helpers/contrats"
 import { parseAndFilterMergeStr, type MergeOptionObject } from "../../helpers/postes"
 
@@ -18,16 +31,31 @@ import { createModal } from "@codegouvfr/react-dsfr/Modal"
 
 import AppRebound from "../../components/AppRebound"
 import AppMultiSelect, { type Option } from "../../components/AppMultiSelect"
+import EtabFilters from "../../components/EtabFilters"
+import JobProportionIndicator from "../../components/JobProportionIndicator"
 
 type EtabPostesLoader = {
   etabId: number
   jobList: EtablissementPoste[]
+  jobProportionIndicator:
+    | { workedDaysByJob: Indicator3; meta: IndicatorMetaData }
+    | AppError
+  openDaysCodes?: string[]
   options: Option[]
+  queryEndDate: string
+  queryMotives: number[]
+  queryNatures: string[]
+  queryStartDate: string
   savedMerges: MergeOptionObject[]
   siret: string
 }
 
-export async function loader({ params }: LoaderFunctionArgs): Promise<EtabPostesLoader> {
+export async function loader({
+  params,
+  request,
+}: LoaderFunctionArgs): Promise<EtabPostesLoader> {
+  const { searchParams } = new URL(request.url)
+
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
 
@@ -38,7 +66,16 @@ export async function loader({ params }: LoaderFunctionArgs): Promise<EtabPostes
     })
   }
 
-  const etabPostes = await postPostes(etabType.id)
+  const [etabDefaultPeriod, etabPostes] = await Promise.all([
+    getEtablissementsDefaultPeriod(etabType.id),
+    postPostes(etabType.id),
+  ])
+  const { queryStartDate, queryEndDate } = getQueryDates({
+    etabDefaultPeriod,
+    searchParams,
+  })
+  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
+  const queryNatures = getQueryAsArray(searchParams, "nature")
 
   if (isAppError(etabPostes)) {
     const responseParams: ResponseInit = {
@@ -53,6 +90,8 @@ export async function loader({ params }: LoaderFunctionArgs): Promise<EtabPostes
     (poste) => ({ value: poste.posteId, label: poste.libellePoste } as Option)
   )
 
+  const localOpenDays = ls.get(`etab.${params.siret}.openDays`)
+  const savedOpenDaysCodes = formatLocalOpenDays(localOpenDays)
   const localMergesIds = ls.get(`etab.${params.siret}.merges`)
   const formattedMergesIds = formatLocalMerges(localMergesIds)
 
@@ -70,7 +109,18 @@ export async function loader({ params }: LoaderFunctionArgs): Promise<EtabPostes
       )
     : []
 
-  const jobListWithMerge = await postPostes(etabType.id, formattedMergesIds)
+  const [jobListWithMerge, jobProportionIndicator] = await Promise.all([
+    postPostes(etabType.id, formattedMergesIds),
+    postIndicateur3({
+      id: etabType.id,
+      startDate: queryStartDate,
+      endDate: queryEndDate,
+      openDaysCodes: savedOpenDaysCodes,
+      mergedPostesIds: formattedMergesIds,
+      natures: queryNatures,
+      motives: queryMotives,
+    }),
+  ])
 
   if (isAppError(jobListWithMerge)) {
     const responseParams: ResponseInit = {
@@ -84,7 +134,13 @@ export async function loader({ params }: LoaderFunctionArgs): Promise<EtabPostes
   return {
     etabId: etabType.id,
     jobList: jobListWithMerge,
+    jobProportionIndicator,
+    openDaysCodes: savedOpenDaysCodes,
     options,
+    queryEndDate,
+    queryMotives,
+    queryNatures,
+    queryStartDate,
     savedMerges,
     siret,
   }
@@ -94,18 +150,33 @@ export default function EtabPostes() {
   const {
     etabId,
     jobList: initialJobList,
+    jobProportionIndicator: initJobProportionIndicator,
+    openDaysCodes,
     options,
+    queryEndDate,
+    queryMotives,
+    queryNatures,
+    queryStartDate,
     savedMerges,
     siret,
   } = useLoaderData() as EtabPostesLoader
   const [merges, setMerges] = useState(savedMerges)
   const [jobList, setJobList] = useState(initialJobList)
+  const [jobProportionIndicator, setJobProportionIndicator] = useState(
+    initJobProportionIndicator
+  )
   const [alertState, setAlertState] = useState<{
     message?: string
     severity: AlertProps.Severity
     title: string
   } | null>(null)
 
+  const filtersQuery = createFiltersQuery({
+    startDate: queryStartDate,
+    endDate: queryEndDate,
+    motives: queryMotives,
+    natures: queryNatures,
+  })
   const modal = createModal({
     id: "job-list-modal",
     isOpenedByDefault: false,
@@ -124,7 +195,19 @@ export default function EtabPostes() {
 
     const merges = parseAndFilterMergeStr(data, "merge")
 
-    const jobListWithMerge = await postPostes(etabId, merges)
+    const [jobListWithMerge, newJobProportionIndicator] = await Promise.all([
+      postPostes(etabId, merges),
+      postIndicateur3({
+        id: etabId,
+        startDate: queryStartDate,
+        endDate: queryEndDate,
+        openDaysCodes,
+        mergedPostesIds: merges,
+        natures: queryNatures,
+        motives: queryMotives,
+      }),
+    ])
+    setJobProportionIndicator(newJobProportionIndicator)
 
     let message = "Une erreur s'est produite, vos fusions n'ont pas pu être sauvegardées."
     let severity: AlertProps.Severity = "error"
@@ -159,6 +242,15 @@ export default function EtabPostes() {
   return (
     <>
       <div className="fr-mb-3w">
+        <h2 className="fr-text--xl fr-mb-1w">Module de filtres</h2>
+        <hr />
+        <EtabFilters
+          startDate={queryStartDate}
+          endDate={queryEndDate}
+          natures={queryNatures}
+          motives={queryMotives}
+          disabledFilters={{ jobs: true }}
+        />
         <h2 className="fr-text--xl fr-mb-1w">Etat des lieux des postes</h2>
         <hr />
         <Button onClick={() => modal.open()} className="fr-mb-4w">
@@ -178,6 +270,25 @@ export default function EtabPostes() {
             })}
           </ul>
         </modal.Component>
+        <h3 className="fr-text--md underline underline-offset-4">
+          Postes les plus occupés
+        </h3>
+        {isAppError(jobProportionIndicator) ? (
+          <Alert
+            className="fr-mb-2w"
+            severity="warning"
+            title={jobProportionIndicator.messageFr}
+            description={errorDescription(jobProportionIndicator)}
+          />
+        ) : (
+          <JobProportionIndicator
+            workedDaysByJob={jobProportionIndicator.workedDaysByJob}
+            meta={jobProportionIndicator.meta}
+            collapseReadingNote
+            hasMotives={queryMotives.length > 0}
+            natures={queryNatures}
+          />
+        )}
         <h2 className="fr-text--xl fr-mb-1w">Fusion de postes</h2>
         <hr />
         <form className="flex flex-col" method="post" onSubmit={handleSubmit}>
@@ -269,7 +380,10 @@ export default function EtabPostes() {
             <AppRebound
               desc="Lancer le diagnostic d'emploi permanent"
               linkProps={{
-                to: "../recours-abusif",
+                to: {
+                  pathname: "../recours-abusif",
+                  search: filtersQuery ? `?${filtersQuery}` : "",
+                },
               }}
               title="Recours abusif"
             />
@@ -278,9 +392,24 @@ export default function EtabPostes() {
             <AppRebound
               desc="Lancer le diagnostic d'anomalie des délais de carence"
               linkProps={{
-                to: { pathname: "../carence" },
+                to: {
+                  pathname: "../carence",
+                  search: filtersQuery ? `?${filtersQuery}` : "",
+                },
               }}
               title="Délai de carence"
+            />
+          </div>
+          <div className="fr-col-12 fr-col-md-4">
+            <AppRebound
+              desc="Consulter les contrats correspondants aux filtres"
+              linkProps={{
+                to: {
+                  pathname: "../contrats",
+                  search: filtersQuery ? `?${filtersQuery}` : "",
+                },
+              }}
+              title="Contrats"
             />
           </div>
         </div>
