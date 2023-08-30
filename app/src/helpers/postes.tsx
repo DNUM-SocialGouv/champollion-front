@@ -42,6 +42,25 @@ export const initEmployeeOptions = (employees: Salarie[] | AppError) => {
   return options
 }
 
+export const filteredOptions = ({
+  currentMergeId,
+  allMerges,
+  options,
+}: {
+  currentMergeId: number | string
+  allMerges: MergeOptionObject[]
+  options: Option[]
+}) => {
+  const allOptionsSelectedInMergeExceptCurrent = allMerges
+    .filter((mergeObject) => mergeObject.id !== currentMergeId)
+    .map((mergeObject) => mergeObject.mergedOptions.map((option) => option.value))
+    .flat()
+  const remainingOptions = options.filter(
+    (option) => !allOptionsSelectedInMergeExceptCurrent.includes(option.value)
+  )
+  return remainingOptions
+}
+
 export const OptionWithMerge = (props: OptionProps<Option>) => {
   return (
     <components.Option {...props}>

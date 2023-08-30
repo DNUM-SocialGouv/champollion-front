@@ -10,7 +10,11 @@ import {
 } from "../api"
 import type { EtablissementPoste } from "../api/types"
 import { getErrorMessage, isAppError } from "../helpers/errors"
-import { parseAndFilterMergeStr, type MergeOptionObject } from "../helpers/postes"
+import {
+  parseAndFilterMergeStr,
+  type MergeOptionObject,
+  filteredOptions,
+} from "../helpers/postes"
 import { findDuplicates } from "../helpers/format"
 
 import { Alert, AlertProps } from "@codegouvfr/react-dsfr/Alert"
@@ -210,7 +214,11 @@ function LabellisationForm({ etabId, options }: { etabId: number; options: Optio
             key={merge.id}
             merges={likelyMerges}
             setMerges={setLikelyMerges}
-            options={options}
+            options={filteredOptions({
+              options,
+              currentMergeId: merge.id,
+              allMerges: [...likelyMerges, ...unclearMerges],
+            })}
             handleDeleteMerge={handleDeleteLikelyMerge}
           />
         ))}
@@ -242,7 +250,11 @@ function LabellisationForm({ etabId, options }: { etabId: number; options: Optio
             key={merge.id}
             merges={unclearMerges}
             setMerges={setUnclearMerges}
-            options={options}
+            options={filteredOptions({
+              options,
+              currentMergeId: merge.id,
+              allMerges: [...likelyMerges, ...unclearMerges],
+            })}
             handleDeleteMerge={handleDeleteUnclearMerge}
           />
         ))}

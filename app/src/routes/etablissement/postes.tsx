@@ -22,11 +22,16 @@ import {
 } from "../../helpers/format"
 import { errorDescription } from "../../helpers/indicators"
 import { JobMergedBadge } from "../../helpers/contrats"
-import { parseAndFilterMergeStr, type MergeOptionObject } from "../../helpers/postes"
+import {
+  parseAndFilterMergeStr,
+  type MergeOptionObject,
+  filteredOptions,
+} from "../../helpers/postes"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import type { AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
+import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 
 import AppRebound from "../../components/AppRebound"
@@ -170,6 +175,7 @@ export default function EtabPostes() {
     severity: AlertProps.Severity
     title: string
   } | null>(null)
+  const [areOptionsFiltered, setAreOptionsFiltered] = useState(false)
 
   const filtersQuery = createFiltersQuery({
     startDate: queryStartDate,
@@ -296,6 +302,21 @@ export default function EtabPostes() {
             Vous pouvez choisir de fusionner certains libellés de postes correspondant à
             la même identité de poste.
           </p>
+          <Checkbox
+            className="fr-mb-2w"
+            options={[
+              {
+                label: "Filtrer les libellés déjà fusionnés",
+                hintText:
+                  "Si vous cochez cette case, une fois un libellé ajouté à une fusion, il n'apparaîtra plus dans le menu de sélection des libellés d'une autre fusion.",
+                nativeInputProps: {
+                  name: "filtered-options",
+                  checked: areOptionsFiltered,
+                  onChange: (event) => setAreOptionsFiltered(event.target.checked),
+                },
+              },
+            ]}
+          />
           {merges.length > 0 &&
             merges.map((merge) => (
               <div
@@ -315,7 +336,15 @@ export default function EtabPostes() {
                       )
                       setMerges(newMerges)
                     }}
-                    options={options}
+                    options={
+                      areOptionsFiltered
+                        ? filteredOptions({
+                            options,
+                            currentMergeId: merge.id,
+                            allMerges: merges,
+                          })
+                        : options
+                    }
                     value={merge.mergedOptions}
                   />
                   <input
