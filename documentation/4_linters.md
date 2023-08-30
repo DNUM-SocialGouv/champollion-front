@@ -9,6 +9,9 @@ yarn lint:format
 # vérification de la qualité du code et corrections avec ESLint
 yarn lint:fix
 
-# lancer les 2 commandes précédentes d'affilée
+# vérification du typage TypeScript
+yarn lint:types
+
+# lancer les 3 commandes précédentes d'affilée
 yarn lint
 ```
