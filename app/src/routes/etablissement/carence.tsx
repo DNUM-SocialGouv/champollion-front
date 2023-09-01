@@ -1,5 +1,6 @@
 import ls from "localstorage-slim"
-import { type LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router-dom"
+import { type LoaderFunctionArgs, useSearchParams } from "react-router-dom"
+import { useLoaderData } from "react-router-typesafe"
 import { Fragment } from "react"
 
 import {
@@ -9,7 +10,7 @@ import {
   postCarences,
   postPostes,
 } from "../../api"
-import type { EtablissementPoste, IDCC, Infractions } from "../../api/types"
+import type { IDCC, Infractions } from "../../api/types"
 import type { FormattedInfraction, FormattedCarenceContract } from "../../helpers/carence"
 import {
   formatInfractions,
@@ -26,7 +27,6 @@ import {
   getQueryAsNumberArray,
   getQueryAsString,
 } from "../../helpers/format"
-import type { AppError } from "../../helpers/errors"
 import { errorWording, isAppError } from "../../helpers/errors"
 import { getQueryDates } from "../../helpers/filters"
 import { initJobOptions } from "../../helpers/postes"
@@ -44,10 +44,7 @@ import type { Header } from "../../components/AppTable"
 import EtabFilters from "../../components/EtabFilters"
 import AppCollapse from "../../components/AppCollapse"
 
-export async function loader({
-  params,
-  request,
-}: LoaderFunctionArgs): Promise<EtabCarenceLoader> {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
 
   const siret = params.siret ? String(params.siret) : ""
@@ -96,16 +93,6 @@ export async function loader({
   }
 }
 
-type EtabCarenceLoader = {
-  idccData: Record<string, IDCC> | AppError
-  infractions: Infractions | AppError
-  legislation: string
-  postes: AppError | EtablissementPoste[]
-  queryEndDate: string
-  queryJobs: number[]
-  queryStartDate: string
-}
-
 const headers = [
   { key: "employee", label: "Salarié", width: "15%" },
   { key: "startDate", label: "Date de début", width: "10%" },
@@ -125,7 +112,7 @@ export default function EtabCarence() {
     queryJobs,
     queryStartDate,
     queryEndDate,
-  } = useLoaderData() as EtabCarenceLoader
+  } = useLoaderData<typeof loader>()
 
   const jobOptions = initJobOptions(postes)
 

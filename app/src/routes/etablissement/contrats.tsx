@@ -1,7 +1,7 @@
 import { useState } from "react"
 import type { ReactNode, FormEvent } from "react"
-import { useLoaderData, useSearchParams } from "react-router-dom"
-import type { LoaderFunctionArgs } from "react-router-dom"
+import { useSearchParams, type LoaderFunctionArgs } from "react-router-dom"
+import { useLoaderData } from "react-router-typesafe"
 import ls from "localstorage-slim"
 
 import {
@@ -12,13 +12,7 @@ import {
   postContratsExport,
   getEtablissementsDefaultPeriod,
 } from "../../api"
-import type {
-  EtablissementPoste,
-  EtuContrat,
-  FileExtension,
-  PaginationMetaData,
-  Salarie,
-} from "../../api/types"
+import type { EtuContrat, FileExtension, PaginationMetaData } from "../../api/types"
 import type { EditableDate, ContratDatesState } from "../../helpers/contrats"
 import {
   formatContrats,
@@ -28,7 +22,6 @@ import {
   radioBtnOptions,
 } from "../../helpers/contrats"
 import { motiveOptions, contractNatures, getQueryDates } from "../../helpers/filters"
-import type { AppError } from "../../helpers/errors"
 import { errorWording, isAppError } from "../../helpers/errors"
 import {
   createFiltersQuery,
@@ -52,10 +45,7 @@ import AppTable from "../../components/AppTable"
 import EtabFilters from "../../components/EtabFilters"
 import AppRebound from "../../components/AppRebound"
 
-export async function loader({
-  params,
-  request,
-}: LoaderFunctionArgs): Promise<CarenceContratsLoader> {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
 
   const siret = params.siret ? String(params.siret) : ""
@@ -115,28 +105,6 @@ export async function loader({
   }
 }
 
-type CarenceContratsLoader = {
-  companyName: string
-  contratsData:
-    | AppError
-    | {
-        contrats: EtuContrat[]
-        meta: PaginationMetaData
-      }
-  employeesList: AppError | Salarie[]
-  etabId: number
-  mergedPostesIds?: number[][]
-  page: number
-  postes: AppError | EtablissementPoste[]
-  queryEmployee?: number
-  queryEndDate: string
-  queryJobs: number[]
-  queryMotives: number[]
-  queryNature: string[]
-  queryStartDate: string
-  siret: string
-}
-
 export default function EtabContrats() {
   const {
     companyName,
@@ -153,7 +121,7 @@ export default function EtabContrats() {
     queryNature,
     queryStartDate,
     siret,
-  } = useLoaderData() as CarenceContratsLoader
+  } = useLoaderData<typeof loader>()
 
   const filtersQuery = createFiltersQuery({
     startDate: queryStartDate,
@@ -387,7 +355,7 @@ function ContratsTable({
   meta: PaginationMetaData
 }) {
   const [searchParams] = useSearchParams()
-  const { siret } = useLoaderData() as CarenceContratsLoader
+  const { siret } = useLoaderData<typeof loader>()
 
   const initialContratsDatesState = contrats.map((contrat) => {
     const savedContratsDates = ls.get(`contrats.${siret}`) as Record<string, string>

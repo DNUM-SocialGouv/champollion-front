@@ -1,5 +1,5 @@
 import { type FormEvent, Fragment, useState } from "react"
-import { useLoaderData } from "react-router-dom"
+import { useLoaderData } from "react-router-typesafe"
 import type { LoaderFunctionArgs } from "react-router-dom"
 import ls from "localstorage-slim"
 import { v4 as uuid } from "uuid"
@@ -10,8 +10,7 @@ import {
   postIndicateur3,
   postPostes,
 } from "../../api"
-import type { EtablissementPoste, Indicator3, IndicatorMetaData } from "../../api/types"
-import { AppError, errorWording, isAppError } from "../../helpers/errors"
+import { errorWording, isAppError } from "../../helpers/errors"
 import { getQueryDates } from "../../helpers/filters"
 import {
   createFiltersQuery,
@@ -39,26 +38,7 @@ import AppMultiSelect, { type Option } from "../../components/AppMultiSelect"
 import EtabFilters from "../../components/EtabFilters"
 import JobProportionIndicator from "../../components/JobProportionIndicator"
 
-type EtabPostesLoader = {
-  etabId: number
-  jobList: EtablissementPoste[]
-  jobProportionIndicator:
-    | { workedDaysByJob: Indicator3; meta: IndicatorMetaData }
-    | AppError
-  openDaysCodes?: string[]
-  options: Option[]
-  queryEndDate: string
-  queryMotives: number[]
-  queryNatures: string[]
-  queryStartDate: string
-  savedMerges: MergeOptionObject[]
-  siret: string
-}
-
-export async function loader({
-  params,
-  request,
-}: LoaderFunctionArgs): Promise<EtabPostesLoader> {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
 
   const siret = params.siret ? String(params.siret) : ""
@@ -164,7 +144,7 @@ export default function EtabPostes() {
     queryStartDate,
     savedMerges,
     siret,
-  } = useLoaderData() as EtabPostesLoader
+  } = useLoaderData<typeof loader>()
   const [merges, setMerges] = useState(savedMerges)
   const [jobList, setJobList] = useState(initialJobList)
   const [jobProportionIndicator, setJobProportionIndicator] = useState(

@@ -1,5 +1,6 @@
 import { useRef, useState } from "react"
-import { type LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router-dom"
+import { type LoaderFunctionArgs, useSearchParams } from "react-router-dom"
+import { useLoaderData } from "react-router-typesafe"
 import ls from "localstorage-slim"
 import { v4 as uuid } from "uuid"
 
@@ -10,13 +11,7 @@ import {
   getEtablissementsDefaultPeriod,
   postIndicateur2,
 } from "../../api"
-import type {
-  Effectif,
-  EffectifUnit,
-  EtablissementPoste,
-  Indicator2,
-  IndicatorMetaData,
-} from "../../api/types"
+import type { Effectif, EffectifUnit, IndicatorMetaData } from "../../api/types"
 import { isEffectifUnit } from "../../api/types"
 import {
   formatEffectifs,
@@ -25,7 +20,6 @@ import {
   unitMoreInfo,
   unitsOptions,
 } from "../../helpers/effectifs"
-import type { AppError } from "../../helpers/errors"
 import { errorWording, isAppError } from "../../helpers/errors"
 import { getQueryDates } from "../../helpers/filters"
 import {
@@ -55,10 +49,7 @@ import ContractNatureIndicator from "../../components/ContractNatureIndicator"
 import EffectifBarChart, { type GrayAreasInput } from "../../components/EffectifBarChart"
 import EtabFilters from "../../components/EtabFilters"
 
-export async function loader({
-  params,
-  request,
-}: LoaderFunctionArgs): Promise<EtabPostesLoader> {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
 
   const siret = params.siret ? String(params.siret) : ""
@@ -121,19 +112,6 @@ export async function loader({
   }
 }
 
-type EtabPostesLoader = {
-  contractNatureIndicator:
-    | { workedDaysByNature: Indicator2; meta: IndicatorMetaData }
-    | AppError
-  effectifsData: AppError | { effectifs: Effectif[]; meta: IndicatorMetaData }
-  postes: AppError | EtablissementPoste[]
-  queryStartDate: string
-  queryEndDate: string
-  queryMotives: number[]
-  queryJobs: number[]
-  unit: EffectifUnit
-}
-
 export default function EtabRecours() {
   const {
     contractNatureIndicator,
@@ -144,7 +122,7 @@ export default function EtabRecours() {
     queryMotives,
     queryStartDate,
     unit,
-  } = useLoaderData() as EtabPostesLoader
+  } = useLoaderData<typeof loader>()
 
   const effectifsNatures = ["01", "02", "03"]
 

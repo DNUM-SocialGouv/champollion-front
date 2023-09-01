@@ -143,7 +143,7 @@ export const formatLocalMerges = (data: unknown): number[][] | undefined => {
   return formattedMergesIds
 }
 
-type DayCode = "0" | "1" | "2" | "3" | "4" | "5" | "6"
+export type DayCode = "0" | "1" | "2" | "3" | "4" | "5" | "6"
 
 export const formatLocalOpenDays = (
   dataFromLocalStorage: unknown
