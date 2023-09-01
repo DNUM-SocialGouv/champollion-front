@@ -3,10 +3,10 @@ import {
   type ActionFunctionArgs,
   Form,
   type LoaderFunctionArgs,
-  useActionData,
-  useLoaderData,
   Link,
 } from "react-router-dom"
+import { useActionData, useLoaderData } from "react-router-typesafe"
+
 import {
   getEtablissementsInfo,
   getEtablissementsType,
@@ -15,16 +15,14 @@ import {
   postIndicateur2,
   postIndicateur3,
 } from "../../api"
-import type {
-  EtablissementInfo,
-  Indicator1,
-  Indicator2,
-  Indicator3,
-  IndicatorMetaData,
-  LastEffectif,
-} from "../../api/types"
-import { type AppError, errorWording, isAppError } from "../../helpers/errors"
-import { formatDate, formatLocalMerges, formatLocalOpenDays } from "../../helpers/format"
+import type { Indicator1, IndicatorMetaData } from "../../api/types"
+import { errorWording, isAppError } from "../../helpers/errors"
+import {
+  DayCode,
+  formatDate,
+  formatLocalMerges,
+  formatLocalOpenDays,
+} from "../../helpers/format"
 import { errorDescription } from "../../helpers/indicators"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
@@ -35,27 +33,19 @@ import EtabInfo from "../../components/EtabInfo"
 import ContractNatureIndicator from "../../components/ContractNatureIndicator"
 import JobProportionIndicator from "../../components/JobProportionIndicator"
 
-export async function action({
-  params,
-  request,
-}: ActionFunctionArgs): Promise<EtabSyntheseAction> {
+export async function action({ params, request }: ActionFunctionArgs) {
   const formData = await request.formData()
   const data = Object.fromEntries(formData)
   const openDays = Object.keys(data)
     .filter((key) => key.includes("open-day"))
     .map((key) => data[key])
   ls.set(`etab.${params.siret}.openDays`, openDays)
-  return { state: "success", stateRelatedMessage: "Sauvegardé" }
+  const state: CheckboxState = "success"
+
+  return { state: state, stateRelatedMessage: "Sauvegardé" }
 }
 
-type EtabSyntheseAction = {
-  state: "success" | "error" | "default" | undefined
-  stateRelatedMessage: string
-}
-
-export async function loader({
-  params,
-}: LoaderFunctionArgs): Promise<EtabSyntheseLoader> {
+export async function loader({ params }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
 
@@ -102,19 +92,7 @@ export async function loader({
   }
 }
 
-type EtabSyntheseLoader = {
-  contractNatureIndicator:
-    | { workedDaysByNature: Indicator2; meta: IndicatorMetaData }
-    | AppError
-  headcountIndicator: { headcount: Indicator1; meta: IndicatorMetaData } | AppError
-  info: EtablissementInfo | AppError
-  jobProportionIndicator:
-    | { workedDaysByJob: Indicator3; meta: IndicatorMetaData }
-    | AppError
-  lastEffectif: LastEffectif | AppError
-  savedOpenDaysCodes: string[] | undefined
-  siret: string
-}
+type CheckboxState = "success" | "error" | "default"
 
 export default function EtabSynthese() {
   const {
@@ -125,10 +103,10 @@ export default function EtabSynthese() {
     savedOpenDaysCodes,
     siret,
     contractNatureIndicator,
-  } = useLoaderData() as EtabSyntheseLoader
-  const checkboxState = useActionData() as EtabSyntheseAction
+  } = useLoaderData<typeof loader>()
+  const checkboxState = useActionData<typeof action>()
 
-  const initialOpenDays = [
+  const initialOpenDays: { code: DayCode; label: string; checked: boolean }[] = [
     { code: "1", label: "Lundi", checked: true },
     { code: "2", label: "Mardi", checked: true },
     { code: "3", label: "Mercredi", checked: true },

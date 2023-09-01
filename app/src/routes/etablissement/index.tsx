@@ -3,11 +3,11 @@ import {
   type LoaderFunctionArgs,
   Outlet,
   redirect,
-  useLoaderData,
   useLocation,
   useNavigate,
   useOutletContext,
 } from "react-router-dom"
+import { useLoaderData } from "react-router-typesafe"
 
 import { getEtablissementsType } from "../../api"
 import { errorWording, isAppError } from "../../helpers/errors"
@@ -16,15 +16,7 @@ import { Tabs } from "@codegouvfr/react-dsfr/Tabs"
 
 import EtabBanner from "../../components/EtabBanner"
 
-type EtabLoader = {
-  etabId: number
-  raisonSociale: string
-  siret: string
-}
-
-export async function loader({
-  params,
-}: LoaderFunctionArgs): Promise<Response | EtabLoader> {
+export async function loader({ params }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
 
@@ -59,7 +51,7 @@ const tabs = [
 type ContextType = { etabId: number }
 
 export default function Etab() {
-  const { etabId, raisonSociale, siret } = useLoaderData() as EtabLoader
+  const { etabId, raisonSociale, siret } = useLoaderData<typeof loader>()
   const navigate = useNavigate()
   const { pathname } = useLocation()
 
