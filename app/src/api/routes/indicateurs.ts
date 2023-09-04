@@ -8,6 +8,7 @@ type Indicateur1Params = {
   id: number
   startDate?: string
   endDate?: string
+  signal?: AbortSignal
 }
 
 type Filters = {
@@ -22,13 +23,21 @@ type Indicateur2Params = Indicateur1Params & Omit<Filters, "natures">
 
 type Indicateur3Params = Indicateur1Params & Omit<Filters, "postesIds">
 
-export async function getIndicateur1({ id, startDate, endDate }: Indicateur1Params) {
+export async function getIndicateur1({
+  id,
+  startDate,
+  endDate,
+  signal,
+}: Indicateur1Params) {
   try {
     let params = `etablissement_id=${id}`
     if (endDate) params += `&end_date=${endDate}`
     if (startDate) params += `&start_date=${startDate}`
 
-    const response = await api.get(`indicateurs/1?${params}`)
+    let config = {}
+    if (signal) config = { signal }
+
+    const response = await api.get(`indicateurs/1?${params}`, config)
     const headcount = response.data?.data as Indicator1
     const meta = response.data?.meta as IndicatorMetaData
 
@@ -47,6 +56,7 @@ export async function postIndicateur2({
   motives,
   postesIds,
   openDaysCodes,
+  signal,
 }: Indicateur2Params) {
   try {
     let params = `etablissement_id=${id}`
@@ -67,9 +77,12 @@ export async function postIndicateur2({
 
     let body = {}
     if (mergedPostesIds && mergedPostesIds?.length > 0)
-      body = Object.assign(body, { merged_poste_ids: mergedPostesIds })
+      body = { merged_poste_ids: mergedPostesIds }
 
-    const response = await api.post(`indicateurs/2?${params}`, body)
+    let config = {}
+    if (signal) config = { signal }
+
+    const response = await api.post(`indicateurs/2?${params}`, body, config)
     const workedDaysByNature = response.data?.data as Indicator2
     const meta = response.data?.meta as IndicatorMetaData
 
@@ -88,6 +101,7 @@ export async function postIndicateur3({
   mergedPostesIds,
   natures,
   motives,
+  signal,
 }: Indicateur3Params) {
   try {
     let params = `etablissement_id=${id}`
@@ -109,9 +123,12 @@ export async function postIndicateur3({
 
     let body = {}
     if (mergedPostesIds && mergedPostesIds?.length > 0)
-      body = Object.assign(body, { merged_poste_ids: mergedPostesIds })
+      body = { merged_poste_ids: mergedPostesIds }
 
-    const response = await api.post(`indicateurs/3?${params}`, body)
+    let config = {}
+    if (signal) config = { signal }
+
+    const response = await api.post(`indicateurs/3?${params}`, body, config)
     const workedDaysByJob = response.data?.data as Indicator3
     const meta = response.data?.meta as IndicatorMetaData
 

@@ -4,8 +4,10 @@ import {
   Form,
   type LoaderFunctionArgs,
   Link,
+  useAsyncValue,
+  useNavigation,
 } from "react-router-dom"
-import { useActionData, useLoaderData } from "react-router-typesafe"
+import { defer, useActionData, useLoaderData } from "react-router-typesafe"
 
 import {
   getEtablissementsInfo,
@@ -23,14 +25,14 @@ import {
   formatLocalMerges,
   formatLocalOpenDays,
 } from "../../helpers/format"
-import { errorDescription } from "../../helpers/indicators"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 
-import EtabInfo from "../../components/EtabInfo"
 import ContractNatureIndicator from "../../components/ContractNatureIndicator"
+import Deferring from "../../components/Deferring"
+import EtabInfo from "../../components/EtabInfo"
 import JobProportionIndicator from "../../components/JobProportionIndicator"
 
 export async function action({ params, request }: ActionFunctionArgs) {
@@ -63,29 +65,38 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
   const formattedMergesIds = formatLocalMerges(localMergesIds)
 
-  const [
-    info,
-    lastEffectif,
-    headcountIndicator,
-    contractNatureIndicator,
-    jobProportionIndicator,
-  ] = await Promise.all([
+  const [info, lastEffectif] = await Promise.all([
     getEtablissementsInfo(etabId),
     getEffectifsLast(etabId),
-    getIndicateur1({ id: etabId }),
-    postIndicateur2({ id: etabId, openDaysCodes: savedOpenDaysCodes }),
-    postIndicateur3({
-      id: etabId,
-      openDaysCodes: savedOpenDaysCodes,
-      mergedPostesIds: formattedMergesIds,
-    }),
   ])
 
+  // AbortController to abort all deferred calls on route change
+  const deferredCallsController = new AbortController()
+
+  const headcountIndicator = getIndicateur1({
+    id: etabId,
+    signal: deferredCallsController.signal,
+  })
+  const contractNatureIndicator = postIndicateur2({
+    id: etabId,
+    openDaysCodes: savedOpenDaysCodes,
+    signal: deferredCallsController.signal,
+  })
+  const jobProportionIndicator = postIndicateur3({
+    id: etabId,
+    openDaysCodes: savedOpenDaysCodes,
+    mergedPostesIds: formattedMergesIds,
+    signal: deferredCallsController.signal,
+  })
+
   return {
-    contractNatureIndicator,
-    headcountIndicator,
+    deferredCalls: defer({
+      contractNatureIndicator,
+      headcountIndicator,
+      jobProportionIndicator,
+    }),
+    deferredCallsController,
     info,
-    jobProportionIndicator,
     lastEffectif,
     savedOpenDaysCodes,
     siret,
@@ -96,17 +107,20 @@ type CheckboxState = "success" | "error" | "default"
 
 export default function EtabSynthese() {
   const {
-    headcountIndicator,
+    deferredCalls,
+    deferredCallsController,
     info,
-    jobProportionIndicator,
     lastEffectif,
     savedOpenDaysCodes,
     siret,
-    contractNatureIndicator,
   } = useLoaderData<typeof loader>()
   const checkboxState = useActionData<typeof action>()
+  const navigation = useNavigation()
+  if (navigation.state === "loading") {
+    deferredCallsController.abort()
+  }
 
-  const initialOpenDays: { code: DayCode; label: string; checked: boolean }[] = [
+  const initialOpenDays: Array<{ code: DayCode; label: string; checked: boolean }> = [
     { code: "1", label: "Lundi", checked: true },
     { code: "2", label: "Mardi", checked: true },
     { code: "3", label: "Mercredi", checked: true },
@@ -175,63 +189,44 @@ export default function EtabSynthese() {
         <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Chiffres clés</h2>
         <hr />
         <h3 className="fr-text--md underline underline-offset-4">Effectifs</h3>
-        {isAppError(headcountIndicator) ? (
-          <Alert
-            className="fr-mb-2w"
-            severity="warning"
-            title={headcountIndicator.messageFr}
-            description={`Erreur ${headcountIndicator.status}`}
-          />
-        ) : (
-          <HeadcountIndicator
-            headcount={headcountIndicator.headcount}
-            meta={headcountIndicator.meta}
-          />
-        )}
+        <Deferring deferredPromise={deferredCalls.data.headcountIndicator}>
+          <HeadcountIndicator />
+        </Deferring>
+
         <h3 className="fr-text--md underline underline-offset-4">
           Natures de contrat les plus utilisées
         </h3>
-        {isAppError(contractNatureIndicator) ? (
-          <Alert
-            className="fr-mb-2w"
-            severity="warning"
-            title={contractNatureIndicator.messageFr}
-            description={errorDescription(contractNatureIndicator)}
-          />
-        ) : (
-          <ContractNatureIndicator
-            workedDaysByNature={contractNatureIndicator.workedDaysByNature}
-            meta={contractNatureIndicator.meta}
-          />
-        )}
+        <Deferring deferredPromise={deferredCalls.data.contractNatureIndicator}>
+          <ContractNatureIndicator />
+        </Deferring>
+
         <h3 className="fr-text--md underline underline-offset-4">
           Postes les plus occupés
         </h3>
-        {isAppError(jobProportionIndicator) ? (
-          <Alert
-            className="fr-mb-2w"
-            severity="warning"
-            title={jobProportionIndicator.messageFr}
-            description={errorDescription(jobProportionIndicator)}
-          />
-        ) : (
-          <JobProportionIndicator
-            workedDaysByJob={jobProportionIndicator.workedDaysByJob}
-            meta={jobProportionIndicator.meta}
-            showLearnMore
-          />
-        )}
+
+        <Deferring deferredPromise={deferredCalls.data.jobProportionIndicator}>
+          <JobProportionIndicator showLearnMore />
+        </Deferring>
       </div>
     </>
   )
 }
 
-type HeadcountIndicatorProps = {
+type HeadcountIndicatorDeferred = {
   headcount: Indicator1
   meta: IndicatorMetaData
 }
 
-function HeadcountIndicator({ headcount, meta }: HeadcountIndicatorProps) {
+function HeadcountIndicator() {
+  const deferredData = useAsyncValue() as HeadcountIndicatorDeferred
+  if (!deferredData) {
+    console.error(
+      "HeadcountIndicator must be used in a <Await> component but didn't receive async data"
+    )
+    return null
+  }
+
+  const { headcount, meta } = deferredData
   const data = [
     {
       key: "cdi",

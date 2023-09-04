@@ -40,6 +40,8 @@ api.interceptors.response.use(
         if (!error.code) err.code = "ENO_REQUEST"
       }
       if (!err.status) err.status = 503
+
+      if (error.code === "ERR_CANCELED") err.messageFr = "La requête a été annulée."
     }
     if (isDevMode) console.warn("Axios error interceptor: ", error.message, err)
     return Promise.reject(err)

@@ -1,6 +1,6 @@
 import { type FormEvent, Fragment, useState } from "react"
-import { useLoaderData } from "react-router-typesafe"
-import type { LoaderFunctionArgs } from "react-router-dom"
+import { defer, useLoaderData } from "react-router-typesafe"
+import { useNavigation, type LoaderFunctionArgs } from "react-router-dom"
 import ls from "localstorage-slim"
 import { v4 as uuid } from "uuid"
 
@@ -19,7 +19,6 @@ import {
   getQueryAsArray,
   getQueryAsNumberArray,
 } from "../../helpers/format"
-import { errorDescription } from "../../helpers/indicators"
 import { JobMergedBadge } from "../../helpers/contrats"
 import {
   parseAndFilterMergeStr,
@@ -33,8 +32,9 @@ import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 
-import AppRebound from "../../components/AppRebound"
 import AppMultiSelect, { type Option } from "../../components/AppMultiSelect"
+import AppRebound from "../../components/AppRebound"
+import Deferring from "../../components/Deferring"
 import EtabFilters from "../../components/EtabFilters"
 import JobProportionIndicator from "../../components/JobProportionIndicator"
 
@@ -94,18 +94,21 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       )
     : []
 
-  const [jobListWithMerge, jobProportionIndicator] = await Promise.all([
-    postPostes(etabType.id, formattedMergesIds),
-    postIndicateur3({
-      id: etabType.id,
-      startDate: queryStartDate,
-      endDate: queryEndDate,
-      openDaysCodes: savedOpenDaysCodes,
-      mergedPostesIds: formattedMergesIds,
-      natures: queryNatures,
-      motives: queryMotives,
-    }),
-  ])
+  const jobListWithMerge = await postPostes(etabType.id, formattedMergesIds)
+
+  // AbortController to abort deferred calls on route change
+  const indicatorController = new AbortController()
+
+  const jobProportionIndicator = postIndicateur3({
+    id: etabType.id,
+    startDate: queryStartDate,
+    endDate: queryEndDate,
+    openDaysCodes: savedOpenDaysCodes,
+    mergedPostesIds: formattedMergesIds,
+    natures: queryNatures,
+    motives: queryMotives,
+    signal: indicatorController.signal,
+  })
 
   if (isAppError(jobListWithMerge)) {
     const responseParams: ResponseInit = {
@@ -117,9 +120,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   return {
+    deferredCalls: defer({
+      jobProportionIndicator,
+    }),
     etabId: etabType.id,
+    indicatorController,
     jobList: jobListWithMerge,
-    jobProportionIndicator,
     openDaysCodes: savedOpenDaysCodes,
     options,
     queryEndDate,
@@ -135,7 +141,7 @@ export default function EtabPostes() {
   const {
     etabId,
     jobList: initialJobList,
-    jobProportionIndicator: initJobProportionIndicator,
+    deferredCalls,
     openDaysCodes,
     options,
     queryEndDate,
@@ -144,11 +150,12 @@ export default function EtabPostes() {
     queryStartDate,
     savedMerges,
     siret,
+    indicatorController,
   } = useLoaderData<typeof loader>()
   const [merges, setMerges] = useState(savedMerges)
   const [jobList, setJobList] = useState(initialJobList)
   const [jobProportionIndicator, setJobProportionIndicator] = useState(
-    initJobProportionIndicator
+    deferredCalls.data.jobProportionIndicator
   )
   const [alertState, setAlertState] = useState<{
     message?: string
@@ -156,6 +163,11 @@ export default function EtabPostes() {
     title: string
   } | null>(null)
   const [areOptionsFiltered, setAreOptionsFiltered] = useState(false)
+
+  const navigation = useNavigation()
+  if (navigation.state === "loading") {
+    indicatorController.abort()
+  }
 
   const filtersQuery = createFiltersQuery({
     startDate: queryStartDate,
@@ -181,18 +193,18 @@ export default function EtabPostes() {
 
     const merges = parseAndFilterMergeStr(data, "merge")
 
-    const [jobListWithMerge, newJobProportionIndicator] = await Promise.all([
-      postPostes(etabId, merges),
-      postIndicateur3({
-        id: etabId,
-        startDate: queryStartDate,
-        endDate: queryEndDate,
-        openDaysCodes,
-        mergedPostesIds: merges,
-        natures: queryNatures,
-        motives: queryMotives,
-      }),
-    ])
+    const jobListWithMerge = await postPostes(etabId, merges)
+
+    const newJobProportionIndicator = postIndicateur3({
+      id: etabId,
+      startDate: queryStartDate,
+      endDate: queryEndDate,
+      openDaysCodes,
+      mergedPostesIds: merges,
+      natures: queryNatures,
+      motives: queryMotives,
+      signal: indicatorController.signal,
+    })
     setJobProportionIndicator(newJobProportionIndicator)
 
     let message = "Une erreur s'est produite, vos fusions n'ont pas pu être sauvegardées."
@@ -259,22 +271,15 @@ export default function EtabPostes() {
         <h3 className="fr-text--md underline underline-offset-4">
           Postes les plus occupés
         </h3>
-        {isAppError(jobProportionIndicator) ? (
-          <Alert
-            className="fr-mb-2w"
-            severity="warning"
-            title={jobProportionIndicator.messageFr}
-            description={errorDescription(jobProportionIndicator)}
-          />
-        ) : (
+
+        <Deferring deferredPromise={jobProportionIndicator}>
           <JobProportionIndicator
-            workedDaysByJob={jobProportionIndicator.workedDaysByJob}
-            meta={jobProportionIndicator.meta}
             collapseReadingNote
             hasMotives={queryMotives.length > 0}
             natures={queryNatures}
           />
-        )}
+        </Deferring>
+
         <h2 className="fr-text--xl fr-mb-1w">Fusion de postes</h2>
         <hr />
         <form className="flex flex-col" method="post" onSubmit={handleSubmit}>

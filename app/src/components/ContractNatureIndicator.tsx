@@ -1,3 +1,5 @@
+import { useAsyncValue } from "react-router-dom"
+
 import type { Indicator2, IndicatorMetaData } from "../api/types"
 import { formatDate } from "../helpers/format"
 
@@ -5,20 +7,32 @@ import ContractsPieChart, { type PieSlice } from "./ContractsPieChart"
 import AppCollapse from "./AppCollapse"
 
 type ContractNatureIndicatorProps = {
-  workedDaysByNature: Indicator2
-  meta: IndicatorMetaData
   collapseReadingNote?: boolean
   hasJobs?: boolean
   hasMotives?: boolean
 }
 
+type ContractNatureIndicatorDeferred = {
+  workedDaysByNature: Indicator2
+  meta: IndicatorMetaData
+}
+
 export default function ContractNatureIndicator({
-  workedDaysByNature,
-  meta,
   collapseReadingNote = false,
   hasJobs = false,
   hasMotives = false,
 }: ContractNatureIndicatorProps) {
+  const deferredData = useAsyncValue() as ContractNatureIndicatorDeferred
+
+  if (!deferredData) {
+    console.error(
+      "ContractNatureIndicator must be used in a <Await> component but didn't receive async data"
+    )
+    return null
+  }
+
+  const { meta, workedDaysByNature } = deferredData
+
   const start = formatDate(meta.startDate, "MMMM YYYY")
   const end = formatDate(meta.endDate, "MMMM YYYY")
   const cdiPercent = `${workedDaysByNature.cdi.relNb.toLocaleString("fr-FR")}`

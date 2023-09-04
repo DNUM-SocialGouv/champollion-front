@@ -1,6 +1,11 @@
 import ls from "localstorage-slim"
-import { type LoaderFunctionArgs, useSearchParams } from "react-router-dom"
-import { useLoaderData } from "react-router-typesafe"
+import {
+  type LoaderFunctionArgs,
+  useSearchParams,
+  useNavigation,
+  useAsyncValue,
+} from "react-router-dom"
+import { defer, useLoaderData } from "react-router-typesafe"
 import { Fragment } from "react"
 
 import {
@@ -32,17 +37,16 @@ import { getQueryDates } from "../../helpers/filters"
 import { initJobOptions } from "../../helpers/postes"
 
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
-import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Select } from "@codegouvfr/react-dsfr/Select"
 
-import AppRebound from "../../components/AppRebound"
-import AppTable from "../../components/AppTable"
-import type { Header } from "../../components/AppTable"
-import EtabFilters from "../../components/EtabFilters"
 import AppCollapse from "../../components/AppCollapse"
+import AppRebound from "../../components/AppRebound"
+import AppTable, { type Header } from "../../components/AppTable"
+import Deferring from "../../components/Deferring"
+import EtabFilters from "../../components/EtabFilters"
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
@@ -72,7 +76,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const formattedOpenDays = formatLocalOpenDays(openDays)
 
   const postes = await postPostes(etabType.id, formattedMergesIds)
-  const infractions = await postCarences({
+
+  const deferredCallsController = new AbortController()
+  const infractions = postCarences({
     id: etabType.id,
     startDate: queryStartDate,
     endDate: queryEndDate,
@@ -80,11 +86,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     mergedPostesIds: formattedMergesIds,
     openDaysCodes: formattedOpenDays,
     postesIds: queryJobs,
+    signal: deferredCallsController.signal,
   })
 
   return {
+    deferredCalls: defer({
+      infractions,
+    }),
+    deferredCallsController,
     idccData,
-    infractions,
     legislation: queryLegislation,
     postes,
     queryEndDate,
@@ -105,14 +115,19 @@ const headers = [
 
 export default function EtabCarence() {
   const {
+    deferredCalls,
+    deferredCallsController,
     idccData,
-    infractions,
     legislation,
     postes,
     queryJobs,
     queryStartDate,
     queryEndDate,
   } = useLoaderData<typeof loader>()
+  const navigation = useNavigation()
+  if (navigation.state === "loading") {
+    deferredCallsController.abort()
+  }
 
   const jobOptions = initJobOptions(postes)
 
@@ -170,20 +185,13 @@ export default function EtabCarence() {
         </modal.Component>
 
         <hr />
-        {isAppError(infractions) ? (
-          <Alert
-            className="fr-mb-2w"
-            severity="error"
-            title={infractions.messageFr}
-            description={`Erreur ${infractions.status}`}
-          />
-        ) : (
+        <Deferring deferredPromise={deferredCalls.data.infractions}>
           <EtabCarenceInfraction
-            defaultData={infractions}
             defaultLegislation={legislation}
             legislationData={legislationData}
           />
-        )}
+        </Deferring>
+
         <h2 className="fr-text--xl fr-mb-1w fr-mt-3w">Actions</h2>
         <hr />
         <div className="fr-grid-row fr-grid-row--gutters">
@@ -230,14 +238,21 @@ export default function EtabCarence() {
 }
 
 function EtabCarenceInfraction({
-  defaultData,
   defaultLegislation,
   legislationData,
 }: {
-  defaultData: Infractions
   defaultLegislation: string
   legislationData: Record<string, IDCC> | null
 }) {
+  const defaultData = useAsyncValue() as Infractions
+
+  if (!defaultData) {
+    console.error(
+      "EtabCarenceInfraction didn't receive async deferred data. It must be used in a <Await> component from react-router."
+    )
+    return null
+  }
+
   const formattedInfractions = formatInfractions(defaultData)
   const [searchParams, setSearchParams] = useSearchParams()
 
