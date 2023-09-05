@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useAsyncValue } from "react-router-dom"
 
 import type { Indicator3, IndicatorMetaData } from "../api/types"
 import { formatDate, formatNumber } from "../helpers/format"
@@ -8,16 +8,19 @@ import { JobMergedBadge, getContractNature } from "../helpers/contrats"
 import { Table } from "@codegouvfr/react-dsfr/Table"
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
 
-import ContractsPieChart from "./ContractsPieChart"
 import AppCollapse from "./AppCollapse"
+import ContractsPieChart from "./ContractsPieChart"
 
 type JobProportionIndicatorProps = {
-  workedDaysByJob: Indicator3
-  meta: IndicatorMetaData
   collapseReadingNote?: boolean
   showLearnMore?: boolean
   natures?: string[]
   hasMotives?: boolean
+}
+
+type JobProportionIndicatorDeferred = {
+  workedDaysByJob: Indicator3
+  meta: IndicatorMetaData
 }
 
 type Data = {
@@ -35,13 +38,22 @@ type ReducedData = {
 }
 
 export default function JobProportionIndicator({
-  workedDaysByJob,
-  meta,
   collapseReadingNote = false,
   showLearnMore = false,
   hasMotives = false,
   natures,
 }: JobProportionIndicatorProps) {
+  const deferredData = useAsyncValue() as JobProportionIndicatorDeferred
+
+  if (!deferredData) {
+    console.error(
+      "JobProportionIndicator didn't receive async deferred data. It must be used in a <Await> component from react-router."
+    )
+    return null
+  }
+
+  const { workedDaysByJob, meta } = deferredData
+
   const [showTable, setShowTable] = useState(false)
   const start = formatDate(meta.startDate, "MMMM YYYY")
   const end = formatDate(meta.endDate, "MMMM YYYY")

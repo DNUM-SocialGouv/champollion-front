@@ -12,7 +12,7 @@ const background = createColorObject(
   ["alt-grey", "alt-blue-france", "contrast-grey", "contrast-info", "default-grey", "flat-info", "flat-success", "flat-warning", "raised-grey"],
   "background"
 )
-const border = createColorObject(["default-grey", "default-blue-cumulus", "default-purple-glycine", "default-pink-tuile"], "border")
+const border = createColorObject(["action-high-blue-france", "default-grey", "default-blue-cumulus", "default-purple-glycine", "default-pink-tuile"], "border")
 const text = createColorObject(["mention-grey", "active-grey", "disabled-grey"], "text")
 const artwork = createColorObject([], "artwork")
 

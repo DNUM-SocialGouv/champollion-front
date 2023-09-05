@@ -11,6 +11,7 @@ type CarenceParams = {
   openDaysCodes?: string[]
   legislation?: string
   mergedPostesIds?: number[][]
+  signal?: AbortSignal
 }
 
 export const postCarences = async ({
@@ -21,6 +22,7 @@ export const postCarences = async ({
   openDaysCodes,
   legislation,
   mergedPostesIds,
+  signal,
 }: CarenceParams) => {
   try {
     let params = `etablissement_id=${id}`
@@ -34,9 +36,12 @@ export const postCarences = async ({
     let body = {}
 
     if (mergedPostesIds && mergedPostesIds?.length > 0)
-      body = Object.assign(body, { merged_poste_ids: mergedPostesIds })
+      body = { merged_poste_ids: mergedPostesIds }
 
-    const response = await api.post(`/carences/?${params}`, body)
+    let config = {}
+    if (signal) config = { signal }
+
+    const response = await api.post(`/carences/?${params}`, body, config)
     return (response.data.data as Infractions) ?? handleUndefinedData("/effectifs")
   } catch (err) {
     return handleEndpointError(err)

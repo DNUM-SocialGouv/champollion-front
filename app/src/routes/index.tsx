@@ -17,8 +17,8 @@ import artworkMail from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/digital/
 import artworkCommunity from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/leisure/community.svg"
 import artworkPassport from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/document/passport.svg"
 
-import AppPictoTile from "../components/AppPictoTile"
 import AppCollapse from "../components/AppCollapse"
+import AppPictoTile from "../components/AppPictoTile"
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData()
@@ -100,7 +100,7 @@ export default function Index() {
                   Rechercher
                 </Button>
               </Form>
-              {isAppError(error) && (
+              {Boolean(error) && isAppError(error) && (
                 <Alert
                   className="fr-mb-2w"
                   description={error.messageFr}
