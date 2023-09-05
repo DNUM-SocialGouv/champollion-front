@@ -82,12 +82,12 @@ export async function postIndicateur2({
     let config = {}
     if (signal) config = { signal }
 
-    const response = await api.post(`indicateurs/2?${params}`, body, config)
+    const response = await api.post(`indicateurs/2-7?${params}`, body, config)
     const workedDaysByNature = response.data?.data as Indicator2
     const meta = response.data?.meta as IndicatorMetaData
 
     if (workedDaysByNature && meta) return { workedDaysByNature, meta }
-    else return handleUndefinedData("indicateurs/2")
+    else return handleUndefinedData("indicateurs/2-7")
   } catch (err) {
     return handleEndpointError(err)
   }
@@ -128,12 +128,12 @@ export async function postIndicateur3({
     let config = {}
     if (signal) config = { signal }
 
-    const response = await api.post(`indicateurs/3?${params}`, body, config)
+    const response = await api.post(`indicateurs/3-4?${params}`, body, config)
     const workedDaysByJob = response.data?.data as Indicator3
     const meta = response.data?.meta as IndicatorMetaData
 
     if (workedDaysByJob && meta) return { workedDaysByJob, meta }
-    else return handleUndefinedData("indicateurs/3")
+    else return handleUndefinedData("indicateurs/3-4")
   } catch (err) {
     return handleEndpointError(err)
   }

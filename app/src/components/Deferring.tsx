@@ -2,7 +2,7 @@ import { type PropsWithChildren, Suspense } from "react"
 import { Await } from "react-router-dom"
 
 import { errorWording, isAppError } from "../helpers/errors"
-import { errorDescription } from "../helpers/indicators"
+import { errorDescription } from "../helpers/errors"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 

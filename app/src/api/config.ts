@@ -17,19 +17,27 @@ api.interceptors.response.use(
       ...response,
       data: response.data instanceof Blob ? response.data : keysToCamel(response.data),
     } as AxiosResponse<unknown, unknown>),
-  (error: Error | AxiosError) => {
+  async (error: Error | AxiosError) => {
     const err: AppError = { ...defaultAxiosError }
 
     if (axios.isAxiosError(error)) {
       if (error.code) err.code = error.code
       if (error.message) err.message = error.message
       if (error.response) {
-        const data = error.response.data
+        let data = error.response.data
+
+        if (data instanceof Blob) {
+          const responseData = await error.response.data.text()
+          data =
+            typeof responseData === "string" ? JSON.parse(responseData) : responseData
+        }
+
         if (data && Array.isArray(data) && data[0]) {
           const { message, messageFr } = getErrorMessage(data[0])
           err.message = message
           err.messageFr = messageFr
-          if (data[0]?.context) err.context = data[0]?.context
+          if (data[0]?.context) err.context = data[0].context
+          if (data[0]?.type) err.type = data[0].type
         }
         if (error.response.status) err.status = error.response.status
       } else if (error.request) {
