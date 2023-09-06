@@ -22,7 +22,12 @@ import {
   radioBtnOptions,
 } from "../../helpers/contrats"
 import { motiveOptions, contractNatures, getQueryDates } from "../../helpers/filters"
-import { errorWording, isAppError } from "../../helpers/errors"
+import {
+  type AppError,
+  errorDescription,
+  errorWording,
+  isAppError,
+} from "../../helpers/errors"
 import {
   createFiltersQuery,
   formatDate,
@@ -122,7 +127,7 @@ export default function EtabContrats() {
     queryStartDate,
     siret,
   } = useLoaderData<typeof loader>()
-
+  const [exportedContracts, setExportedContracts] = useState<undefined | AppError>()
   const filtersQuery = createFiltersQuery({
     startDate: queryStartDate,
     endDate: queryEndDate,
@@ -151,7 +156,7 @@ export default function EtabContrats() {
     const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
     const correctedDates = formatCorrectedDates(lsContrats)
 
-    await postContratsExport({
+    const newExportedContracts = await postContratsExport({
       companyName,
       correctedDates,
       employeesIds: queryEmployee ? [queryEmployee] : undefined,
@@ -166,6 +171,7 @@ export default function EtabContrats() {
       siret,
       startDate: queryStartDate,
     })
+    setExportedContracts(newExportedContracts)
   }
   const warningList = () => {
     return (
@@ -261,14 +267,22 @@ export default function EtabContrats() {
           />
           <Button type="submit">Télécharger</Button>
         </form>
-        <p className="fr-mb-0 fr-mt-2w italic">
+        <p className="fr-mt-2w italic">
           ⚠️ Si vous exportez un gros volume de contrats, le téléchargement peut durer
           plusieurs secondes.
         </p>
+        {isAppError(exportedContracts) && (
+          <Alert
+            className="fr-mb-2w"
+            severity="error"
+            title={exportedContracts.messageFr}
+            description={errorDescription(exportedContracts)}
+          />
+        )}
       </modal.Component>
       <hr />
       <p>Vous pouvez corriger les dates d'après vos observations.</p>
-      <div className="fr-px-3w fr-py-2w fr-mb-2w bg-bg-alt-greyyyy border border-solid border-bd-default-grey">
+      <div className="fr-px-3w fr-py-2w fr-mb-2w border border-solid border-bd-default-grey">
         <h3 className="fr-text--md fr-mb-2w">Légende des statuts de date</h3>
         <ul className="fr-my-0">
           <li className="flex flex-col md:flex-row">
@@ -299,7 +313,7 @@ export default function EtabContrats() {
           className="fr-mb-2w"
           severity="error"
           title={contratsData.messageFr}
-          description={`Erreur ${contratsData.status}`}
+          description={errorDescription(contratsData)}
         />
       ) : contratsData.contrats.length > 0 ? (
         <ContratsTable

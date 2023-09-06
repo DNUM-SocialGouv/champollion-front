@@ -100,6 +100,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   })
   const contractNatureIndicator = postIndicateur2({
     id: etabType.id,
+    startDate: queryStartDate,
+    endDate: queryEndDate,
     motives: queryMotives,
     postesIds: queryJobs,
     mergedPostesIds: formattedMergesIds,
