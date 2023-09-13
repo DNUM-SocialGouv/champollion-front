@@ -216,3 +216,18 @@ export type Indicator3 = Record<
     relNb: number
   }
 >
+
+export type Indicator5 = Record<
+  number | string,
+  {
+    libellePoste: string | null
+    merged: number
+    absNbCdi: number
+    absNbCtt: number
+    absNbCdd: number
+    absNbTot: number
+    relNbCdi: number
+    relNbCdd: number
+    relNbCtt: number
+  }
+>

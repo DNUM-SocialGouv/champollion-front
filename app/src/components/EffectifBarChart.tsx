@@ -250,6 +250,7 @@ export default function EffectifBarChart({
             dataKey="cdi"
             fill="var(--artwork-minor-blue-cumulus)"
             stroke="var(--artwork-minor-blue-cumulus)"
+            strokeOpacity={barOpacity.cdd}
             fillOpacity={barOpacity.cdi}
             name="CDI"
             stackId="fakeBarForLegend"

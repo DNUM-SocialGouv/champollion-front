@@ -9,6 +9,8 @@ fileignoreconfig:
   checksum: a3c7443b73d65e5de5f88ce3a72cec2f05337b91b91d29b1ce06714ba26ea51a
 - filename: app/src/components/EtabFilters.tsx
   checksum: 4fb8b57addb47957611797a18a7bdf8679ca3ca3712cd9f3d7ce4b32a2539ba1
+- filename: app/src/components/PrecariousJobsBarChart.tsx
+  checksum: 2b601a8b8b84cc9db033b3b3cead3ebe0adf15906b8b525faa61cf0c59ff72a0
 - filename: app/src/helpers/carence.tsx
   checksum: 68161bf4d8d91747f6ee2be759a98239eec29ee0d294c0122aa3eb48c0aa195b
 - filename: app/src/helpers/contrats.tsx
