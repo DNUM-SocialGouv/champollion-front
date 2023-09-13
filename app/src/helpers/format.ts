@@ -62,6 +62,7 @@ const keysToCamel = (input: any): any => {
 }
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
+const uncapitalize = (str: string) => str.charAt(0).toLowerCase() + str.slice(1)
 
 const formatDate = (date: string | dayjs.Dayjs | null, format = "DD/MM/YYYY") =>
   dayjs(date).isValid() ? dayjs(date).format(format) : ""
@@ -173,6 +174,22 @@ export const addArrayParams = <T>(
   return params
 }
 
+export const splitSentenceAtMiddle = (sentence: string) => {
+  const middleIndex = Math.floor(sentence.length / 2)
+  // Find the first whitespace of the second half of the sentence
+  let splitIndex = sentence.indexOf(" ", middleIndex)
+  // If no whitespace was found to the right of the middle, try to find it to the left
+  if (splitIndex === -1) splitIndex = sentence.lastIndexOf(" ", middleIndex)
+
+  if (splitIndex != -1) {
+    // Split the sentence into two parts
+    const firstPart = sentence.substring(0, splitIndex).trim()
+    const secondPart = sentence.substring(splitIndex + 1).trim()
+
+    return [firstPart, secondPart]
+  } else return [sentence]
+}
+
 export {
   arrayEquals,
   camelToSnakeCase,
@@ -191,4 +208,5 @@ export {
   oneYearAgo,
   toCamel,
   today,
+  uncapitalize,
 }

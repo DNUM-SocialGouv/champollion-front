@@ -1,5 +1,7 @@
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from "recharts"
+
 import { formatNumber } from "../helpers/format"
+import { jobMergedBadgeSvg } from "../helpers/contrats"
 
 export type PieSlice = { name: string | null; value: number; percent: number }
 
@@ -107,23 +109,7 @@ export default function ContractsPieChart({
         >
           {textContent}
         </text>
-        {merged && (
-          <>
-            <rect
-              width="18"
-              height="18"
-              rx="4"
-              fill="var(--background-contrast-yellow-moutarde)"
-              x={badgeX}
-              y={badgeY}
-            />
-            <path
-              transform={`translate(${badgeX + 3}, ${badgeY + 3}) scale(0.5)`}
-              d="M13 10H20L11 23V14H4L13 1V10Z"
-              fill="var(--text-action-high-yellow-moutarde)"
-            />
-          </>
-        )}
+        {merged && jobMergedBadgeSvg(badgeX, badgeY)}
       </g>
     )
   }

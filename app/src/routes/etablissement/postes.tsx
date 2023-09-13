@@ -1,6 +1,6 @@
 import { type FormEvent, Fragment, useState } from "react"
 import { defer, useLoaderData } from "react-router-typesafe"
-import { useNavigation, type LoaderFunctionArgs } from "react-router-dom"
+import { useNavigation, type LoaderFunctionArgs, useAsyncValue } from "react-router-dom"
 import ls from "localstorage-slim"
 import { v4 as uuid } from "uuid"
 
@@ -8,14 +8,18 @@ import {
   getEtablissementsDefaultPeriod,
   getEtablissementsType,
   postIndicateur3,
+  postIndicateur5,
   postPostes,
 } from "../../api"
+import type { Indicator5, IndicatorMetaData } from "../../api/types"
 import { errorWording, isAppError } from "../../helpers/errors"
 import { getQueryDates } from "../../helpers/filters"
 import {
   createFiltersQuery,
+  formatDate,
   formatLocalMerges,
   formatLocalOpenDays,
+  formatNumber,
   getQueryAsArray,
   getQueryAsNumberArray,
 } from "../../helpers/format"
@@ -31,12 +35,15 @@ import type { AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
+import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
+import { Table } from "@codegouvfr/react-dsfr/Table"
 
 import AppMultiSelect, { type Option } from "../../components/AppMultiSelect"
 import AppRebound from "../../components/AppRebound"
 import Deferring from "../../components/Deferring"
 import EtabFilters from "../../components/EtabFilters"
 import JobProportionIndicator from "../../components/JobProportionIndicator"
+import PrecariousJobsBarChart from "../../components/PrecariousJobsBarChart"
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
@@ -109,6 +116,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     motives: queryMotives,
     signal: indicatorController.signal,
   })
+  const precariousJobIndicator = postIndicateur5({
+    id: etabType.id,
+    startDate: queryStartDate,
+    endDate: queryEndDate,
+    openDaysCodes: savedOpenDaysCodes,
+    mergedPostesIds: formattedMergesIds,
+    motives: queryMotives,
+    signal: indicatorController.signal,
+  })
 
   if (isAppError(jobListWithMerge)) {
     const responseParams: ResponseInit = {
@@ -122,6 +138,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   return {
     deferredCalls: defer({
       jobProportionIndicator,
+      precariousJobIndicator,
     }),
     etabId: etabType.id,
     indicatorController,
@@ -156,6 +173,9 @@ export default function EtabPostes() {
   const [jobList, setJobList] = useState(initialJobList)
   const [jobProportionIndicator, setJobProportionIndicator] = useState(
     deferredCalls.data.jobProportionIndicator
+  )
+  const [precariousJobIndicator, setPrecariousJobIndicator] = useState(
+    deferredCalls.data.precariousJobIndicator
   )
   const [alertState, setAlertState] = useState<{
     message?: string
@@ -206,6 +226,16 @@ export default function EtabPostes() {
       signal: indicatorController.signal,
     })
     setJobProportionIndicator(newJobProportionIndicator)
+    const newPrecariousJobIndicator = postIndicateur5({
+      id: etabId,
+      startDate: queryStartDate,
+      endDate: queryEndDate,
+      openDaysCodes,
+      mergedPostesIds: merges,
+      motives: queryMotives,
+      signal: indicatorController.signal,
+    })
+    setPrecariousJobIndicator(newPrecariousJobIndicator)
 
     let message = "Une erreur s'est produite, vos fusions n'ont pas pu être sauvegardées."
     let severity: AlertProps.Severity = "error"
@@ -271,13 +301,19 @@ export default function EtabPostes() {
         <h3 className="fr-text--md underline underline-offset-4">
           Postes les plus occupés
         </h3>
-
         <Deferring deferredPromise={jobProportionIndicator}>
           <JobProportionIndicator
             collapseReadingNote
             hasMotives={queryMotives.length > 0}
             natures={queryNatures}
           />
+        </Deferring>
+
+        <h3 className="fr-text--md fr-mt-2w underline underline-offset-4">
+          Postes les plus occupés en CDD et CTT
+        </h3>
+        <Deferring deferredPromise={precariousJobIndicator}>
+          <PrecariousJobsIndicator hasMotives={queryMotives.length > 0} />
         </Deferring>
 
         <h2 className="fr-text--xl fr-mb-1w">Fusion de postes</h2>
@@ -428,6 +464,110 @@ export default function EtabPostes() {
           </div>
         </div>
       </div>
+    </>
+  )
+}
+
+type PrecariousJobsIndicatorDeferred = {
+  precariousJobs: Indicator5
+  meta: IndicatorMetaData
+}
+
+type PrecariousJobsIndicatorProps = {
+  hasMotives?: boolean
+}
+
+function PrecariousJobsIndicator({ hasMotives = false }: PrecariousJobsIndicatorProps) {
+  const deferredData = useAsyncValue() as PrecariousJobsIndicatorDeferred
+  if (!deferredData) {
+    console.error(
+      "PrecariousJobsIndicator must be used in a <Await> component but didn't receive async data"
+    )
+    return null
+  }
+
+  const { precariousJobs, meta } = deferredData
+  const [showTable, setShowTable] = useState(false)
+  const start = formatDate(meta.startDate, "MMMM YYYY")
+  const end = formatDate(meta.endDate, "MMMM YYYY")
+
+  const filters = hasMotives ? " et les motifs de recours sélectionnés, " : ", "
+
+  const data = Object.values(precariousJobs)
+    .map((jobData) => {
+      return {
+        label: jobData.libellePoste,
+        merged: jobData.merged,
+        nbCddCtt: jobData.absNbCdd + jobData.absNbCtt,
+        nbCdi: jobData.absNbCdi,
+        ratio: jobData.relNbCdd + jobData.relNbCtt,
+      }
+    })
+    .sort((a, b) => b.nbCddCtt - a.nbCddCtt)
+    .slice(0, 10)
+
+  const headers = [
+    "Libellé de poste",
+    "Jours travaillés en CDD et CTT",
+    "Jours travaillés en CDI",
+    "Part de jours travaillés en CDD et CTT",
+  ]
+  const tableData = data.map((job) => {
+    const jobName = (
+      <>
+        {job.label}
+        <JobMergedBadge merged={job.merged === 1} />
+      </>
+    )
+    const ratio = formatNumber(job.ratio) + " %"
+
+    return [jobName, formatNumber(job.nbCddCtt), formatNumber(job.nbCdi), ratio]
+  })
+
+  const firstJob = data[0]
+  const firstJobLabel = firstJob.label
+
+  const cddCttShare = firstJob.ratio.toLocaleString("fr-FR")
+  const nbCdi = firstJob.nbCdi.toLocaleString("fr-FR")
+  const nbCddCtt = firstJob.nbCddCtt.toLocaleString("fr-FR")
+
+  const readingNote = (
+    <div className="fr-mb-2w">
+      <h5 className="fr-text--md fr-mt-3w fr-mb-1v font-bold">Note de lecture</h5>
+      <p className="fr-text--sm fr-mb-0">
+        De {start} à {end}, pour le libellé de poste "{firstJobLabel}"{filters}
+        les jours travaillés en CDD et CTT représentent {cddCttShare}% des jours
+        travaillés en CDI, CDD et CTT soit {nbCdi} jours travaillés en CDI pour {nbCddCtt}{" "}
+        en CDD et CTT.
+      </p>
+      {hasMotives && (
+        <p className="fr-text--sm fr-mb-0 italic">
+          Les CDI n'ont pas de motifs de recours : tous les CDI sont comptabilisés.
+        </p>
+      )}
+    </div>
+  )
+
+  return (
+    <>
+      <h4 className="fr-text--md">
+        Les dix libellés de poste comptant le plus de jours travaillés en CDD et CTT :{" "}
+      </h4>
+      {showTable ? (
+        <Table className="app-table--thin fr-mb-2w" headers={headers} data={tableData} />
+      ) : (
+        <div className="h-[28rem] w-full">
+          <PrecariousJobsBarChart data={data} />
+        </div>
+      )}
+      <ToggleSwitch
+        label="Afficher les données sous forme de tableau"
+        checked={showTable}
+        onChange={(checked) => setShowTable(checked)}
+        classes={{ label: "w-full" }}
+      />
+
+      {readingNote}
     </>
   )
 }
