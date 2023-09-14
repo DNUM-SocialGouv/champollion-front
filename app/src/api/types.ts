@@ -1,3 +1,10 @@
+import { CorrectedDates } from "../helpers/contrats"
+
+export type ModificationsBody = {
+  corrected_dates?: CorrectedDates
+  merged_poste_ids?: number[][]
+}
+
 export type PaginationMetaData = {
   currentPage: number | null
   nextPage: number | null
@@ -54,44 +61,33 @@ export type Salarie = {
   dateNaissance: string
 }
 
-export type EtuContrat = {
-  id: number
+type Contrat = {
+  contratId: number
   nomFamille: string | null
   nomUsage: string | null
   prenoms: string
   dateNaissance: string | null
-  posteId: string | null
-  libellePoste: string
-  merged: MergedCode
-  codeNatureContrat: string
-  libelleNatureContrat: string
-  dateDebut: string
-  dateFin: string | null
-  statutFin: number | null
-  codeConventionCollective: string | null
-  libelleConventionCollective: string | null
-  codeMotifRecours: string | null
-  libelleMotifRecours: string | null
-  ettSiret: string | null
-  ettRaisonSociale: string | null
-}
-
-export type EttContrat = {
-  id: number
-  nomFamille: string | null
-  nomUsage: string | null
-  prenoms: string
   posteId: string | null
   libellePoste: string | null
   codeNatureContrat: string
   libelleNatureContrat: string
   dateDebut: string
   dateFin: string | null
+  statutDebut: number | null
   statutFin: number | null
   codeConventionCollective: string | null
   libelleConventionCollective: string | null
   codeMotifRecours: string | null
   libelleMotifRecours: string | null
+}
+
+export type EtuContrat = Contrat & {
+  merged: MergedCode
+  ettSiret: string | null
+  ettRaisonSociale: string | null
+}
+
+export type EttContrat = Contrat & {
   etuSiret: string | null
   etuRaisonSociale: string | null
   etuCodePostal: string | null

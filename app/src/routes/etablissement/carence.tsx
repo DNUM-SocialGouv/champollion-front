@@ -34,7 +34,7 @@ import {
   getQueryAsNumberArray,
   getQueryAsString,
 } from "../../helpers/format"
-import { JobMergedBadge } from "../../helpers/contrats"
+import { JobMergedBadge, formatCorrectedDates } from "../../helpers/contrats"
 import { errorWording, isAppError } from "../../helpers/errors"
 import { getQueryDates } from "../../helpers/filters"
 import { initJobOptions } from "../../helpers/postes"
@@ -80,10 +80,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const queryJobs = getQueryAsNumberArray(searchParams, "poste")
   const queryLegislation = getQueryAsString(searchParams, "legislation") || "droitCommun"
 
+  // Get user modifications from localStorage
   const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
   const formattedMergesIds = formatLocalMerges(localMergesIds)
   const openDays = ls.get(`etab.${params.siret}.openDays`)
   const formattedOpenDays = formatLocalOpenDays(openDays)
+  const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
+  const correctedDates = formatCorrectedDates(lsContrats)
 
   const postes = await postPostes(etabType.id, formattedMergesIds)
 
@@ -93,6 +96,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     startDate: queryStartDate,
     endDate: queryEndDate,
     legislation: camelToSnakeCase(queryLegislation),
+    correctedDates,
     mergedPostesIds: formattedMergesIds,
     openDaysCodes: formattedOpenDays,
     postesIds: queryJobs,
@@ -123,6 +127,11 @@ const headers = [
   { key: "nature", label: "Nature de contrat", width: "10%" },
 ] as Header<FormattedCarenceContract>[]
 
+const modal = createModal({
+  id: "export-modal",
+  isOpenedByDefault: false,
+})
+
 export default function EtabCarence() {
   const {
     deferredCalls,
@@ -151,11 +160,6 @@ export default function EtabCarence() {
     motives: carenceMotives,
     natures: carenceNatures,
     jobs: queryJobs,
-  })
-
-  const modal = createModal({
-    id: "export-modal",
-    isOpenedByDefault: false,
   })
 
   const noticeCorrectData = () => (

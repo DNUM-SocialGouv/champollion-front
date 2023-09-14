@@ -34,7 +34,7 @@ export default function EtabInfo({ info, lastEffectif, siret }: EtabInfoProps) {
           : "Inconnu",
     },
     {
-      label: "Dernier effectif déclaré (CDD et CDI)",
+      label: "Dernier effectif (CDD et CDI)",
       value: lastEffectif !== null ? `${lastEffectif.value} contrats` : "Inconnu",
     },
     {

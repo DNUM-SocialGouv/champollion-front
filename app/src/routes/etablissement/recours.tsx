@@ -25,6 +25,7 @@ import {
   unitMoreInfo,
   unitsOptions,
 } from "../../helpers/effectifs"
+import { formatCorrectedDates } from "../../helpers/contrats"
 import { errorWording, isAppError } from "../../helpers/errors"
 import { getQueryDates } from "../../helpers/filters"
 import {
@@ -78,10 +79,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const unit: EffectifUnit = isEffectifUnit(queryUnit) ? queryUnit : "tot"
 
+  // Get user modifications from localStorage
   const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
   const formattedMergesIds = formatLocalMerges(localMergesIds)
   const openDays = ls.get(`etab.${params.siret}.openDays`)
   const formattedOpenDays = formatLocalOpenDays(openDays)
+  const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
+  const correctedDates = formatCorrectedDates(lsContrats)
 
   const postes = await postPostes(etabType.id, formattedMergesIds)
 
@@ -94,6 +98,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     unit,
     motives: queryMotives,
     postesIds: queryJobs,
+    correctedDates,
     mergedPostesIds: formattedMergesIds,
     openDaysCodes: formattedOpenDays,
     signal: deferredCallsController.signal,
@@ -104,6 +109,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     endDate: queryEndDate,
     motives: queryMotives,
     postesIds: queryJobs,
+    correctedDates,
     mergedPostesIds: formattedMergesIds,
     openDaysCodes: formattedOpenDays,
     signal: deferredCallsController.signal,
@@ -123,6 +129,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     unit,
   }
 }
+
+const modal = createModal({
+  id: "export-modal",
+  isOpenedByDefault: false,
+})
 
 export default function EtabRecours() {
   const {
@@ -159,11 +170,6 @@ export default function EtabRecours() {
     setPrevEffectifs(initialEffectifs)
     setEffectifs(initialEffectifs)
   }
-
-  const modal = createModal({
-    id: "export-modal",
-    isOpenedByDefault: false,
-  })
 
   return (
     <>

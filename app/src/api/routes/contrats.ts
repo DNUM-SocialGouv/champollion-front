@@ -1,11 +1,18 @@
 import api from "../config"
-import type { EttContrat, EtuContrat, FileExtension, PaginationMetaData } from "../types"
-import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
+import type {
+  EttContrat,
+  EtuContrat,
+  FileExtension,
+  ModificationsBody,
+  PaginationMetaData,
+} from "../types"
 import type { CorrectedDates } from "../../helpers/contrats"
+import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import { motivesCodeDict } from "../../helpers/filters"
 import { addArrayParams } from "../../helpers/format"
 
 type Common = {
+  correctedDates?: CorrectedDates
   employeesIds?: number[]
   endDate?: string
   id: number
@@ -26,13 +33,7 @@ type ExportParams = Common & {
   isEtu?: boolean
   format: FileExtension
   companyName: string
-  correctedDates?: CorrectedDates
   siret: string
-}
-
-type Body = {
-  corrected_dates?: CorrectedDates
-  merged_poste_ids?: number[][]
 }
 
 export const postContratsEtu = async ({
@@ -43,6 +44,7 @@ export const postContratsEtu = async ({
   natures,
   postesIds,
   employeesIds,
+  correctedDates,
   mergedPostesIds,
   page = 1,
   per = 20,
@@ -71,10 +73,11 @@ export const postContratsEtu = async ({
     if (page) params += `&page=${page}`
     if (per) params += `&per_page=${per}`
 
-    let body = {}
+    const body: ModificationsBody = {}
 
     if (mergedPostesIds && mergedPostesIds?.length > 0)
-      body = Object.assign(body, { merged_poste_ids: mergedPostesIds })
+      body.merged_poste_ids = mergedPostesIds
+    if (correctedDates) body.corrected_dates = correctedDates
 
     const response = await api.post(`/contrats/etu?${params}`, body)
     const contrats = response.data?.data as EtuContrat[]
@@ -161,7 +164,7 @@ export const postContratsExport = async ({
     params = addArrayParams(params, postesIds, "poste_ids")
     params = addArrayParams(params, employeesIds, "salarie_ids")
 
-    const body: Body = {}
+    const body: ModificationsBody = {}
 
     if (mergedPostesIds && mergedPostesIds?.length > 0)
       body.merged_poste_ids = mergedPostesIds

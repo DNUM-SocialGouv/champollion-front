@@ -32,8 +32,7 @@ import Labellisation, {
   action as labellisationAction,
 } from "./routes/labellisation"
 
-// set localStorage expiration to 2 weeks (in seconds)
-ls.config.ttl = 1209600
+// encrypt localStorage
 ls.config.encrypt = true
 
 startReactDsfr({

@@ -2,14 +2,16 @@ import type { ReactNode } from "react"
 import { Link, redirect } from "react-router-dom"
 import { useLoaderData } from "react-router-typesafe"
 import type { LoaderFunctionArgs } from "react-router-dom"
+import ls from "localstorage-slim"
 
 import {
   getEtablissementsInfo,
   getEtablissementsType,
   getContratsEtt,
-  getEffectifsLast,
+  postEffectifsLast,
 } from "../api"
 import type { EttContrat, PaginationMetaData } from "../api/types"
+import { formatCorrectedDates } from "../helpers/contrats"
 import { errorWording, isAppError } from "../helpers/errors"
 import { formatDate } from "../helpers/format"
 
@@ -39,9 +41,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return redirect(`/etablissement/${siret}`)
   }
 
+  const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
+  const correctedDates = formatCorrectedDates(lsContrats)
+
   const [info, lastEffectif, data] = await Promise.all([
     getEtablissementsInfo(etabType.id),
-    getEffectifsLast(etabType.id),
+    postEffectifsLast(etabType.id, correctedDates),
     getContratsEtt({
       id: etabType.id,
       page,
@@ -150,7 +155,7 @@ function ETTContrats({
         <></>
       )
       return {
-        id: contrat.id,
+        id: contrat.contratId,
         poste: contrat.libellePoste,
         etu,
         employee: `${contrat.prenoms} ${contrat.nomFamille}`,

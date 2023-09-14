@@ -74,6 +74,15 @@ export const nextMonth = (date: string | null) =>
 export const prevMonth = (date: string | null) =>
   dayjs(date).isValid() ? dayjs(date).subtract(1, "month") : ""
 
+export const dateIsBefore = (
+  firstDate: string | dayjs.Dayjs | null,
+  secondDate: string | dayjs.Dayjs | null
+) => {
+  return dayjs(firstDate).isValid() && dayjs(secondDate).isValid()
+    ? dayjs(firstDate).isBefore(secondDate)
+    : false
+}
+
 const formatNumber = (value: number | string) =>
   value && Number(value)
     ? value.toLocaleString("fr-FR", { maximumFractionDigits: 2 })

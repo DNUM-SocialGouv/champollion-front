@@ -1,5 +1,6 @@
 import api from "../config"
-import type { IDCC, Infractions, MetaCarences } from "../types"
+import type { IDCC, Infractions, MetaCarences, ModificationsBody } from "../types"
+import type { CorrectedDates } from "../../helpers/contrats"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import { addArrayParams } from "../../helpers/format"
 
@@ -10,6 +11,7 @@ type CarenceParams = {
   postesIds?: number[]
   openDaysCodes?: string[]
   legislation?: string
+  correctedDates?: CorrectedDates
   mergedPostesIds?: number[][]
   signal?: AbortSignal
 }
@@ -21,6 +23,7 @@ export const postCarences = async ({
   postesIds,
   openDaysCodes,
   legislation,
+  correctedDates,
   mergedPostesIds,
   signal,
 }: CarenceParams) => {
@@ -33,10 +36,11 @@ export const postCarences = async ({
     params = addArrayParams(params, postesIds, "poste_ids")
     params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
 
-    let body = {}
+    const body: ModificationsBody = {}
 
     if (mergedPostesIds && mergedPostesIds?.length > 0)
-      body = { merged_poste_ids: mergedPostesIds }
+      body.merged_poste_ids = mergedPostesIds
+    if (correctedDates) body.corrected_dates = correctedDates
 
     let config = {}
     if (signal) config = { signal }

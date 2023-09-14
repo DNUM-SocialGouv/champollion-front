@@ -75,6 +75,11 @@ export async function loader() {
   }
 }
 
+const modal = createModal({
+  id: "job-list-modal",
+  isOpenedByDefault: false,
+})
+
 export default function Labellisation() {
   const savedState = useActionData<typeof action>()
   const { etabId, jobList } = useLoaderData<typeof loader>()
@@ -82,11 +87,6 @@ export default function Labellisation() {
   const options = jobList.map(
     (poste) => ({ value: poste.posteId, label: poste.libellePoste } as Option)
   )
-
-  const modal = createModal({
-    id: "job-list-modal",
-    isOpenedByDefault: false,
-  })
 
   return (
     <>
