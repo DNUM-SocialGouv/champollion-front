@@ -3,14 +3,12 @@ import { Link } from "react-router-dom"
 import ls from "localstorage-slim"
 
 import { formatDate } from "./format"
-import type { EtuContrat } from "../api/types"
+import type { EtuContrat, FileExtension } from "../api/types"
 
 import { AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Input } from "@codegouvfr/react-dsfr/Input"
-
-import type { Option } from "../components/AppMultiSelect"
 
 type FormattedContrat = {
   id: number
@@ -18,7 +16,7 @@ type FormattedContrat = {
   employee: string
   startDate: ReactNode
   endDate: ReactNode
-  contractType: string
+  nature: string
   motive: string | null
   ett: ReactNode
   conventionCode: string | null
@@ -31,7 +29,7 @@ type Column =
   | "employee"
   | "startDate"
   | "endDate"
-  | "contractType"
+  | "nature"
   | "motive"
   | "ett"
   | "conventionCode"
@@ -47,20 +45,20 @@ const headers = [
   { key: "employee", label: "Salarié", width: "15%" },
   { key: "startDate", label: "Date de début", width: "15%" },
   { key: "endDate", label: "Date de fin", width: "15%" },
-  { key: "contractType", label: "Nature contrat", width: "5%" },
+  { key: "nature", label: "Nature contrat", width: "5%" },
   { key: "motive", label: "Motif de recours", width: "15%" },
   { key: "ett", label: "ETT", width: "15%" },
   { key: "conventionCode", label: "Conv. collective", width: "5%" },
 ] as ContratsHeader<Column>[]
 
-const contractTypeShort = [
+const contractNatureShort = [
   { code: "01", label: "CDI" },
   { code: "02", label: "CDD" },
   { code: "03", label: "CTT" },
 ]
 
-const getContractType = (contractCode: string) =>
-  contractTypeShort.find((item) => item.code === contractCode)?.label || "Autre"
+const getContractNature = (contractCode: string) =>
+  contractNatureShort.find((item) => item.code === contractCode)?.label || "Autre"
 
 export type DateStatus = "declared" | "computed" | "validated" | "unknown"
 
@@ -192,7 +190,7 @@ const formatContrats = (
         employee,
         startDate,
         endDate,
-        contractType: getContractType(contrat.codeNatureContrat),
+        nature: getContractNature(contrat.codeNatureContrat),
         motive,
         conventionCode: contrat.codeConventionCollective,
         ett,
@@ -234,6 +232,24 @@ export function JobMergedBadge({
     </>
   )
 }
+
+export const jobMergedBadgeSvg = (x: number, y: number) => (
+  <>
+    <rect
+      width="18"
+      height="18"
+      rx="4"
+      fill="var(--background-contrast-yellow-moutarde)"
+      x={x}
+      y={y}
+    />
+    <path
+      transform={`translate(${x + 3}, ${y + 3}) scale(0.5)`}
+      d="M13 10H20L11 23V14H4L13 1V10Z"
+      fill="var(--text-action-high-yellow-moutarde)"
+    />
+  </>
+)
 
 function ContratDate({
   contratDates,
@@ -309,26 +325,6 @@ function ContratDate({
   )
 }
 
-const motiveOptions: Option[] = [
-  { value: 1, label: "Remplacement d'un salarié" },
-  { value: 2, label: "Accroissement temporaire d'activité" },
-  { value: 3, label: "Usage / saisonnier" },
-  { value: 4, label: "Autre" },
-]
-
-const motivesCodeDict: Record<number, string[]> = {
-  1: ["01", "07", "08", "12", "13"],
-  2: ["02"],
-  3: ["03", "04", "05"],
-  4: ["06", "09", "10", "11", "14", "15"],
-}
-
-const contractNatures = [
-  { key: "cdi", code: "01", label: "CDI" },
-  { key: "cdd", code: "02", label: "CDD" },
-  { key: "ctt", code: "03", label: "CTT (intérim)" },
-]
-
 export type CorrectedDates = Record<
   number,
   {
@@ -337,25 +333,35 @@ export type CorrectedDates = Record<
   }
 >
 
-export const formatCorrectedDates = (contractsDates: Record<string, string>) => {
-  return Object.entries(contractsDates).reduce((acc, [key, value]) => {
-    const [id, dateType] = key.split("-")
-    const contractId = Number(id)
-    const dateTypeKey = `${dateType}_date`
+export const formatCorrectedDates = (contractsDates: Record<string, string> | null) => {
+  if (contractsDates) {
+    return Object.entries(contractsDates).reduce((acc, [key, value]) => {
+      const [id, dateType] = key.split("-")
+      const contractId = Number(id)
+      const dateTypeKey = `${dateType}_date`
 
-    if (contractId && ["start_date", "end_date"].includes(dateTypeKey)) {
-      const dateObj = { ...(acc[contractId] || {}), [dateTypeKey]: value }
-      acc[contractId] = dateObj
-    }
-    return acc
-  }, {} as CorrectedDates)
+      if (contractId && ["start_date", "end_date"].includes(dateTypeKey)) {
+        const dateObj = { ...(acc[contractId] || {}), [dateTypeKey]: value }
+        acc[contractId] = dateObj
+      }
+      return acc
+    }, {} as CorrectedDates)
+  } else return undefined
 }
 
-export {
-  contractNatures,
-  formatContrats,
-  getContractType,
-  headers,
-  motiveOptions,
-  motivesCodeDict,
+const fileExtensionLabel: Record<FileExtension, string> = {
+  ods: "Fichier LibreOffice .ods",
+  xlsx: "Fichier Excel .xlsx",
+  csv: "Fichier tableur CSV .csv",
 }
+export const extensions: FileExtension[] = ["ods", "xlsx", "csv"]
+export const radioBtnOptions = extensions.map((key) => ({
+  label: fileExtensionLabel[key],
+  nativeInputProps: {
+    value: key,
+    defaultChecked: key === "ods",
+    // note: I'm using uncontrolled radio component because the controlled one closes the modal on click
+  },
+}))
+
+export { formatContrats, getContractNature, headers }

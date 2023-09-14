@@ -1,34 +1,29 @@
 import { Fragment, useEffect, useState } from "react"
 import type { FormEvent } from "react"
-import { Form, useActionData, useLoaderData } from "react-router-dom"
-import type { ActionFunctionArgs } from "react-router-dom"
+import { Form, type ActionFunctionArgs } from "react-router-dom"
+import { useActionData, useLoaderData } from "react-router-typesafe"
 import { v4 as uuid } from "uuid"
 
 import {
   getLabellisations as getRandomJobs,
   postLabellisations as postLabellisationsMerges,
 } from "../api"
-import type { EtablissementPoste } from "../api/types"
 import { getErrorMessage, isAppError } from "../helpers/errors"
-import { parseAndFilterMergeStr, type MergeOptionObject } from "../helpers/postes"
+import {
+  parseAndFilterMergeStr,
+  type MergeOptionObject,
+  filteredOptions,
+} from "../helpers/postes"
 import { findDuplicates } from "../helpers/format"
 
-import { Alert, AlertProps } from "@codegouvfr/react-dsfr/Alert"
+import { Alert, type AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 
 import AppMultiSelect from "../components/AppMultiSelect"
 import type { Option } from "../components/AppMultiSelect"
 
-type LabellisationAction = {
-  message?: string
-  severity: AlertProps.Severity
-  title: string
-}
-
-export async function action({
-  request,
-}: ActionFunctionArgs): Promise<LabellisationAction> {
+export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData()
   const etabId = Number(formData.get("etablissement-id"))
   const data = Object.fromEntries(formData)
@@ -42,26 +37,26 @@ export async function action({
     unclearMergedPostesIds: unclearMerges,
   })
 
+  let severity: AlertProps.Severity = "success"
+  let message
+  let title = `Les fusions ont bien été sauvegardées pour l'établissement ${etabId}, voici un nouvel établissement à labelliser.`
+
   if (isAppError(result)) {
-    return {
-      message: getErrorMessage(result).messageFr,
-      severity: "error",
-      title: `Une erreur est survenue sur l'établissement ${etabId}`,
-    }
+    severity = "error"
+    ;(message = getErrorMessage(result).messageFr),
+      (title = `Une erreur est survenue sur l'établissement ${etabId}`)
   }
 
-  return {
-    title: `Les fusions ont bien été sauvegardées pour l'établissement ${etabId}, voici un nouvel établissement à labelliser.`,
-    severity: "success",
+  const alertData: { title: string; message?: string; severity: AlertProps.Severity } = {
+    title,
+    message,
+    severity,
   }
+
+  return alertData
 }
 
-type LabellisationLoader = {
-  etabId: number
-  jobList: EtablissementPoste[]
-}
-
-export async function loader(): Promise<LabellisationLoader> {
+export async function loader() {
   const jobs = await getRandomJobs()
 
   if (isAppError(jobs)) {
@@ -81,8 +76,8 @@ export async function loader(): Promise<LabellisationLoader> {
 }
 
 export default function Labellisation() {
-  const savedState = useActionData() as LabellisationAction
-  const { etabId, jobList } = useLoaderData() as LabellisationLoader
+  const savedState = useActionData<typeof action>()
+  const { etabId, jobList } = useLoaderData<typeof loader>()
 
   const options = jobList.map(
     (poste) => ({ value: poste.posteId, label: poste.libellePoste } as Option)
@@ -210,7 +205,11 @@ function LabellisationForm({ etabId, options }: { etabId: number; options: Optio
             key={merge.id}
             merges={likelyMerges}
             setMerges={setLikelyMerges}
-            options={options}
+            options={filteredOptions({
+              options,
+              currentMergeId: merge.id,
+              allMerges: [...likelyMerges, ...unclearMerges],
+            })}
             handleDeleteMerge={handleDeleteLikelyMerge}
           />
         ))}
@@ -242,7 +241,11 @@ function LabellisationForm({ etabId, options }: { etabId: number; options: Optio
             key={merge.id}
             merges={unclearMerges}
             setMerges={setUnclearMerges}
-            options={options}
+            options={filteredOptions({
+              options,
+              currentMergeId: merge.id,
+              allMerges: [...likelyMerges, ...unclearMerges],
+            })}
             handleDeleteMerge={handleDeleteUnclearMerge}
           />
         ))}

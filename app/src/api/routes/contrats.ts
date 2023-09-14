@@ -1,7 +1,8 @@
 import api from "../config"
-import type { EttContrat, EtuContrat, MetaData } from "../types"
+import type { EttContrat, EtuContrat, FileExtension, PaginationMetaData } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
-import { type CorrectedDates, motivesCodeDict } from "../../helpers/contrats"
+import type { CorrectedDates } from "../../helpers/contrats"
+import { motivesCodeDict } from "../../helpers/filters"
 import { addArrayParams } from "../../helpers/format"
 
 type Common = {
@@ -23,6 +24,7 @@ type ContratsParams = Common & {
 
 type ExportParams = Common & {
   isEtu?: boolean
+  format: FileExtension
   companyName: string
   correctedDates?: CorrectedDates
   siret: string
@@ -76,7 +78,7 @@ export const postContratsEtu = async ({
 
     const response = await api.post(`/contrats/etu?${params}`, body)
     const contrats = response.data?.data as EtuContrat[]
-    const meta = response.data?.meta as MetaData
+    const meta = response.data?.meta as PaginationMetaData
 
     if (contrats && meta) {
       return {
@@ -111,7 +113,7 @@ export const getContratsEtt = async ({
 
     const response = await api.post(`/contrats/ett?${params}`)
     const contrats = response.data?.data as EttContrat[]
-    const meta = response.data?.meta as MetaData
+    const meta = response.data?.meta as PaginationMetaData
 
     if (contrats && meta) {
       return {
@@ -129,6 +131,7 @@ export const postContratsExport = async ({
   correctedDates,
   employeesIds,
   endDate,
+  format = "ods",
   id,
   isEtu = true,
   mergedPostesIds,
@@ -139,9 +142,9 @@ export const postContratsExport = async ({
   startDate,
 }: ExportParams) => {
   try {
-    let params = `etablissement_id=${id}&etu=${isEtu}`
+    let params = `etablissement_id=${id}&etu=${isEtu}&format=${format}`
 
-    const fileName = "Contrats_" + companyName.replace(" ", "_") + "_" + siret + ".ods"
+    const fileName = `Contrats_${companyName.replace(" ", "_")}_${siret}.${format}`
 
     if (endDate) params += `&end_date=${endDate}`
     if (startDate) params += `&start_date=${startDate}`
@@ -169,7 +172,7 @@ export const postContratsExport = async ({
     })
 
     const odsBlob = new Blob([response.data], {
-      type: "application/vnd.oasis.opendocument.spreadsheet",
+      type: response.headers["content-type"],
     })
 
     const tempUrl = URL.createObjectURL(odsBlob)

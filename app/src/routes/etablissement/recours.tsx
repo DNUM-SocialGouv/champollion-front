@@ -1,57 +1,60 @@
 import { useRef, useState } from "react"
-import { type LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router-dom"
+import {
+  type LoaderFunctionArgs,
+  useSearchParams,
+  useNavigation,
+  useAsyncValue,
+} from "react-router-dom"
+import { defer, useLoaderData } from "react-router-typesafe"
 import ls from "localstorage-slim"
 import { v4 as uuid } from "uuid"
 
-import { postEffectifs, postPostes, getEtablissementsType } from "../../api"
-import type { Effectif, EffectifUnit, EtablissementPoste } from "../../api/types"
+import {
+  postEffectifs,
+  postPostes,
+  getEtablissementsType,
+  getEtablissementsDefaultPeriod,
+  postIndicateur2,
+} from "../../api"
+import type { Effectif, EffectifUnit, IndicatorMetaData } from "../../api/types"
 import { isEffectifUnit } from "../../api/types"
 import {
   formatEffectifs,
-  unitsOptions,
+  getReadingNotes,
   getUnitOptionFromKey,
   unitMoreInfo,
-  getReadingNotes,
+  unitsOptions,
 } from "../../helpers/effectifs"
-import type { AppError } from "../../helpers/errors"
 import { errorWording, isAppError } from "../../helpers/errors"
+import { getQueryDates } from "../../helpers/filters"
 import {
   createFiltersQuery,
+  formatDate,
   formatLocalMerges,
   formatLocalOpenDays,
   getQueryAsNumberArray,
   getQueryAsString,
-  oneYearAgo,
-  today,
+  nextMonth,
+  prevMonth,
 } from "../../helpers/format"
 import { initJobOptions } from "../../helpers/postes"
 
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
-import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Select } from "@codegouvfr/react-dsfr/Select"
 import { Table } from "@codegouvfr/react-dsfr/Table"
 
-import AppRebound from "../../components/AppRebound"
-import EffectifBarChart from "../../components/EffectifBarChart"
-import EtabFilters from "../../components/EtabFilters"
 import AppCollapse from "../../components/AppCollapse"
+import AppRebound from "../../components/AppRebound"
+import ContractNatureIndicator from "../../components/ContractNatureIndicator"
+import Deferring from "../../components/Deferring"
+import EffectifBarChart, { type GrayAreasInput } from "../../components/EffectifBarChart"
+import EtabFilters from "../../components/EtabFilters"
 
-export async function loader({
-  params,
-  request,
-}: LoaderFunctionArgs): Promise<EtabPostesLoader> {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
-  const queryStartDate = getQueryAsString(searchParams, "debut") || oneYearAgo
-  const queryEndDate = getQueryAsString(searchParams, "fin") || today
-  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
-  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
-  const queryUnit = getQueryAsString(searchParams, "unit")
-  const motives = queryMotives.map((motive) => Number(motive))
-
-  const unit: EffectifUnit = isEffectifUnit(queryUnit) ? queryUnit : "tot"
 
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
@@ -63,25 +66,55 @@ export async function loader({
     })
   }
 
+  const etabDefaultPeriod = await getEtablissementsDefaultPeriod(etabType.id)
+
+  const { queryStartDate, queryEndDate } = getQueryDates({
+    etabDefaultPeriod,
+    searchParams,
+  })
+  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
+  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
+  const queryUnit = getQueryAsString(searchParams, "unit")
+
+  const unit: EffectifUnit = isEffectifUnit(queryUnit) ? queryUnit : "tot"
+
   const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
   const formattedMergesIds = formatLocalMerges(localMergesIds)
   const openDays = ls.get(`etab.${params.siret}.openDays`)
   const formattedOpenDays = formatLocalOpenDays(openDays)
 
   const postes = await postPostes(etabType.id, formattedMergesIds)
-  const effectifs = await postEffectifs({
+
+  // AbortController to abort all deferred calls on route change
+  const deferredCallsController = new AbortController()
+  const effectifsData = postEffectifs({
     id: etabType.id,
     startDate: queryStartDate,
     endDate: queryEndDate,
     unit,
-    motives,
+    motives: queryMotives,
     postesIds: queryJobs,
     mergedPostesIds: formattedMergesIds,
     openDaysCodes: formattedOpenDays,
+    signal: deferredCallsController.signal,
+  })
+  const contractNatureIndicator = postIndicateur2({
+    id: etabType.id,
+    startDate: queryStartDate,
+    endDate: queryEndDate,
+    motives: queryMotives,
+    postesIds: queryJobs,
+    mergedPostesIds: formattedMergesIds,
+    openDaysCodes: formattedOpenDays,
+    signal: deferredCallsController.signal,
   })
 
   return {
-    effectifs,
+    deferredCalls: defer({
+      contractNatureIndicator,
+      effectifsData,
+    }),
+    deferredCallsController,
     postes,
     queryEndDate,
     queryJobs,
@@ -91,26 +124,21 @@ export async function loader({
   }
 }
 
-type EtabPostesLoader = {
-  effectifs: Effectif[] | AppError
-  postes: AppError | EtablissementPoste[]
-  queryStartDate: string
-  queryEndDate: string
-  queryMotives: number[]
-  queryJobs: number[]
-  unit: EffectifUnit
-}
-
 export default function EtabRecours() {
   const {
-    effectifs: initialEffectifs,
+    deferredCalls,
+    deferredCallsController,
     postes,
     queryEndDate,
     queryJobs,
     queryMotives,
     queryStartDate,
     unit,
-  } = useLoaderData() as EtabPostesLoader
+  } = useLoaderData<typeof loader>()
+  const navigation = useNavigation()
+  if (navigation.state === "loading") {
+    deferredCallsController.abort()
+  }
 
   const effectifsNatures = ["01", "02", "03"]
 
@@ -122,6 +150,8 @@ export default function EtabRecours() {
     jobs: queryJobs,
   })
   const jobOptions = initJobOptions(postes)
+
+  const initialEffectifs = deferredCalls.data.effectifsData
 
   const [effectifs, setEffectifs] = useState(initialEffectifs)
   const [prevEffectifs, setPrevEffectifs] = useState(initialEffectifs)
@@ -177,16 +207,21 @@ export default function EtabRecours() {
         </modal.Component>
         <hr />
 
-        {isAppError(effectifs) ? (
-          <Alert
-            className="fr-mb-2w"
-            severity="error"
-            title={effectifs.messageFr}
-            description={`Erreur ${effectifs.status}`}
+        <Deferring deferredPromise={effectifs}>
+          <EtabPostesEffectifs defaultUnit={unit} />
+        </Deferring>
+
+        <h2 className="fr-text--xl fr-mb-1w fr-mt-3w">
+          Natures de contrat les plus utilisées
+        </h2>
+        <hr />
+
+        <Deferring deferredPromise={deferredCalls.data.contractNatureIndicator}>
+          <ContractNatureIndicator
+            hasMotives={queryMotives.length > 0}
+            hasJobs={queryJobs.length > 0}
           />
-        ) : (
-          <EtabPostesEffectifs defaultData={effectifs} defaultUnit={unit} />
-        )}
+        </Deferring>
 
         <h2 className="fr-text--xl fr-mb-1w fr-mt-3w">Actions</h2>
         <hr />
@@ -207,7 +242,10 @@ export default function EtabRecours() {
             <AppRebound
               desc="Fusionner plusieurs libellés du même poste"
               linkProps={{
-                to: "../postes",
+                to: {
+                  pathname: "../postes",
+                  search: filtersQuery ? `?${filtersQuery}` : "",
+                },
               }}
               title="Fusion de postes"
             />
@@ -230,23 +268,48 @@ export default function EtabRecours() {
   )
 }
 
-function EtabPostesEffectifs({
-  defaultData,
-  defaultUnit,
-}: {
-  defaultData: Effectif[]
-  defaultUnit: EffectifUnit
-}) {
+type EtabPostesEffectifsDeferred = { effectifs: Effectif[]; meta: IndicatorMetaData }
+
+function EtabPostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
+  const deferredData = useAsyncValue() as EtabPostesEffectifsDeferred
+
+  if (!deferredData) {
+    console.error(
+      "EtabPostesEffectifs didn't receive async deferred data. It must be used in a <Await> component from react-router."
+    )
+    return null
+  }
+
+  const { effectifs: defaultEffectifs, meta } = deferredData
   const [searchParams, setSearchParams] = useSearchParams()
   const [areTempContractsStacked, setAreTempContractsStacked] = useState(false)
   const initialUnitOption = unitsOptions.find((option) => option.value === defaultUnit)
-  const [effectifsData, setEffectifsData] = useState(formatEffectifs(defaultData))
+  const [effectifsData, setEffectifsData] = useState(
+    formatEffectifs(defaultEffectifs, meta.firstValidDate, meta.lastValidDate)
+  )
   const tableRefs = useRef<HTMLDivElement[]>([])
+  const lastInvalidPastMonth = formatDate(prevMonth(meta.firstValidDate), "YYYY-MM-DD")
+  const firstInvalidFutureMonth = formatDate(nextMonth(meta.lastValidDate), "YYYY-MM-DD")
 
-  const [prevEffectifs, setPrevEffectifs] = useState(defaultData)
-  if (defaultData !== prevEffectifs) {
-    setPrevEffectifs(defaultData)
-    setEffectifsData(formatEffectifs(defaultData))
+  const maxEffectif = effectifsData.reduce(
+    (acc, current) => Math.max(acc, Math.max(current.cdi, current.cdd, current.ctt)),
+    0
+  )
+
+  const grayAreasData: GrayAreasInput = {
+    startRequestedDate: meta.startDate,
+    lastInvalidPastMonth: lastInvalidPastMonth,
+    firstInvalidFutureMonth: firstInvalidFutureMonth,
+    endRequestedDate: meta.endDate,
+    maxHeight: maxEffectif * 1.2, // max height of gray areas = max effectif + 20% margin
+  }
+
+  const [prevEffectifs, setPrevEffectifs] = useState(defaultEffectifs)
+  if (defaultEffectifs !== prevEffectifs) {
+    setPrevEffectifs(defaultEffectifs)
+    setEffectifsData(
+      formatEffectifs(defaultEffectifs, meta.firstValidDate, meta.lastValidDate)
+    )
   }
 
   const handleUnitSelected = async (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -265,7 +328,8 @@ function EtabPostesEffectifs({
     data: (string | number)[][]
   }
   const nbMonthsPerTable = 12
-  const nbSubTables = Math.ceil(effectifsData.length / nbMonthsPerTable)
+  const filteredEffectifsData = effectifsData.filter((monthData) => !monthData.isEmpty)
+  const nbSubTables = Math.ceil(filteredEffectifsData.length / nbMonthsPerTable)
   const tablesContent: TableContent[] = []
   const formatNumber = (effectif: number) =>
     (Math.round(effectif * 100) / 100).toLocaleString("fr-FR")
@@ -275,7 +339,7 @@ function EtabPostesEffectifs({
     const cdiArray: Array<string | number> = ["CDI"]
     const cddArray: Array<string | number> = ["CDD"]
     const cttArray: Array<string | number> = ["CTT"]
-    effectifsData
+    filteredEffectifsData
       .slice(i * nbMonthsPerTable, (i + 1) * nbMonthsPerTable)
       .forEach((month) => {
         headers.push(month.label)
@@ -343,6 +407,7 @@ function EtabPostesEffectifs({
           isStacked={areTempContractsStacked}
           unit="contrats"
           data={effectifsData}
+          grayAreasData={grayAreasData}
         />
       </div>
       <Checkbox
@@ -358,12 +423,15 @@ function EtabPostesEffectifs({
           },
         ]}
       />
-      {initialUnitOption && initialUnitOption.value && effectifsData.length > 0 && (
-        <>
-          <h3 className="fr-text--md fr-mt-2w fr-mb-1v font-bold">Notes de lectures</h3>
-          <p>{getReadingNotes(effectifsData[0], initialUnitOption.value)}</p>
-        </>
-      )}
+
+      {initialUnitOption &&
+        initialUnitOption.value &&
+        filteredEffectifsData.length > 0 && (
+          <>
+            <h3 className="fr-text--md fr-mt-2w fr-mb-1v font-bold">Note de lecture</h3>
+            <p>{getReadingNotes(filteredEffectifsData[0], initialUnitOption.value)}</p>
+          </>
+        )}
 
       <Accordion
         label="Afficher les effectifs sous forme de tableau"

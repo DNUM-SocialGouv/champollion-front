@@ -9,7 +9,7 @@ input[type="date"].fr-input::-webkit-calendar-picker-indicator {
   margin-right: auto;
   opacity: 1;
 }
-input[type="date"].fr-input {
+.fr-input-wrap[class*=" ri-"] input[type="date"].fr-input {
   background-image: none;
   padding-right: 1rem;
 }
@@ -17,6 +17,7 @@ input[type="date"].fr-input {
   content: none;
 }
 
+/* Reduce header logo height */
 .fr-header__logo {
   padding: 0.75rem 1rem;
 }
@@ -31,4 +32,11 @@ input[type="date"].fr-input {
   background-size: 3.5rem 2.5rem;
   padding-top: 1.4rem;
   background-position: 0 calc(100% + 1.25rem);
+}
+
+.fr-table.app-table--thin td {
+  padding: 0 1rem;
+}
+.fr-table.app-table--thin th {
+  padding: 0.25rem 1rem;
 }

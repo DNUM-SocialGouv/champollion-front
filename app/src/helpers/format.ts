@@ -62,12 +62,17 @@ const keysToCamel = (input: any): any => {
 }
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
+const uncapitalize = (str: string) => str.charAt(0).toLowerCase() + str.slice(1)
 
-const formatDate = (date: string | null, format = "DD/MM/YYYY") =>
+const formatDate = (date: string | dayjs.Dayjs | null, format = "DD/MM/YYYY") =>
   dayjs(date).isValid() ? dayjs(date).format(format) : ""
 
 const today = dayjs().format("YYYY-MM-DD")
 const oneYearAgo = dayjs().subtract(1, "year").format("YYYY-MM-DD")
+export const nextMonth = (date: string | null) =>
+  dayjs(date).isValid() ? dayjs(date).add(1, "month") : ""
+export const prevMonth = (date: string | null) =>
+  dayjs(date).isValid() ? dayjs(date).subtract(1, "month") : ""
 
 const formatNumber = (value: number | string) =>
   value && Number(value)
@@ -104,11 +109,11 @@ const createFiltersQuery = ({
   natures,
   jobs,
 }: {
-  startDate: string
-  endDate: string
-  motives: number[]
-  natures: string[]
-  jobs: number[]
+  startDate?: string
+  endDate?: string
+  motives?: number[]
+  natures?: string[]
+  jobs?: number[]
 }) => {
   let query = ""
   // todo refacto with map english key <=> french query param
@@ -139,7 +144,7 @@ export const formatLocalMerges = (data: unknown): number[][] | undefined => {
   return formattedMergesIds
 }
 
-type DayCode = "0" | "1" | "2" | "3" | "4" | "5" | "6"
+export type DayCode = "0" | "1" | "2" | "3" | "4" | "5" | "6"
 
 export const formatLocalOpenDays = (
   dataFromLocalStorage: unknown
@@ -169,6 +174,22 @@ export const addArrayParams = <T>(
   return params
 }
 
+export const splitSentenceAtMiddle = (sentence: string) => {
+  const middleIndex = Math.floor(sentence.length / 2)
+  // Find the first whitespace of the second half of the sentence
+  let splitIndex = sentence.indexOf(" ", middleIndex)
+  // If no whitespace was found to the right of the middle, try to find it to the left
+  if (splitIndex === -1) splitIndex = sentence.lastIndexOf(" ", middleIndex)
+
+  if (splitIndex != -1) {
+    // Split the sentence into two parts
+    const firstPart = sentence.substring(0, splitIndex).trim()
+    const secondPart = sentence.substring(splitIndex + 1).trim()
+
+    return [firstPart, secondPart]
+  } else return [sentence]
+}
+
 export {
   arrayEquals,
   camelToSnakeCase,
@@ -187,4 +208,5 @@ export {
   oneYearAgo,
   toCamel,
   today,
+  uncapitalize,
 }

@@ -2,11 +2,11 @@
 
 L'environnement de développement de l'application du projet Champollion est prévu pour être setup sur la VM Lab de l'infrasctrure OVH (0V1-APP-LAB-DEV-003). La procédure qui suit est configurée pour cet environnement (Rocky Linux).
 
-## Mise en place
+## Pré-requis
 
-1. Fork le repo 
+Vous avez peut-être déjà effectué les actions suivantes pour d'autres installations du projet, sinon les pré-requis sont :
 
-    Allez sur https://gitlab.intranet.social.gouv.fr/champollion/front-it/forks/new pour fork le repository Champolib.
+1. Connexion SSH à la VM Lab OVH via VSCode installé sur la PMAD
 
 2. Installez les modules nécessaires
 
@@ -26,9 +26,16 @@ L'environnement de développement de l'application du projet Champollion est pr�
     mkdir -p ~/code ~/data ~/env
     ```
 
-4. Configurer git
+## Mise en place
 
-    Pour la connexion à Gitlab la configuration suivante est requise (préciser les valeurs pour **GIT_EMAIL** et **GIT_USER**) : 
+1. Fork le repo
+
+    Allez sur https://gitlab.intranet.social.gouv.fr/champollion/front-it/forks/new pour fork le repository Champolib.
+    Une fois le fork créé, partagez les droits avec le groupe gitlab Champollion. Pour cela, aller dans Settings > Members > Share with group et ajouter `Champollion` en accès  **Developer**, sans expiration.
+
+2. Configurer git
+
+    Pour la connexion à Gitlab la configuration suivante est requise (préciser les valeurs pour **GIT_EMAIL** et **GIT_USER**) :
 
     ```bash
     # git config
@@ -39,25 +46,37 @@ L'environnement de développement de l'application du projet Champollion est pr�
     git config --global user.name **GIT_USER** # example: leoguillaume
     ```
 
-5. Exporter les variables d'environnements
+3. Cloner le repo front-it
 
-    Remplacer **GIT_USER** pour votre identifiant git (voir l'URL de votre fork).
+    Récupérez l'url HTTPS (et non SSH qui s'affiche par défaut) de votre fork sur gitlab, sous la forme https://gitlab.intranet.social.gouv.fr/**GIT_USER**/front-it.git
+    Vous pouvez créer les variables suivantes ou bien faire un clone avec les urls directement.
 
     ```bash
     export FRONT_REPOSITORY_REMOTE_URL=https://gitlab.intranet.social.gouv.fr/champollion/front-it
     export FRONT_REPOSITORY_ORIGIN_URL=https://gitlab.intranet.social.gouv.fr/**GIT_USER**/front-it
     ```
 
-6. Cloner le repository et ajouter l'upstream
-
-    ``` bash
-    git clone ${FRONT_REPOSITORY_ORIGIN_URL} ~/code/front-it
-    cd ~/code/front-it && git remote add upstream ${FRONT_REPOSITORY_REMOTE_URL}
+    ```bash
+    cd code/
+    git clone ${FRONT_REPOSITORY_ORIGIN_URL}
+    cd front-it/
+    git remote add upstream ${FRONT_REPOSITORY_REMOTE_URL}
     ```
 
-7. Installation des dépendances nécessaires
+4. (Optionnel) Ajouter les remotes d'autres développeur·euse·s
 
-    1. Exportez les variables d'environnement pour passer par le proxy afin d'accéder à des ressources sur internet
+    Si vous souhaitez accéder aux branches sur les repo d'autres personnes, il faut ajouter leurs fork comme nouveaux remote, et spécifier le proxy (vide) :
+
+    ```bash
+    git remote add <other_git_pseudo> <other_fork_url_https>
+    # ex: git remote add sbourdon https://gitlab.intranet.social.gouv.fr/sbourdon/front-it.git
+    git config --global remote.<other_git_pseudo>.proxy ""
+    # ex: git config --global remote.sbourdon.proxy ""
+    ```
+
+5. Installation des dépendances nécessaires
+
+    1. Si ce n'est déjà fait, exportez les variables d'environnement pour passer par le proxy afin d'accéder à des ressources sur internet
 
         ```bash
         export HTTP_PROXY=http://100.78.56.201:8002
@@ -65,63 +84,79 @@ L'environnement de développement de l'application du projet Champollion est pr�
         ```
 
     2. Il faut spécifier un nouveau dossier `npm` pour le user afin d’éviter des [problèmes de permissions](https://stackoverflow.com/questions/48910876/error-eacces-permission-denied-access-usr-local-lib-node-modules/55274930#55274930)
-    
+
         ```bash
         mkdir ~/.npm-global
         npm config set prefix '~/.npm-global'
         ```
 
     3. Editer le fichier `.bashrc` avec les commandes suivantes :
-    
+
         ```bash
         echo "export PATH=~/.npm-global/bin:\$PATH" >> ~/.bashrc
         source  ~/.bashrc
         ```
-    
+
     4. Installer YARN et les dépendances
-    
+
         ```bash
-        npm i --global yarn && yarn --cwd ${FRONT_REPOSITORY_PATH}/app/
+        npm i --global yarn
+        # dans front-it/app/ :
+        yarn
         ```
-    
+
+        💡 Attention, l'application front React en elle-même est dans le sous-dossier app/, c'est là où se trouve le package.json, donc les commandes yarn doivent toujours être lancées depuis front-it/app/ sinon elles ne fonctionneront pas.
+
     5. Créez un fichier un .env.local
 
-        [TO DO]
+        Copier les variables du .env.example et compléter les valeurs. Pour se connecter à l'API, il faut spécifier l'url du serveur back lancé en local auparavant (voir la doc de l'API sur le repo `champolib`).
+
         ```bash
-        VITE_API_BASE_URL=
-        VITE_LOGOUT_URL=
+        VITE_API_BASE_URL=http://localhost:8002 # remplacer 8002 par le port sur lequel vous avez lancé l'API.
         ```
 
 ## Lancer l'application en local
 
-Pour lancer facilement l'application, vous pouvez ajouter la fonction suivante à votre fichier `~/.bashrc`. Exécutez `startapp` avec les arguments souhaités.
+Dans `front-it/app/`, lancez :
+
+```bash
+yarn dev
+```
+
+(Facultatif) Pour lancer facilement l'application, vous pouvez également ajouter la fonction suivante à votre fichier `~/.bashrc`. Exécutez `startapp` avec les arguments souhaités.
+
+Vous aurez besoin d'ajouter une variable d'environnement spécifiant le chemin du repo.
+
+```bash
+export FRONT_REPOSITORY_PATH= # mettre le chemin de votre environnement jusqu'à code/front-it/
+```
 
 ```bash
 startapp () {
-    local OPTIND
-    local api=$VITE_API_BASE_URL
+     local OPTIND
+     local api=$VITE_API_BASE_URL
 
-    Help()
-    {
-    # Display Help
-    echo "Launch a local node server."
-    echo
-    echo "Syntax: bash launch.sh [-h|a]"
-    echo "options:"
-    echo "h          display this help and exit"
-    echo "a          api url (default: ${VITE_API_BASE_URL})"
-    }
+     Help()
+     {
+     # Display Help
+     echo "Launch a local node server."
+     echo
+     echo "Syntax: bash launch.sh [-h|a]"
+     echo "options:"
+     echo "h             display this help and exit"
+     echo "a             api url (default: ${VITE_API_BASE_URL})"
+     }
 
-    while getopts "ha:" flag
-    do
-        case "${flag}" in
-            h)  # display help
-                Help
-                kill -INT $$;;
-            a)  local api=${OPTARG};;
-        esac
-    done
+     while getopts "ha:" flag
+     do
+          case "${flag}" in
+                h)  # display help
+                     Help
+                     kill -INT $$;;
+                a)  local api=${OPTARG};;
+          esac
+     done
 
-    VITE_API_BASE_URL=$api yarn --cwd ${FRONT_REPOSITORY_PATH}/app/ dev
+     VITE_API_BASE_URL=$api yarn --cwd ${FRONT_REPOSITORY_PATH}/app/ dev
 }
 ```

@@ -1,6 +1,7 @@
-import { type ReactNode, useState } from "react"
-import { useLoaderData, useSearchParams } from "react-router-dom"
-import type { LoaderFunctionArgs } from "react-router-dom"
+import { useState } from "react"
+import type { ReactNode, FormEvent } from "react"
+import { useSearchParams, type LoaderFunctionArgs } from "react-router-dom"
+import { useLoaderData } from "react-router-typesafe"
 import ls from "localstorage-slim"
 
 import {
@@ -9,18 +10,24 @@ import {
   postPostes,
   postContratsEtu,
   postContratsExport,
+  getEtablissementsDefaultPeriod,
 } from "../../api"
-import type { EtablissementPoste, EtuContrat, MetaData, Salarie } from "../../api/types"
+import type { EtuContrat, FileExtension, PaginationMetaData } from "../../api/types"
 import type { EditableDate, ContratDatesState } from "../../helpers/contrats"
 import {
   formatContrats,
   headers,
-  motiveOptions,
-  contractNatures,
   formatCorrectedDates,
+  extensions,
+  radioBtnOptions,
 } from "../../helpers/contrats"
-import type { AppError } from "../../helpers/errors"
-import { errorWording, isAppError } from "../../helpers/errors"
+import { motiveOptions, contractNatures, getQueryDates } from "../../helpers/filters"
+import {
+  type AppError,
+  errorDescription,
+  errorWording,
+  isAppError,
+} from "../../helpers/errors"
 import {
   createFiltersQuery,
   formatDate,
@@ -28,10 +35,7 @@ import {
   getQueryAsArray,
   getQueryAsNumber,
   getQueryAsNumberArray,
-  getQueryAsString,
   getQueryPage,
-  oneYearAgo,
-  today,
 } from "../../helpers/format"
 import { initEmployeeOptions, initJobOptions } from "../../helpers/postes"
 import { DateStatusBadge } from "../../helpers/contrats"
@@ -40,24 +44,14 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
+import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons"
 
 import AppTable from "../../components/AppTable"
 import EtabFilters from "../../components/EtabFilters"
 import AppRebound from "../../components/AppRebound"
 
-export async function loader({
-  params,
-  request,
-}: LoaderFunctionArgs): Promise<CarenceContratsLoader> {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
-
-  const queryStartDate = getQueryAsString(searchParams, "debut") || oneYearAgo
-  const queryEndDate = getQueryAsString(searchParams, "fin") || today
-  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
-  const queryNature = getQueryAsArray(searchParams, "nature")
-  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
-  const queryEmployee = getQueryAsNumber(searchParams, "salarie")
-  const page = getQueryPage(searchParams)
 
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
@@ -68,6 +62,19 @@ export async function loader({
       statusText: etabType.messageFr ?? errorWording.etab,
     })
   }
+
+  const etabDefaultPeriod = await getEtablissementsDefaultPeriod(etabType.id)
+
+  const { queryStartDate, queryEndDate } = getQueryDates({
+    etabDefaultPeriod,
+    searchParams,
+  })
+  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
+  const queryNature = getQueryAsArray(searchParams, "nature")
+  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
+  const queryEmployee = getQueryAsNumber(searchParams, "salarie")
+  const page = getQueryPage(searchParams)
+
   const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
   const formattedMergesIds = formatLocalMerges(localMergesIds)
 
@@ -103,28 +110,6 @@ export async function loader({
   }
 }
 
-type CarenceContratsLoader = {
-  companyName: string
-  contratsData:
-    | AppError
-    | {
-        contrats: EtuContrat[]
-        meta: MetaData
-      }
-  employeesList: AppError | Salarie[]
-  etabId: number
-  mergedPostesIds?: number[][]
-  page: number
-  postes: AppError | EtablissementPoste[]
-  queryEmployee?: number
-  queryEndDate: string
-  queryJobs: number[]
-  queryMotives: number[]
-  queryNature: string[]
-  queryStartDate: string
-  siret: string
-}
-
 export default function EtabContrats() {
   const {
     companyName,
@@ -141,8 +126,8 @@ export default function EtabContrats() {
     queryNature,
     queryStartDate,
     siret,
-  } = useLoaderData() as CarenceContratsLoader
-
+  } = useLoaderData<typeof loader>()
+  const [exportedContracts, setExportedContracts] = useState<undefined | AppError>()
   const filtersQuery = createFiltersQuery({
     startDate: queryStartDate,
     endDate: queryEndDate,
@@ -158,15 +143,25 @@ export default function EtabContrats() {
     startDate: formatDate(queryStartDate),
     endDate: formatDate(queryEndDate),
   }
-  const downloadContracts = () => {
-    const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string>
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    const formData = new FormData(event.currentTarget)
+    const fileExtension = formData.get("file-extension") as FileExtension
+    const format: FileExtension =
+      typeof fileExtension === "string" && extensions.includes(fileExtension)
+        ? fileExtension
+        : "ods"
+
+    const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
     const correctedDates = formatCorrectedDates(lsContrats)
 
-    postContratsExport({
+    const newExportedContracts = await postContratsExport({
       companyName,
       correctedDates,
       employeesIds: queryEmployee ? [queryEmployee] : undefined,
       endDate: queryEndDate,
+      format,
       id: etabId,
       mergedPostesIds,
       motives: queryMotives,
@@ -176,6 +171,7 @@ export default function EtabContrats() {
       siret,
       startDate: queryStartDate,
     })
+    setExportedContracts(newExportedContracts)
   }
   const warningList = () => {
     return (
@@ -256,20 +252,37 @@ export default function EtabContrats() {
         </Button>
       </div>
       <modal.Component title="Exporter les contrats">
-        <p>Vous pouvez exporter les contrats au format tableur LibreOffice (.ods).</p>
+        <p>
+          Vous pouvez exporter les contrats au format tableur (Excel, LibreOffice ou CSV).
+        </p>
         <p>
           Tous les filtres sauvegardés, les fusions de postes et les corrections de date
           seront pris en compte.
         </p>
-        <Button onClick={() => downloadContracts()}>Télécharger</Button>
-        <p className="fr-mb-0 fr-mt-2w italic">
+        <form onSubmit={handleSubmit}>
+          <RadioButtons
+            legend="Sélectionnez le format de fichier :"
+            name="file-extension"
+            options={radioBtnOptions}
+          />
+          <Button type="submit">Télécharger</Button>
+        </form>
+        <p className="fr-mt-2w italic">
           ⚠️ Si vous exportez un gros volume de contrats, le téléchargement peut durer
           plusieurs secondes.
         </p>
+        {isAppError(exportedContracts) && (
+          <Alert
+            className="fr-mb-2w"
+            severity="error"
+            title={exportedContracts.messageFr}
+            description={errorDescription(exportedContracts)}
+          />
+        )}
       </modal.Component>
       <hr />
       <p>Vous pouvez corriger les dates d'après vos observations.</p>
-      <div className="fr-px-3w fr-py-2w fr-mb-2w bg-bg-alt-greyyyy border border-solid border-bd-default-grey">
+      <div className="fr-px-3w fr-py-2w fr-mb-2w border border-solid border-bd-default-grey">
         <h3 className="fr-text--md fr-mb-2w">Légende des statuts de date</h3>
         <ul className="fr-my-0">
           <li className="flex flex-col md:flex-row">
@@ -300,7 +313,7 @@ export default function EtabContrats() {
           className="fr-mb-2w"
           severity="error"
           title={contratsData.messageFr}
-          description={`Erreur ${contratsData.status}`}
+          description={errorDescription(contratsData)}
         />
       ) : contratsData.contrats.length > 0 ? (
         <ContratsTable
@@ -348,9 +361,15 @@ export default function EtabContrats() {
   )
 }
 
-function ContratsTable({ contrats, meta }: { contrats: EtuContrat[]; meta: MetaData }) {
+function ContratsTable({
+  contrats,
+  meta,
+}: {
+  contrats: EtuContrat[]
+  meta: PaginationMetaData
+}) {
   const [searchParams] = useSearchParams()
-  const { siret } = useLoaderData() as CarenceContratsLoader
+  const { siret } = useLoaderData<typeof loader>()
 
   const initialContratsDatesState = contrats.map((contrat) => {
     const savedContratsDates = ls.get(`contrats.${siret}`) as Record<string, string>

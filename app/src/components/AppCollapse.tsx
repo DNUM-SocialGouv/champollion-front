@@ -45,7 +45,7 @@ export default function AppCollapse({
       </div>
 
       <Button
-        className={className}
+        className={`-ml-3 ${className}`}
         iconId="fr-icon-arrow-down-s-line"
         iconPosition="right"
         onClick={onExtendButtonClick}

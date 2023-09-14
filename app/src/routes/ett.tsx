@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
-import { Link, redirect, useLoaderData } from "react-router-dom"
+import { Link, redirect } from "react-router-dom"
+import { useLoaderData } from "react-router-typesafe"
 import type { LoaderFunctionArgs } from "react-router-dom"
 
 import {
@@ -8,8 +9,7 @@ import {
   getContratsEtt,
   getEffectifsLast,
 } from "../api"
-import type { EtablissementInfo, EttContrat, LastEffectif, MetaData } from "../api/types"
-import type { AppError } from "../helpers/errors"
+import type { EttContrat, PaginationMetaData } from "../api/types"
 import { errorWording, isAppError } from "../helpers/errors"
 import { formatDate } from "../helpers/format"
 
@@ -20,9 +20,7 @@ import EtabBanner from "../components/EtabBanner"
 import EtabInfo from "../components/EtabInfo"
 import AppTable from "../components/AppTable"
 
-export async function loader({
-  params,
-}: LoaderFunctionArgs): Promise<Response | ETTLoader> {
+export async function loader({ params }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
   const page = params.page && Number(params.page) ? Number(params.page) : 1
 
@@ -59,20 +57,6 @@ export async function loader({
   }
 }
 
-type ETTLoader = {
-  info: EtablissementInfo | AppError
-  lastEffectif: LastEffectif | AppError
-  page: number
-  raisonSociale: string
-  siret: string
-  data:
-    | AppError
-    | {
-        contrats: EttContrat[]
-        meta: MetaData
-      }
-}
-
 type Column = "poste" | "etu" | "employee" | "startDate" | "endDate" | "motive"
 
 type ContratsHeader = {
@@ -101,7 +85,8 @@ type FormattedContrat = {
 }
 
 export default function ETT() {
-  const { data, info, lastEffectif, raisonSociale, siret } = useLoaderData() as ETTLoader
+  const { data, info, lastEffectif, raisonSociale, siret } =
+    useLoaderData<typeof loader>()
 
   return (
     <div className="flex w-full flex-col">
@@ -146,8 +131,14 @@ export default function ETT() {
   )
 }
 
-function ETTContrats({ contrats, meta }: { contrats: EttContrat[]; meta: MetaData }) {
-  const { page, siret } = useLoaderData() as ETTLoader
+function ETTContrats({
+  contrats,
+  meta,
+}: {
+  contrats: EttContrat[]
+  meta: PaginationMetaData
+}) {
+  const { page, siret } = useLoaderData<typeof loader>()
 
   const formatContrats = (items: EttContrat[]) =>
     items.map((contrat) => {

@@ -7,3 +7,6 @@ node_modules/*
 
 # dsfr
 /public/dsfr/
+
+# Ignore all markdown files:
+**/*.md

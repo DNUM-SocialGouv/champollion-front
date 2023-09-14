@@ -1,14 +1,21 @@
 import ls from "localstorage-slim"
-import { type LoaderFunctionArgs, useLoaderData, useSearchParams } from "react-router-dom"
+import {
+  type LoaderFunctionArgs,
+  useSearchParams,
+  useNavigation,
+  useAsyncValue,
+} from "react-router-dom"
+import { defer, useLoaderData } from "react-router-typesafe"
 import { Fragment } from "react"
 
 import {
   getCarencesIdcc,
+  getEtablissementsDefaultPeriod,
   getEtablissementsType,
   postCarences,
   postPostes,
 } from "../../api"
-import type { EtablissementPoste, IDCC, Infractions } from "../../api/types"
+import type { IDCC, Infractions } from "../../api/types"
 import type { FormattedInfraction, FormattedCarenceContract } from "../../helpers/carence"
 import {
   formatInfractions,
@@ -24,35 +31,25 @@ import {
   formatLocalOpenDays,
   getQueryAsNumberArray,
   getQueryAsString,
-  oneYearAgo,
-  today,
 } from "../../helpers/format"
-import type { AppError } from "../../helpers/errors"
 import { errorWording, isAppError } from "../../helpers/errors"
+import { getQueryDates } from "../../helpers/filters"
 import { initJobOptions } from "../../helpers/postes"
 
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
-import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Select } from "@codegouvfr/react-dsfr/Select"
 
-import AppRebound from "../../components/AppRebound"
-import AppTable from "../../components/AppTable"
-import type { Header } from "../../components/AppTable"
-import EtabFilters from "../../components/EtabFilters"
 import AppCollapse from "../../components/AppCollapse"
+import AppRebound from "../../components/AppRebound"
+import AppTable, { type Header } from "../../components/AppTable"
+import Deferring from "../../components/Deferring"
+import EtabFilters from "../../components/EtabFilters"
 
-export async function loader({
-  params,
-  request,
-}: LoaderFunctionArgs): Promise<EtabCarenceLoader> {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
-  const queryStartDate = getQueryAsString(searchParams, "debut") || oneYearAgo
-  const queryEndDate = getQueryAsString(searchParams, "fin") || today
-  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
-  const queryLegislation = getQueryAsString(searchParams, "legislation") || "droitCommun"
 
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
@@ -64,6 +61,14 @@ export async function loader({
       statusText: etabType.messageFr ?? errorWording.etab,
     })
   }
+  const etabDefaultPeriod = await getEtablissementsDefaultPeriod(etabType.id)
+
+  const { queryStartDate, queryEndDate } = getQueryDates({
+    etabDefaultPeriod,
+    searchParams,
+  })
+  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
+  const queryLegislation = getQueryAsString(searchParams, "legislation") || "droitCommun"
 
   const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
   const formattedMergesIds = formatLocalMerges(localMergesIds)
@@ -71,7 +76,9 @@ export async function loader({
   const formattedOpenDays = formatLocalOpenDays(openDays)
 
   const postes = await postPostes(etabType.id, formattedMergesIds)
-  const infractions = await postCarences({
+
+  const deferredCallsController = new AbortController()
+  const infractions = postCarences({
     id: etabType.id,
     startDate: queryStartDate,
     endDate: queryEndDate,
@@ -79,27 +86,21 @@ export async function loader({
     mergedPostesIds: formattedMergesIds,
     openDaysCodes: formattedOpenDays,
     postesIds: queryJobs,
+    signal: deferredCallsController.signal,
   })
 
   return {
+    deferredCalls: defer({
+      infractions,
+    }),
+    deferredCallsController,
     idccData,
-    infractions,
     legislation: queryLegislation,
     postes,
     queryEndDate,
     queryJobs,
     queryStartDate,
   }
-}
-
-type EtabCarenceLoader = {
-  idccData: Record<string, IDCC> | AppError
-  infractions: Infractions | AppError
-  legislation: string
-  postes: AppError | EtablissementPoste[]
-  queryEndDate: string
-  queryJobs: number[]
-  queryStartDate: string
 }
 
 const headers = [
@@ -109,19 +110,24 @@ const headers = [
   { key: "delay", label: "Délai de carence", width: "10%" },
   { key: "nextPossibleDate", label: "Date de prochain contrat possible", width: "15%" },
   { key: "motive", label: "Motif de recours", width: "20%" },
-  { key: "contractType", label: "Nature de contrat", width: "10%" },
+  { key: "nature", label: "Nature de contrat", width: "10%" },
 ] as Header<FormattedCarenceContract>[]
 
 export default function EtabCarence() {
   const {
+    deferredCalls,
+    deferredCallsController,
     idccData,
-    infractions,
     legislation,
     postes,
     queryJobs,
     queryStartDate,
     queryEndDate,
-  } = useLoaderData() as EtabCarenceLoader
+  } = useLoaderData<typeof loader>()
+  const navigation = useNavigation()
+  if (navigation.state === "loading") {
+    deferredCallsController.abort()
+  }
 
   const jobOptions = initJobOptions(postes)
 
@@ -179,20 +185,13 @@ export default function EtabCarence() {
         </modal.Component>
 
         <hr />
-        {isAppError(infractions) ? (
-          <Alert
-            className="fr-mb-2w"
-            severity="error"
-            title={infractions.messageFr}
-            description={`Erreur ${infractions.status}`}
-          />
-        ) : (
+        <Deferring deferredPromise={deferredCalls.data.infractions}>
           <EtabCarenceInfraction
-            defaultData={infractions}
             defaultLegislation={legislation}
             legislationData={legislationData}
           />
-        )}
+        </Deferring>
+
         <h2 className="fr-text--xl fr-mb-1w fr-mt-3w">Actions</h2>
         <hr />
         <div className="fr-grid-row fr-grid-row--gutters">
@@ -200,7 +199,10 @@ export default function EtabCarence() {
             <AppRebound
               desc="Fusionner plusieurs libellés du même poste"
               linkProps={{
-                to: "../postes",
+                to: {
+                  pathname: "../postes",
+                  search: filtersQuery ? `?${filtersQuery}` : "",
+                },
               }}
               title="Fusion de postes"
             />
@@ -236,14 +238,21 @@ export default function EtabCarence() {
 }
 
 function EtabCarenceInfraction({
-  defaultData,
   defaultLegislation,
   legislationData,
 }: {
-  defaultData: Infractions
   defaultLegislation: string
   legislationData: Record<string, IDCC> | null
 }) {
+  const defaultData = useAsyncValue() as Infractions
+
+  if (!defaultData) {
+    console.error(
+      "EtabCarenceInfraction didn't receive async deferred data. It must be used in a <Await> component from react-router."
+    )
+    return null
+  }
+
   const formattedInfractions = formatInfractions(defaultData)
   const [searchParams, setSearchParams] = useSearchParams()
 

@@ -1,7 +1,7 @@
 import api from "../config"
-import type { Effectif, EffectifUnit, LastEffectif } from "../types"
+import type { Effectif, EffectifUnit, IndicatorMetaData, LastEffectif } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
-import { motivesCodeDict } from "../../helpers/contrats"
+import { motivesCodeDict } from "../../helpers/filters"
 
 type EffectifsParams = {
   id: number
@@ -12,6 +12,7 @@ type EffectifsParams = {
   openDaysCodes?: string[]
   postesIds?: number[]
   mergedPostesIds?: number[][]
+  signal?: AbortSignal
 }
 
 export const postEffectifs = async ({
@@ -23,6 +24,7 @@ export const postEffectifs = async ({
   postesIds,
   openDaysCodes,
   mergedPostesIds,
+  signal,
 }: EffectifsParams) => {
   try {
     let params = `etablissement_id=${id}&start_date=${startDate}&end_date=${endDate}&unit=${unit}`
@@ -51,10 +53,17 @@ export const postEffectifs = async ({
 
     let body = {}
     if (mergedPostesIds && mergedPostesIds?.length > 0)
-      body = Object.assign(body, { merged_poste_ids: mergedPostesIds })
+      body = { merged_poste_ids: mergedPostesIds }
 
-    const response = await api.post(`/effectifs/?${params}`, body)
-    return (response.data.data as Effectif[]) ?? handleUndefinedData("/effectifs")
+    let config = {}
+    if (signal) config = { signal }
+
+    const response = await api.post(`/effectifs/?${params}`, body, config)
+    const effectifs = response.data?.data as Effectif[]
+    const meta = response.data?.meta as IndicatorMetaData
+
+    if (effectifs && meta) return { effectifs, meta }
+    else return handleUndefinedData("/effectifs/")
   } catch (err) {
     return handleEndpointError(err)
   }

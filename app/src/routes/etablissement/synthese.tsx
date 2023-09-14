@@ -3,41 +3,51 @@ import {
   type ActionFunctionArgs,
   Form,
   type LoaderFunctionArgs,
-  useActionData,
-  useLoaderData,
+  Link,
+  useAsyncValue,
+  useNavigation,
 } from "react-router-dom"
-import { getEtablissementsInfo, getEtablissementsType, getEffectifsLast } from "../../api"
-import type { EtablissementInfo, LastEffectif } from "../../api/types"
-import { type AppError, errorWording, isAppError } from "../../helpers/errors"
-import { formatLocalOpenDays } from "../../helpers/format"
+import { defer, useActionData, useLoaderData } from "react-router-typesafe"
+
+import {
+  getEtablissementsInfo,
+  getEtablissementsType,
+  getEffectifsLast,
+  getIndicateur1,
+  postIndicateur2,
+  postIndicateur3,
+} from "../../api"
+import type { Indicator1, IndicatorMetaData } from "../../api/types"
+import { errorWording, isAppError } from "../../helpers/errors"
+import {
+  DayCode,
+  formatDate,
+  formatLocalMerges,
+  formatLocalOpenDays,
+} from "../../helpers/format"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 
+import ContractNatureIndicator from "../../components/ContractNatureIndicator"
+import Deferring from "../../components/Deferring"
 import EtabInfo from "../../components/EtabInfo"
+import JobProportionIndicator from "../../components/JobProportionIndicator"
 
-export async function action({
-  params,
-  request,
-}: ActionFunctionArgs): Promise<EtabSyntheseAction> {
+export async function action({ params, request }: ActionFunctionArgs) {
   const formData = await request.formData()
   const data = Object.fromEntries(formData)
   const openDays = Object.keys(data)
     .filter((key) => key.includes("open-day"))
     .map((key) => data[key])
   ls.set(`etab.${params.siret}.openDays`, openDays)
-  return { state: "success", stateRelatedMessage: "Sauvegardé" }
+  const state: CheckboxState = "success"
+
+  return { state: state, stateRelatedMessage: "Sauvegardé" }
 }
 
-type EtabSyntheseAction = {
-  state: "success" | "error" | "default" | undefined
-  stateRelatedMessage: string
-}
-
-export async function loader({
-  params,
-}: LoaderFunctionArgs): Promise<EtabSyntheseLoader> {
+export async function loader({ params }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
 
@@ -52,27 +62,65 @@ export async function loader({
 
   const localOpenDays = ls.get(`etab.${params.siret}.openDays`)
   const savedOpenDaysCodes = formatLocalOpenDays(localOpenDays)
+  const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
+  const formattedMergesIds = formatLocalMerges(localMergesIds)
 
   const [info, lastEffectif] = await Promise.all([
     getEtablissementsInfo(etabId),
     getEffectifsLast(etabId),
   ])
-  return { info, lastEffectif, savedOpenDaysCodes, siret }
+
+  // AbortController to abort all deferred calls on route change
+  const deferredCallsController = new AbortController()
+
+  const headcountIndicator = getIndicateur1({
+    id: etabId,
+    signal: deferredCallsController.signal,
+  })
+  const contractNatureIndicator = postIndicateur2({
+    id: etabId,
+    openDaysCodes: savedOpenDaysCodes,
+    signal: deferredCallsController.signal,
+  })
+  const jobProportionIndicator = postIndicateur3({
+    id: etabId,
+    openDaysCodes: savedOpenDaysCodes,
+    mergedPostesIds: formattedMergesIds,
+    signal: deferredCallsController.signal,
+  })
+
+  return {
+    deferredCalls: defer({
+      contractNatureIndicator,
+      headcountIndicator,
+      jobProportionIndicator,
+    }),
+    deferredCallsController,
+    info,
+    lastEffectif,
+    savedOpenDaysCodes,
+    siret,
+  }
 }
 
-type EtabSyntheseLoader = {
-  info: EtablissementInfo | AppError
-  lastEffectif: LastEffectif | AppError
-  savedOpenDaysCodes: string[] | undefined
-  siret: string
-}
+type CheckboxState = "success" | "error" | "default"
 
 export default function EtabSynthese() {
-  const { info, lastEffectif, savedOpenDaysCodes, siret } =
-    useLoaderData() as EtabSyntheseLoader
-  const checkboxState = useActionData() as EtabSyntheseAction
+  const {
+    deferredCalls,
+    deferredCallsController,
+    info,
+    lastEffectif,
+    savedOpenDaysCodes,
+    siret,
+  } = useLoaderData<typeof loader>()
+  const checkboxState = useActionData<typeof action>()
+  const navigation = useNavigation()
+  if (navigation.state === "loading") {
+    deferredCallsController.abort()
+  }
 
-  const initialOpenDays = [
+  const initialOpenDays: Array<{ code: DayCode; label: string; checked: boolean }> = [
     { code: "1", label: "Lundi", checked: true },
     { code: "2", label: "Mardi", checked: true },
     { code: "3", label: "Mercredi", checked: true },
@@ -118,7 +166,7 @@ export default function EtabSynthese() {
         />
       )}
       <div className="fr-py-3w flex w-full flex-col">
-        <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Jours d'ouverture</h2>
+        <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Modifier les jours d'ouverture</h2>
         <hr />
         <Form className="flex flex-col" method="post">
           <p>
@@ -138,7 +186,113 @@ export default function EtabSynthese() {
             Sauvegarder
           </Button>
         </Form>
+        <h2 className="fr-text--xl fr-mt-2w fr-mb-1w">Chiffres clés</h2>
+        <hr />
+        <h3 className="fr-text--md underline underline-offset-4">Effectifs</h3>
+        <Deferring deferredPromise={deferredCalls.data.headcountIndicator}>
+          <HeadcountIndicator />
+        </Deferring>
+
+        <h3 className="fr-text--md underline underline-offset-4">
+          Natures de contrat les plus utilisées
+        </h3>
+        <Deferring deferredPromise={deferredCalls.data.contractNatureIndicator}>
+          <ContractNatureIndicator />
+        </Deferring>
+
+        <h3 className="fr-text--md underline underline-offset-4">
+          Postes les plus occupés
+        </h3>
+
+        <Deferring deferredPromise={deferredCalls.data.jobProportionIndicator}>
+          <JobProportionIndicator showLearnMore />
+        </Deferring>
       </div>
+    </>
+  )
+}
+
+type HeadcountIndicatorDeferred = {
+  headcount: Indicator1
+  meta: IndicatorMetaData
+}
+
+function HeadcountIndicator() {
+  const deferredData = useAsyncValue() as HeadcountIndicatorDeferred
+  if (!deferredData) {
+    console.error(
+      "HeadcountIndicator must be used in a <Await> component but didn't receive async data"
+    )
+    return null
+  }
+
+  const { headcount, meta } = deferredData
+  const data = [
+    {
+      key: "cdi",
+      label: "CDI",
+      value: headcount.nbCdi,
+      classes:
+        "bg-[var(--artwork-minor-blue-cumulus)] border border-solid border-bd-default-blue-cumulus", // add border to display a thin line when count is 0
+    },
+    {
+      key: "cdd",
+      label: "CDD",
+      value: headcount.nbCdd,
+      classes:
+        "bg-diagonal-purple-glycine border border-solid border-bd-default-purple-glycine",
+    },
+    {
+      key: "ctt",
+      label: "CTT (intérim)",
+      value: headcount.nbCtt,
+      classes: "bg-vertical-pink-tuile border border-solid border-bd-default-pink-tuile",
+    },
+  ]
+  const maxValue = Math.max(...data.map((item) => item.value))
+
+  const start = formatDate(meta.startDate, "MMMM YYYY")
+  const end = formatDate(meta.endDate, "MMMM YYYY")
+  const countCdi = `${headcount.nbCdi.toLocaleString("fr-FR")} CDI`
+  return (
+    <>
+      <h4 className="fr-text--md">
+        Nombre de contrats en vigueur entre {start} et {end} :
+      </h4>
+      <p></p>
+
+      <div className="fr-mb-2w flex h-40 items-baseline">
+        {data.map((item) => {
+          const barHeight = (item.value / maxValue) * 100 // Scale the bar heights
+          const barStyle = {
+            height: `${barHeight}%`,
+          }
+
+          return (
+            <div key={item.key} className="fr-mr-3w flex h-full items-baseline">
+              <div aria-hidden className={`w-6 ${item.classes}`} style={barStyle}></div>
+              <div className="fr-px-1w">
+                <span className="text-3xl font-bold">
+                  {item.value.toLocaleString("fr-FR")}{" "}
+                </span>
+                {item.label}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+      <h5 className="fr-text--md fr-mt-3w fr-mb-1v font-bold">Note de lecture</h5>
+      <p className="fr-text--sm fr-mb-1w">
+        De {start} à {end}, {countCdi} ont été en vigueur sur toute ou une partie de la
+        période.
+        <br />
+        En d'autres termes, de {start} à {end}, {countCdi} ont été effectifs.
+      </p>
+      <p className="fr-mt-2w">
+        <span className="fr-icon-arrow-right-line fr-icon--sm" aria-hidden="true"></span>
+        Pour en savoir plus et consulter l'histogramme des effectifs, consultez la page{" "}
+        <Link to={"recours-abusif"}>Recours abusif</Link>.
+      </p>
     </>
   )
 }

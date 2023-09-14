@@ -1,7 +1,7 @@
-import { useLoaderData } from "react-router-dom"
+import { useLoaderData } from "react-router-typesafe"
 
 import { getLegalNotice } from "../api"
-import { type AppError, isAppError } from "../helpers/errors"
+import { isAppError } from "../helpers/errors"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 
@@ -12,7 +12,7 @@ export async function loader() {
 }
 
 export default function LegalNotice() {
-  const legalNotice = useLoaderData() as string | AppError
+  const legalNotice = useLoaderData<typeof loader>()
 
   return (
     <>

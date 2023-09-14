@@ -1,11 +1,10 @@
 import { Fragment, useState } from "react"
-import { Form, Link, redirect, useActionData, useLoaderData } from "react-router-dom"
+import { Form, Link, redirect } from "react-router-dom"
 import type { ActionFunctionArgs } from "react-router-dom"
+import { useActionData, useLoaderData } from "react-router-typesafe"
 import ls from "localstorage-slim"
 
 import { getEtablissementsType, getExternalLinks } from "../api"
-import type { ExternalLink } from "../api/types"
-import type { AppError } from "../helpers/errors"
 import { isAppError } from "../helpers/errors"
 import { releaseNotes } from "../helpers/news"
 
@@ -18,8 +17,8 @@ import artworkMail from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/digital/
 import artworkCommunity from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/leisure/community.svg"
 import artworkPassport from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/document/passport.svg"
 
-import AppPictoTile from "../components/AppPictoTile"
 import AppCollapse from "../components/AppCollapse"
+import AppPictoTile from "../components/AppPictoTile"
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData()
@@ -39,7 +38,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-export async function loader(): Promise<ExternalLink[]> {
+export async function loader() {
   const externalLinks = await getExternalLinks()
 
   if (!isAppError(externalLinks)) {
@@ -50,8 +49,8 @@ export async function loader(): Promise<ExternalLink[]> {
 }
 
 export default function Index() {
-  const error = useActionData() as AppError
-  const externalLinks = useLoaderData() as ExternalLink[]
+  const error = useActionData<typeof action>()
+  const externalLinks = useLoaderData<typeof loader>()
   const [input, setInput] = useState("")
 
   const noticeBugs = () => (
@@ -101,7 +100,7 @@ export default function Index() {
                   Rechercher
                 </Button>
               </Form>
-              {!!error && (
+              {Boolean(error) && isAppError(error) && (
                 <Alert
                   className="fr-mb-2w"
                   description={error.messageFr}

@@ -27,14 +27,15 @@ export default function EtabInfo({ info, lastEffectif, siret }: EtabInfoProps) {
       value: address,
     },
     {
-      label: "Dernier effectif déclaré (CDD et CDI)",
+      label: "Date de dernière déclaration connue",
       value:
         lastEffectif !== null
-          ? `${lastEffectif.value} contrats (DSN ${formatDate(
-              lastEffectif.date,
-              "MMM YYYY"
-            )})`
+          ? `DSN ${formatDate(lastEffectif.date, "MMM YYYY")}`
           : "Inconnu",
+    },
+    {
+      label: "Dernier effectif déclaré (CDD et CDI)",
+      value: lastEffectif !== null ? `${lastEffectif.value} contrats` : "Inconnu",
     },
     {
       label: "Convention collective",
@@ -49,12 +50,14 @@ export default function EtabInfo({ info, lastEffectif, siret }: EtabInfoProps) {
     },
   ]
 
+  const columnLimitIndex = 3
+
   return (
     <>
       <div className="fr-p-2w border border-solid border-bd-default-grey bg-bg-alt-grey">
         <div className="flex flex-col lg:flex-row">
           <div className="lg:w-1/2">
-            {etabInfoArr.slice(0, 2).map((info) => (
+            {etabInfoArr.slice(0, columnLimitIndex).map((info) => (
               <div className="flex" key={info.label}>
                 <p className="fr-text--xs w-1/3 uppercase text-tx-mention-grey">{`${info.label}\u00A0:`}</p>
                 <p className="fr-pl-1w w-2/3 ">{info.value}</p>
@@ -62,7 +65,7 @@ export default function EtabInfo({ info, lastEffectif, siret }: EtabInfoProps) {
             ))}
           </div>
           <div className="lg:w-1/2">
-            {etabInfoArr.slice(2).map((info) => (
+            {etabInfoArr.slice(columnLimitIndex).map((info) => (
               <div className="flex" key={info.label}>
                 <p className="fr-text--xs w-1/3 uppercase text-tx-mention-grey">{`${info.label}\u00A0:`}</p>
                 <p className="fr-pl-1w w-2/3 ">{info.value}</p>

@@ -1,10 +1,18 @@
-export type MetaData = {
+export type PaginationMetaData = {
   currentPage: number | null
   nextPage: number | null
   perPage: number | null
   prevPage: number | null
   totalPages: number
   totalCount: number
+}
+
+export type IndicatorMetaData = {
+  startDate: string | null
+  endDate: string | null
+  firstValidDate: string | null
+  lastValidDate: string | null
+  count?: number | null
 }
 
 export type EtablissementType = {
@@ -21,6 +29,14 @@ export type EtablissementInfo = {
   commune: string
   complementAdresse?: string
   libelleConventionCollective?: string
+}
+
+export type EtablissementDefaultPeriod = {
+  startDate: string | null
+  endDate: string | null
+  firstValidDate: string | null
+  lastValidDate: string | null
+  etablissementId: number
 }
 
 export type MergedCode = 0 | 1
@@ -174,3 +190,44 @@ export type IDCC = {
     details?: string[]
   }
 }
+
+export type FileExtension = "ods" | "xlsx" | "csv"
+
+export type Indicator1 = {
+  nbCdi: number
+  nbCdd: number
+  nbCtt: number
+}
+
+export type Indicator2 = Record<
+  "cdi" | "cdd" | "ctt",
+  {
+    absNb: number
+    relNb: number
+  }
+>
+
+export type Indicator3 = Record<
+  number | string,
+  {
+    libellePoste: string | null
+    merged: number
+    absNb: number
+    relNb: number
+  }
+>
+
+export type Indicator5 = Record<
+  number | string,
+  {
+    libellePoste: string | null
+    merged: number
+    absNbCdi: number
+    absNbCtt: number
+    absNbCdd: number
+    absNbTot: number
+    relNbCdi: number
+    relNbCdd: number
+    relNbCtt: number
+  }
+>
