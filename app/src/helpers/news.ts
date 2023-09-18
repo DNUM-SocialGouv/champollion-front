@@ -20,6 +20,76 @@ type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
   {
+    date: "2023-09-18",
+    news: [
+      {
+        category: "Page de synthèse",
+        list: [
+          {
+            type: "feat",
+            desc: "Chiffres clés : nombre de contrats par nature (CDI, CDD, CTT)",
+          },
+          {
+            type: "feat",
+            desc: "Chiffres clés : répartition des jours travaillés par nature de contrat",
+          },
+          {
+            type: "feat",
+            desc: "Chiffres clés : répartition des jours travaillés par libellés de poste",
+          },
+        ],
+      },
+      {
+        category: "Liste des contrats",
+        list: [
+          {
+            type: "feat",
+            desc: "Export des contrats au format Excel et CSV (en plus de LibreOffice).",
+          },
+          {
+            type: "ezwin",
+            desc: "Dans l'export tableur, les dates sont au format AAAA-MM-JJ pour faciliter le tri par date.",
+          },
+        ],
+      },
+      {
+        category: "Postes",
+        list: [
+          {
+            type: "feat",
+            desc: "Chiffres clés : répartition des jours travaillés par libellés de poste (avec possibilité de filtrer les natures de contrats, motifs de recours, dates).",
+          },
+          {
+            type: "ezwin",
+            desc: "Dans les listes déroulantes pour sélectionner les fusions de poste, possibilité de masquer les libellés déjà fusionnés ailleurs.",
+          },
+        ],
+      },
+      {
+        category: "Pages d'un établissement",
+        list: [
+          {
+            type: "feat",
+            desc: "La période par défaut sélectionnée dans les filtres est la dernière année glissante jusqu'à la dernière déclaration DSN de l'établissement connue sur cet outil.",
+          },
+        ],
+      },
+      {
+        category: "Recours abusif",
+        list: [
+          {
+            type: "feat",
+            desc: "Chiffres clés : répartition des jours travaillés par nature de contrat (avec possibilité de filtrer les postes, motifs de recours, dates).",
+          },
+          {
+            type: "fix",
+            desc: "Pour éviter les confusions, il est possible de sélectionner des dates uniquement sur les périodes où l'outil a connaissance de la déclaration DSN mensuelle.",
+          },
+        ],
+      },
+    ],
+  },
+  {
     date: "2023-08-04",
     news: [
       {
