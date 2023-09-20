@@ -1,10 +1,8 @@
-FROM node:alpine as builder
+FROM node:18.17-alpine as builder
 
 ARG HTTP_PROXY
 ENV HTTP_PROXY $HTTP_PROXY
-
-ARG HTTPS_PROXY
-ENV HTTPS_PROXY $HTTPS_PROXY
+ENV HTTPS_PROXY $HTTP_PROXY
 
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL $VITE_API_BASE_URL
@@ -17,10 +15,12 @@ WORKDIR /app
 COPY . .
 RUN yarn && yarn build
 
-FROM nginx:stable-alpine
+FROM nginx:1.24-alpine-slim
+
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY default.conf.template /etc/nginx/conf.d
 COPY ./docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh
+
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
