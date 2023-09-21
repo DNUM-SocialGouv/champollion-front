@@ -4,6 +4,7 @@ import {
   useSearchParams,
   useNavigation,
   useAsyncValue,
+  Link,
 } from "react-router-dom"
 import { defer, useLoaderData } from "react-router-typesafe"
 import { Fragment } from "react"
@@ -15,7 +16,7 @@ import {
   postCarences,
   postPostes,
 } from "../../api"
-import type { IDCC, Infractions } from "../../api/types"
+import type { IDCC, Infractions, MetaCarences } from "../../api/types"
 import type { FormattedInfraction, FormattedCarenceContract } from "../../helpers/carence"
 import {
   formatInfractions,
@@ -29,9 +30,11 @@ import {
   formatDate,
   formatLocalMerges,
   formatLocalOpenDays,
+  formatNumber,
   getQueryAsNumberArray,
   getQueryAsString,
 } from "../../helpers/format"
+import { JobMergedBadge } from "../../helpers/contrats"
 import { errorWording, isAppError } from "../../helpers/errors"
 import { getQueryDates } from "../../helpers/filters"
 import { initJobOptions } from "../../helpers/postes"
@@ -40,13 +43,20 @@ import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
+import { Notice } from "@codegouvfr/react-dsfr/Notice"
 import { Select } from "@codegouvfr/react-dsfr/Select"
 
 import AppCollapse from "../../components/AppCollapse"
+import AppIndicator from "../../components/AppIndicator"
 import AppRebound from "../../components/AppRebound"
 import AppTable, { type Header } from "../../components/AppTable"
+import ContractsPieChart, {
+  PieSlice,
+  groupSmallData,
+} from "../../components/ContractsPieChart"
 import Deferring from "../../components/Deferring"
 import EtabFilters from "../../components/EtabFilters"
+import InfractionRatioIndicator from "../../components/InfractionRatioIndicator"
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
@@ -78,7 +88,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const postes = await postPostes(etabType.id, formattedMergesIds)
 
   const deferredCallsController = new AbortController()
-  const infractions = postCarences({
+  const carences = postCarences({
     id: etabType.id,
     startDate: queryStartDate,
     endDate: queryEndDate,
@@ -91,11 +101,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   return {
     deferredCalls: defer({
-      infractions,
+      carences,
     }),
     deferredCallsController,
     idccData,
-    legislation: queryLegislation,
+    legislationCode: queryLegislation,
     postes,
     queryEndDate,
     queryJobs,
@@ -118,7 +128,7 @@ export default function EtabCarence() {
     deferredCalls,
     deferredCallsController,
     idccData,
-    legislation,
+    legislationCode,
     postes,
     queryJobs,
     queryStartDate,
@@ -128,11 +138,9 @@ export default function EtabCarence() {
   if (navigation.state === "loading") {
     deferredCallsController.abort()
   }
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const jobOptions = initJobOptions(postes)
-
-  let legislationData = null
-  if (!isAppError(idccData)) legislationData = idccData
 
   const carenceMotives = [2]
   const carenceNatures = ["02", "03"]
@@ -149,6 +157,69 @@ export default function EtabCarence() {
     id: "export-modal",
     isOpenedByDefault: false,
   })
+
+  const noticeCorrectData = () => (
+    <>
+      Les calculs prennent en compte des paramètres que vous pouvez corriger d'après vos
+      constatations: les <Link to="../postes"> postes fusionnés</Link>, les{" "}
+      <Link to="../contrats">dates des contrats</Link> et les{" "}
+      <Link to="../">jours d'ouverture</Link>.
+    </>
+  )
+
+  let legislationData: Record<string, IDCC> | null = null
+  if (!isAppError(idccData)) legislationData = idccData
+
+  const initialLegislationOption =
+    legislationData &&
+    legislationOptions(legislationData).find((option) => option.value === legislationCode)
+
+  const selectedLegislationDetail =
+    legislationData &&
+    legislationDetails(legislationData).find((idcc) => idcc.key == legislationCode)
+
+  const detailElement = () => (
+    <div className="fr-p-2w fr-mb-2w rounded-2xl border border-solid border-bd-default-grey bg-bg-alt-grey">
+      <div>
+        <b>Nom de l'accord : </b> {selectedLegislationDetail?.fullTitle}
+      </div>
+      {selectedLegislationDetail?.idccDate && (
+        <div>
+          <b>Date de l'accord : </b>
+          {formatDate(selectedLegislationDetail.idccDate)}
+        </div>
+      )}
+      {selectedLegislationDetail?.idccExtensionDate && (
+        <div>
+          <b>Date de l'arrêté d'extension : </b>
+          {formatDate(selectedLegislationDetail.idccExtensionDate)}
+        </div>
+      )}
+      <div className="fr-mt-2w">
+        {selectedLegislationDetail?.description?.main}
+
+        {selectedLegislationDetail?.description?.details && (
+          <ul className="fr-my-0">
+            {selectedLegislationDetail.description.details.map((detail, index) => (
+              <li key={index}>{detail}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  )
+
+  const handleLegislationSelected = async (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const newKey = Number(event.target.value)
+    const newLegislationOption = legislationData
+      ? getLegislationOptionFromKey(newKey, legislationData)
+      : { value: "droitCommun" }
+    const legislationValue = newLegislationOption?.value
+    searchParams.set("legislation", legislationValue)
+    setSearchParams(searchParams)
+  }
 
   return (
     <>
@@ -181,15 +252,47 @@ export default function EtabCarence() {
         </div>
         <modal.Component title="Fonctionnalité d'export à venir">
           <p>La fonctionnalité d'export est en cours de développement.</p>
-          <p>Elle permettra de télécharger les tableaux d'infractions présumées.</p>
+          <p>Elle permettra de télécharger les tableaux d'infractions potentielles.</p>
         </modal.Component>
 
         <hr />
-        <Deferring deferredPromise={deferredCalls.data.infractions}>
-          <EtabCarenceInfraction
-            defaultLegislation={legislation}
-            legislationData={legislationData}
-          />
+        <Notice title={noticeCorrectData()} isClosable className="fr-mb-2w" />
+
+        {legislationData !== null && (
+          <>
+            <Select
+              className="md:w-3/4"
+              label="Accord de branche étendu"
+              hint="Code - Date de l'accord (Date de signature) - Mots clés"
+              nativeSelectProps={{
+                onChange: handleLegislationSelected,
+                value: initialLegislationOption?.key || "0",
+              }}
+            >
+              {legislationOptions(legislationData).map(({ key, label }) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </Select>
+
+            {selectedLegislationDetail &&
+              Object.keys(selectedLegislationDetail).length > 0 && (
+                <>
+                  <AppCollapse
+                    className="fr-mb-2w"
+                    label="Plus d'informations sur l'accord de branche"
+                    labelOpen="Moins d'informations sur l'accord de branche"
+                  >
+                    {detailElement()}
+                  </AppCollapse>
+                </>
+              )}
+          </>
+        )}
+
+        <Deferring deferredPromise={deferredCalls.data.carences}>
+          <EtabCarenceInfraction />
         </Deferring>
 
         <h2 className="fr-text--xl fr-mb-1w fr-mt-3w">Actions</h2>
@@ -237,14 +340,8 @@ export default function EtabCarence() {
   )
 }
 
-function EtabCarenceInfraction({
-  defaultLegislation,
-  legislationData,
-}: {
-  defaultLegislation: string
-  legislationData: Record<string, IDCC> | null
-}) {
-  const defaultData = useAsyncValue() as Infractions
+function EtabCarenceInfraction() {
+  const defaultData = useAsyncValue() as { infractions: Infractions; meta: MetaCarences }
 
   if (!defaultData) {
     console.error(
@@ -253,66 +350,23 @@ function EtabCarenceInfraction({
     return null
   }
 
-  const formattedInfractions = formatInfractions(defaultData)
-  const [searchParams, setSearchParams] = useSearchParams()
+  const { queryJobs, queryStartDate, queryEndDate } = useLoaderData<typeof loader>()
+
+  const formattedInfractions = formatInfractions(defaultData.infractions)
 
   const totalInfractions: number = formattedInfractions.reduce(
     (acc, current) => acc + current.count,
     0
   )
 
-  const initialLegislationOption =
-    legislationData &&
-    legislationOptions(legislationData).find(
-      (option) => option.value === defaultLegislation
-    )
-
-  const selectedLegislationDetail =
-    legislationData &&
-    legislationDetails(legislationData).find((idcc) => idcc.key == defaultLegislation)
-
-  const detailElement = () => (
-    <div className="fr-p-2w fr-mb-2w rounded-2xl border border-solid border-bd-default-grey bg-bg-alt-grey">
-      <div>
-        <b>Nom de l'accord : </b> {selectedLegislationDetail?.fullTitle}
-      </div>
-      {selectedLegislationDetail?.idccDate && (
-        <div>
-          <b>Date de l'accord : </b>
-          {formatDate(selectedLegislationDetail.idccDate)}
-        </div>
-      )}
-      {selectedLegislationDetail?.idccExtensionDate && (
-        <div>
-          <b>Date de l'arrêté d'extension : </b>
-          {formatDate(selectedLegislationDetail.idccExtensionDate)}
-        </div>
-      )}
-      <div className="fr-mt-2w">
-        {selectedLegislationDetail?.description?.main}
-
-        {selectedLegislationDetail?.description?.details && (
-          <ul className="fr-my-0">
-            {selectedLegislationDetail.description.details.map((detail, index) => (
-              <li key={index}>{detail}</li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
+  const pieData = groupSmallData(
+    Object.values(defaultData.infractions).map((job) => ({
+      name: job.libelle,
+      merged: job.merged,
+      value: job.count,
+      percent: job.ratio,
+    }))
   )
-
-  const handleLegislationSelected = async (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const newKey = Number(event.target.value)
-    const newLegislationOption = legislationData
-      ? getLegislationOptionFromKey(newKey, legislationData)
-      : { value: "droitCommun" }
-    const legislationValue = newLegislationOption?.value
-    searchParams.set("legislation", legislationValue)
-    setSearchParams(searchParams)
-  }
 
   const accordionLabel = (job: FormattedInfraction) => {
     return (
@@ -330,39 +384,36 @@ function EtabCarenceInfraction({
 
   return (
     <>
-      {legislationData !== null && (
-        <>
-          <Select
-            className="md:w-3/4"
-            label="Accord de branche étendu"
-            hint="Code - Date de l'accord (Date de signature) - Mots clés"
-            nativeSelectProps={{
-              onChange: handleLegislationSelected,
-              value: initialLegislationOption?.key || "0",
-            }}
-          >
-            {legislationOptions(legislationData).map(({ key, label }) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </Select>
+      <p>
+        <span className="font-bold">{totalInfractions} </span>infractions potentielles.
+      </p>
 
-          {selectedLegislationDetail &&
-            Object.keys(selectedLegislationDetail).length > 0 && (
-              <>
-                <AppCollapse
-                  className="fr-mb-2w"
-                  label="Plus d'informations sur l'accord de branche"
-                  labelOpen="Moins d'informations sur l'accord de branche"
-                >
-                  {detailElement()}
-                </AppCollapse>
-              </>
-            )}
+      {totalInfractions > 0 && (
+        <>
+          <h3 className="fr-text--md underline underline-offset-4">
+            Ratio de contrats en infractions potentielles
+          </h3>
+
+          <InfractionRatioIndicator
+            meta={defaultData.meta}
+            startDate={queryStartDate}
+            endDate={queryEndDate}
+            hasJobs={queryJobs.length > 0}
+          />
+
+          <h3 className="fr-text--md underline underline-offset-4">
+            Répartition par poste
+          </h3>
+
+          <DelayByJobIndicator
+            data={pieData}
+            startDate={queryStartDate}
+            endDate={queryEndDate}
+            hasJobs={queryJobs.length > 0}
+          />
         </>
       )}
-      <p>{totalInfractions} infractions potentielles.</p>
+
       <div className="fr-accordions-group">
         {formattedInfractions.map((infractionByJobTitle) => (
           <Accordion
@@ -390,5 +441,62 @@ function EtabCarenceInfraction({
         ))}
       </div>
     </>
+  )
+}
+
+type DelayByJobIndicatorProps = {
+  data: PieSlice[]
+  startDate: string
+  endDate: string
+  hasJobs: boolean
+}
+
+function DelayByJobIndicator({
+  data,
+  startDate,
+  endDate,
+  hasJobs,
+}: DelayByJobIndicatorProps) {
+  const start = formatDate(startDate, "MMMM YYYY")
+  const end = formatDate(endDate, "MMMM YYYY")
+  const selectedPostes = hasJobs ? " pour les libellés de poste sélectionnés," : ""
+
+  const firstJobShare = data[0].percent
+  const firstJobName = data[0].name
+
+  const title =
+    "Répartition des contrats en infraction potentielle aux délais de carence par libellé de poste :"
+  const subTitle = `Par souci de lisibilité, les parts inférieures à 2 % ne sont pas affichées, et regroupées sous le libellé "Autres".`
+
+  const readingNote = `
+    De ${start} à ${end},${selectedPostes} ${firstJobShare} % des contrats en infraction
+    potentielle avec un ou plusieurs délais de carence ont pour libellé de poste "
+    ${firstJobName}".
+  `
+
+  const headers = ["Libellé de poste", "Proportion des infractions potentielles"]
+  const tableData = data.map((job) => {
+    const jobName = (
+      <>
+        {job.name}
+        <JobMergedBadge merged={job.merged === 1} />
+      </>
+    )
+    const jobShare = formatNumber(job.percent) + " %"
+
+    return [jobName, jobShare]
+  })
+
+  return (
+    <AppIndicator
+      title={title}
+      subTitle={subTitle}
+      readingNote={readingNote}
+      table={{ headers, data: tableData }}
+    >
+      <div className="fr-mb-2w h-60 w-full">
+        <ContractsPieChart data={data} />
+      </div>
+    </AppIndicator>
   )
 }
