@@ -16,7 +16,7 @@ fileignoreconfig:
 - filename: app/src/helpers/carence.tsx
   checksum: 68161bf4d8d91747f6ee2be759a98239eec29ee0d294c0122aa3eb48c0aa195b
 - filename: app/src/helpers/contrats.tsx
-  checksum: 840cf1bd0b7c4ca80fe252b27a5fb95dc32863d7621b32deffd0160ad5fd6a6e
+  checksum: 8acf8f225326e590b8ad9578c24ae66c7d8b3b93401a510753653482786fa607
 - filename: app/src/helpers/effectifs.ts
   checksum: 19d893315ec9d917d778ea490c2c86d4ef3ab7d87ffddebe422807311a10bf94
 - filename: app/src/helpers/effectifs.tsx
