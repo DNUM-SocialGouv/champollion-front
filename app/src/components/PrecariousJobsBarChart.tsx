@@ -184,6 +184,7 @@ export default function PrecariousJobsBarChart({ data }: PrecariousJobsBarChartP
           />
 
           <Bar
+            minPointSize={2}
             dataKey="nbCddCtt"
             name="Jours travaillés en CDD et CTT"
             fill="#ffca00" // yellow moutarde from DSFR, same color for light and dark theme
@@ -197,6 +198,7 @@ export default function PrecariousJobsBarChart({ data }: PrecariousJobsBarChartP
             />
           </Bar>
           <Bar
+            minPointSize={2}
             dataKey="nbCdi"
             name="Jours travaillés en CDI"
             fill="var(--artwork-minor-blue-cumulus)"

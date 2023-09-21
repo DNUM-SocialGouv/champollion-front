@@ -1,5 +1,5 @@
 import api from "../config"
-import type { IDCC, Infractions } from "../types"
+import type { IDCC, Infractions, MetaCarences } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import { addArrayParams } from "../../helpers/format"
 
@@ -42,7 +42,11 @@ export const postCarences = async ({
     if (signal) config = { signal }
 
     const response = await api.post(`/carences/?${params}`, body, config)
-    return (response.data.data as Infractions) ?? handleUndefinedData("/effectifs")
+    const infractions = response.data.data as Infractions
+    const meta = response.data.meta as MetaCarences
+
+    if (infractions && meta) return { infractions, meta }
+    else handleUndefinedData("/carences")
   } catch (err) {
     return handleEndpointError(err)
   }
@@ -51,7 +55,10 @@ export const postCarences = async ({
 export const getCarencesIdcc = async () => {
   try {
     const response = await api.get(`/carences/idcc`)
-    return response.data.data as Record<string, IDCC>
+    return (
+      (response.data.data as Record<string, IDCC>) ??
+      handleUndefinedData("/carences/idcc")
+    )
   } catch (err) {
     return handleEndpointError(err)
   }

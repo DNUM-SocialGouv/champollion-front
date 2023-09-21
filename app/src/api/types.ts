@@ -164,13 +164,19 @@ export type Violation = {
 }
 
 export type JobInfraction = {
-  libelle: string
   count: number
+  libelle: string
   merged: MergedCode
+  ratio: number
   violations: { [key: string]: Violation }
 }
 
 export type Infractions = { [key: string]: JobInfraction }
+
+export type MetaCarences = {
+  nbTotContracts: number
+  nbTotIllegalContracts: number
+}
 
 export type ExternalLink = {
   key: string

@@ -30,6 +30,7 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 
+import AppIndicator from "../../components/AppIndicator"
 import ContractNatureIndicator from "../../components/ContractNatureIndicator"
 import Deferring from "../../components/Deferring"
 import EtabInfo from "../../components/EtabInfo"
@@ -254,13 +255,24 @@ function HeadcountIndicator() {
   const start = formatDate(meta.startDate, "MMMM YYYY")
   const end = formatDate(meta.endDate, "MMMM YYYY")
   const countCdi = `${headcount.nbCdi.toLocaleString("fr-FR")} CDI`
-  return (
-    <>
-      <h4 className="fr-text--md">
-        Nombre de contrats en vigueur entre {start} et {end} :
-      </h4>
-      <p></p>
 
+  const title = `Nombre de contrats en vigueur entre ${start} et ${end} :`
+  const readingNote = `De ${start} à ${end}, ${countCdi} ont été en vigueur sur toute ou une partie de la période.`
+  const subReadingNote = `En d'autres termes, de ${start} à ${end}, ${countCdi} ont été effectifs.`
+  const learnMore = (
+    <p className="fr-mt-2w">
+      <span className="fr-icon-arrow-right-line fr-icon--sm" aria-hidden="true"></span>
+      Pour en savoir plus et consulter l'histogramme des effectifs, consultez la page{" "}
+      <Link to={"recours-abusif"}>Recours abusif</Link>.
+    </p>
+  )
+  return (
+    <AppIndicator
+      title={title}
+      readingNote={readingNote}
+      subReadingNote={subReadingNote}
+      bottomEl={learnMore}
+    >
       <div className="fr-mb-2w flex h-40 items-baseline">
         {data.map((item) => {
           const barHeight = (item.value / maxValue) * 100 // Scale the bar heights
@@ -281,18 +293,6 @@ function HeadcountIndicator() {
           )
         })}
       </div>
-      <h5 className="fr-text--md fr-mt-3w fr-mb-1v font-bold">Note de lecture</h5>
-      <p className="fr-text--sm fr-mb-1w">
-        De {start} à {end}, {countCdi} ont été en vigueur sur toute ou une partie de la
-        période.
-        <br />
-        En d'autres termes, de {start} à {end}, {countCdi} ont été effectifs.
-      </p>
-      <p className="fr-mt-2w">
-        <span className="fr-icon-arrow-right-line fr-icon--sm" aria-hidden="true"></span>
-        Pour en savoir plus et consulter l'histogramme des effectifs, consultez la page{" "}
-        <Link to={"recours-abusif"}>Recours abusif</Link>.
-      </p>
-    </>
+    </AppIndicator>
   )
 }
