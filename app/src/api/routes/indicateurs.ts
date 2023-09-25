@@ -6,7 +6,9 @@ import type {
   Indicator3,
   Indicator5,
   IndicatorMetaData,
+  ModificationsBody,
 } from "../types"
+import type { CorrectedDates } from "../../helpers/contrats"
 import { addArrayParams } from "../../helpers/format"
 import { motivesCodeDict } from "../../helpers/filters"
 
@@ -14,6 +16,7 @@ type Indicateur1Params = {
   id: number
   startDate?: string
   endDate?: string
+  correctedDates?: CorrectedDates
   signal?: AbortSignal
 }
 
@@ -31,10 +34,11 @@ type Indicateur3Params = Indicateur1Params & Omit<Filters, "postesIds">
 
 type Indicateur5Params = Indicateur1Params & Omit<Filters, "natures" | "postesIds">
 
-export async function getIndicateur1({
+export async function postIndicateur1({
   id,
   startDate,
   endDate,
+  correctedDates,
   signal,
 }: Indicateur1Params) {
   try {
@@ -45,7 +49,10 @@ export async function getIndicateur1({
     let config = {}
     if (signal) config = { signal }
 
-    const response = await api.get(`indicateurs/1?${params}`, config)
+    const body: ModificationsBody = {}
+    if (correctedDates) body.corrected_dates = correctedDates
+
+    const response = await api.post(`indicateurs/1?${params}`, body, config)
     const headcount = response.data?.data as Indicator1
     const meta = response.data?.meta as IndicatorMetaData
 
@@ -60,6 +67,7 @@ export async function postIndicateur2({
   id,
   startDate,
   endDate,
+  correctedDates,
   mergedPostesIds,
   motives,
   postesIds,
@@ -83,9 +91,10 @@ export async function postIndicateur2({
     params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
     params = addArrayParams(params, postesIds, "poste_ids")
 
-    let body = {}
+    const body: ModificationsBody = {}
     if (mergedPostesIds && mergedPostesIds?.length > 0)
-      body = { merged_poste_ids: mergedPostesIds }
+      body.merged_poste_ids = mergedPostesIds
+    if (correctedDates) body.corrected_dates = correctedDates
 
     let config = {}
     if (signal) config = { signal }
@@ -106,6 +115,7 @@ export async function postIndicateur3({
   startDate,
   endDate,
   openDaysCodes,
+  correctedDates,
   mergedPostesIds,
   natures,
   motives,
@@ -129,9 +139,10 @@ export async function postIndicateur3({
     params = addArrayParams(params, natures, "nature_contrat_ids")
     params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
 
-    let body = {}
+    const body: ModificationsBody = {}
     if (mergedPostesIds && mergedPostesIds?.length > 0)
-      body = { merged_poste_ids: mergedPostesIds }
+      body.merged_poste_ids = mergedPostesIds
+    if (correctedDates) body.corrected_dates = correctedDates
 
     let config = {}
     if (signal) config = { signal }
@@ -152,6 +163,7 @@ export async function postIndicateur5({
   startDate,
   endDate,
   openDaysCodes,
+  correctedDates,
   mergedPostesIds,
   motives,
   signal,
@@ -173,9 +185,10 @@ export async function postIndicateur5({
     }
     params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
 
-    let body = {}
+    const body: ModificationsBody = {}
     if (mergedPostesIds && mergedPostesIds?.length > 0)
-      body = { merged_poste_ids: mergedPostesIds }
+      body.merged_poste_ids = mergedPostesIds
+    if (correctedDates) body.corrected_dates = correctedDates
 
     let config = {}
     if (signal) config = { signal }

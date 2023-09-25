@@ -77,6 +77,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
   const formattedMergesIds = formatLocalMerges(localMergesIds)
+  const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
+  const correctedDates = formatCorrectedDates(lsContrats)
 
   const postes = await postPostes(etabType.id, formattedMergesIds)
   const employeesList = await getSalaries(etabType.id)
@@ -89,6 +91,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     postesIds: queryJobs,
     employeesIds: queryEmployee ? [queryEmployee] : undefined,
     page,
+    correctedDates,
     mergedPostesIds: formattedMergesIds,
   })
 
@@ -109,6 +112,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     siret,
   }
 }
+
+const exportModal = createModal({
+  id: "export-modal",
+  isOpenedByDefault: false,
+})
+
+const resetDatesModal = createModal({
+  id: "reset-dates-modal",
+  isOpenedByDefault: false,
+})
 
 export default function EtabContrats() {
   const {
@@ -143,7 +156,7 @@ export default function EtabContrats() {
     startDate: formatDate(queryStartDate),
     endDate: formatDate(queryEndDate),
   }
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const onDownloadExport = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     const formData = new FormData(event.currentTarget)
@@ -221,10 +234,11 @@ export default function EtabContrats() {
     ) as NonNullable<ReactNode>
   }
 
-  const modal = createModal({
-    id: "export-modal",
-    isOpenedByDefault: false,
-  })
+  const resetDates = () => {
+    // Remove all corrected dates from localStorage and reload page to get original dates from new API call
+    ls.remove(`contrats.${siret}`)
+    window.location.reload()
+  }
 
   return (
     <>
@@ -243,7 +257,7 @@ export default function EtabContrats() {
       <div className="flex justify-between">
         <h2 className="fr-text--xl fr-mb-1w">Liste des contrats</h2>
         <Button
-          onClick={() => modal.open()}
+          onClick={() => exportModal.open()}
           iconId="fr-icon-download-line"
           priority="tertiary no outline"
           type="button"
@@ -251,7 +265,7 @@ export default function EtabContrats() {
           Exporter
         </Button>
       </div>
-      <modal.Component title="Exporter les contrats">
+      <exportModal.Component title="Exporter les contrats">
         <p>
           Vous pouvez exporter les contrats au format tableur (Excel, LibreOffice ou CSV).
         </p>
@@ -259,7 +273,7 @@ export default function EtabContrats() {
           Tous les filtres sauvegardés, les fusions de postes et les corrections de date
           seront pris en compte.
         </p>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={onDownloadExport}>
           <RadioButtons
             legend="Sélectionnez le format de fichier :"
             name="file-extension"
@@ -279,9 +293,33 @@ export default function EtabContrats() {
             description={errorDescription(exportedContracts)}
           />
         )}
-      </modal.Component>
+      </exportModal.Component>
       <hr />
-      <p>Vous pouvez corriger les dates d'après vos observations.</p>
+      <div className="flex items-start justify-between">
+        <p>Vous pouvez corriger les dates d'après vos observations.</p>
+        <Button
+          onClick={() => resetDatesModal.open()}
+          iconId="fr-icon-arrow-go-back-fill"
+          priority="secondary"
+          size="small"
+          type="button"
+        >
+          Réinitialiser les dates
+        </Button>
+        <resetDatesModal.Component
+          title="Réinitialiser les dates"
+          buttons={[
+            { children: "Annuler" },
+            { onClick: () => resetDates(), children: "Oui" },
+          ]}
+        >
+          <p>Souhaitez-vous réinitialiser les dates des contrats ? </p>
+          <p>
+            ⚠️ Toutes vos modifications de dates seront perdues, et vous aurez à nouveau
+            les dates déclarées.
+          </p>
+        </resetDatesModal.Component>
+      </div>
       <div className="fr-px-3w fr-py-2w fr-mb-2w border border-solid border-bd-default-grey">
         <h3 className="fr-text--md fr-mb-2w">Légende des statuts de date</h3>
         <ul className="fr-my-0">
@@ -373,18 +411,23 @@ function ContratsTable({
 
   const initialContratsDatesState = contrats.map((contrat) => {
     const savedContratsDates = ls.get(`contrats.${siret}`) as Record<string, string>
-    const startKey = `${contrat.id}-start`
+    const startKey = `${contrat.contratId}-start`
     const start: EditableDate = {
       date: contrat.dateDebut,
-      status: "declared",
+      status: contrat.statutFin === 3 ? "validated" : "declared",
       isEdit: false,
     }
     const end: EditableDate = {
       date: contrat.dateFin,
-      status: contrat.statutFin === 2 ? "declared" : "computed",
+      status:
+        contrat.statutFin === 1
+          ? "computed"
+          : contrat.statutFin === 3
+          ? "validated"
+          : "declared",
       isEdit: false,
     }
-    const endKey = `${contrat.id}-end`
+    const endKey = `${contrat.contratId}-end`
 
     if (savedContratsDates && startKey in savedContratsDates) {
       start.date = savedContratsDates[startKey]
@@ -401,7 +444,7 @@ function ContratsTable({
     }
 
     return {
-      id: contrat.id,
+      id: contrat.contratId,
       start,
       end,
     } as ContratDatesState

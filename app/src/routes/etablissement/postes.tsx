@@ -23,7 +23,7 @@ import {
   getQueryAsArray,
   getQueryAsNumberArray,
 } from "../../helpers/format"
-import { JobMergedBadge } from "../../helpers/contrats"
+import { JobMergedBadge, formatCorrectedDates } from "../../helpers/contrats"
 import {
   parseAndFilterMergeStr,
   type MergeOptionObject,
@@ -81,10 +81,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     (poste) => ({ value: poste.posteId, label: poste.libellePoste } as Option)
   )
 
+  // Get user modifications from localStorage
   const localOpenDays = ls.get(`etab.${params.siret}.openDays`)
   const savedOpenDaysCodes = formatLocalOpenDays(localOpenDays)
   const localMergesIds = ls.get(`etab.${params.siret}.merges`)
   const formattedMergesIds = formatLocalMerges(localMergesIds)
+  const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
+  const correctedDates = formatCorrectedDates(lsContrats)
 
   const savedMerges: MergeOptionObject[] = Array.isArray(formattedMergesIds)
     ? formattedMergesIds.map(
@@ -110,6 +113,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     startDate: queryStartDate,
     endDate: queryEndDate,
     openDaysCodes: savedOpenDaysCodes,
+    correctedDates,
     mergedPostesIds: formattedMergesIds,
     natures: queryNatures,
     motives: queryMotives,
@@ -120,6 +124,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     startDate: queryStartDate,
     endDate: queryEndDate,
     openDaysCodes: savedOpenDaysCodes,
+    correctedDates,
     mergedPostesIds: formattedMergesIds,
     motives: queryMotives,
     signal: indicatorController.signal,
@@ -135,6 +140,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   return {
+    correctedDates,
     deferredCalls: defer({
       jobProportionIndicator,
       precariousJobIndicator,
@@ -153,11 +159,17 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 }
 
+const modal = createModal({
+  id: "job-list-modal",
+  isOpenedByDefault: false,
+})
+
 export default function EtabPostes() {
   const {
+    correctedDates,
+    deferredCalls,
     etabId,
     jobList: initialJobList,
-    deferredCalls,
     openDaysCodes,
     options,
     queryEndDate,
@@ -194,10 +206,6 @@ export default function EtabPostes() {
     motives: queryMotives,
     natures: queryNatures,
   })
-  const modal = createModal({
-    id: "job-list-modal",
-    isOpenedByDefault: false,
-  })
 
   const handleAddMerge = () => setMerges([...merges, { id: uuid(), mergedOptions: [] }])
   const handleDeleteMerge = (id: number | string) =>
@@ -219,6 +227,7 @@ export default function EtabPostes() {
       startDate: queryStartDate,
       endDate: queryEndDate,
       openDaysCodes,
+      correctedDates,
       mergedPostesIds: merges,
       natures: queryNatures,
       motives: queryMotives,
@@ -229,6 +238,7 @@ export default function EtabPostes() {
       id: etabId,
       startDate: queryStartDate,
       endDate: queryEndDate,
+      correctedDates,
       openDaysCodes,
       mergedPostesIds: merges,
       motives: queryMotives,

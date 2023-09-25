@@ -12,12 +12,13 @@ import { defer, useActionData, useLoaderData } from "react-router-typesafe"
 import {
   getEtablissementsInfo,
   getEtablissementsType,
-  getEffectifsLast,
-  getIndicateur1,
+  postEffectifsLast,
+  postIndicateur1,
   postIndicateur2,
   postIndicateur3,
 } from "../../api"
 import type { Indicator1, IndicatorMetaData } from "../../api/types"
+import { formatCorrectedDates } from "../../helpers/contrats"
 import { errorWording, isAppError } from "../../helpers/errors"
 import {
   DayCode,
@@ -61,31 +62,37 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   const etabId = etabType.id
 
+  // Get user modifications from localStorage
   const localOpenDays = ls.get(`etab.${params.siret}.openDays`)
   const savedOpenDaysCodes = formatLocalOpenDays(localOpenDays)
   const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
   const formattedMergesIds = formatLocalMerges(localMergesIds)
+  const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
+  const correctedDates = formatCorrectedDates(lsContrats)
 
   const [info, lastEffectif] = await Promise.all([
     getEtablissementsInfo(etabId),
-    getEffectifsLast(etabId),
+    postEffectifsLast(etabId, correctedDates),
   ])
 
   // AbortController to abort all deferred calls on route change
   const deferredCallsController = new AbortController()
 
-  const headcountIndicator = getIndicateur1({
+  const headcountIndicator = postIndicateur1({
     id: etabId,
+    correctedDates,
     signal: deferredCallsController.signal,
   })
   const contractNatureIndicator = postIndicateur2({
     id: etabId,
     openDaysCodes: savedOpenDaysCodes,
+    correctedDates,
     signal: deferredCallsController.signal,
   })
   const jobProportionIndicator = postIndicateur3({
     id: etabId,
     openDaysCodes: savedOpenDaysCodes,
+    correctedDates,
     mergedPostesIds: formattedMergesIds,
     signal: deferredCallsController.signal,
   })
