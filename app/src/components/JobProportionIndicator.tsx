@@ -89,6 +89,7 @@ export default function JobProportionIndicator({
 
   return (
     <AppIndicator
+      id="job-proportion"
       title={title}
       subTitle={subTitle}
       readingNote={readingNote}

@@ -10,7 +10,7 @@ import type {
 } from "../types"
 import type { CorrectedDates } from "../../helpers/contrats"
 import { addArrayParams } from "../../helpers/format"
-import { motivesCodeDict } from "../../helpers/filters"
+import { addMotivesEndpointParam } from "../../helpers/filters"
 
 type Indicateur1Params = {
   id: number
@@ -78,16 +78,7 @@ export async function postIndicateur2({
     let params = `etablissement_id=${id}`
     if (endDate) params += `&end_date=${endDate}`
     if (startDate) params += `&start_date=${startDate}`
-    if (motives && motives.length > 0) {
-      const motivesCodes = motives
-        .map((motive) => motivesCodeDict[motive])
-        .filter(Boolean)
-        .flat()
-      const motivesParam = motivesCodes
-        .map((motive) => `motif_recours_ids=${motive}`)
-        .join("&")
-      params += `&${motivesParam}`
-    }
+    params = addMotivesEndpointParam(params, motives)
     params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
     params = addArrayParams(params, postesIds, "poste_ids")
 
@@ -126,16 +117,7 @@ export async function postIndicateur3({
 
     if (endDate) params += `&end_date=${endDate}`
     if (startDate) params += `&start_date=${startDate}`
-    if (motives && motives.length > 0) {
-      const motivesCodes = motives
-        .map((motive) => motivesCodeDict[motive])
-        .filter(Boolean)
-        .flat()
-      const motivesParam = motivesCodes
-        .map((motive) => `motif_recours_ids=${motive}`)
-        .join("&")
-      params += `&${motivesParam}`
-    }
+    params = addMotivesEndpointParam(params, motives)
     params = addArrayParams(params, natures, "nature_contrat_ids")
     params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
 
@@ -173,16 +155,7 @@ export async function postIndicateur5({
 
     if (endDate) params += `&end_date=${endDate}`
     if (startDate) params += `&start_date=${startDate}`
-    if (motives && motives.length > 0) {
-      const motivesCodes = motives
-        .map((motive) => motivesCodeDict[motive])
-        .filter(Boolean)
-        .flat()
-      const motivesParam = motivesCodes
-        .map((motive) => `motif_recours_ids=${motive}`)
-        .join("&")
-      params += `&${motivesParam}`
-    }
+    params = addMotivesEndpointParam(params, motives)
     params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
 
     const body: ModificationsBody = {}

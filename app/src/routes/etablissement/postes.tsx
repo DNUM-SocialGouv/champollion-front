@@ -553,6 +553,7 @@ function PrecariousJobsIndicator({ hasMotives = false }: PrecariousJobsIndicator
 
   return (
     <AppIndicator
+      id="precarious-jobs"
       title={title}
       readingNote={readingNote}
       subReadingNote={subReadingNote}

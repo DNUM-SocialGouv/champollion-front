@@ -177,8 +177,8 @@ export const addArrayParams = <T>(
   key: string
 ) => {
   if (array && array.length > 0) {
-    const employeesParam = array.map((element) => `${key}=${element}`).join("&")
-    params += `&${employeesParam}`
+    const stringParam = array.map((element) => `${key}=${element}`).join("&")
+    params += `&${stringParam}`
   }
   return params
 }

@@ -6,6 +6,7 @@ import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
 import AppCollapse from "./AppCollapse"
 
 type AppIndicatorProps = {
+  id: string
   readingNote: string
   subReadingNote?: string
   title: string
@@ -16,6 +17,7 @@ type AppIndicatorProps = {
 }
 
 export default function AppIndicator({
+  id,
   children,
   readingNote,
   subReadingNote,
@@ -63,6 +65,7 @@ export default function AppIndicator({
       {collapseReadingNote ? (
         <AppCollapse
           className="fr-mb-1w"
+          id={`${id}-collapse`}
           label="Voir la note de lecture"
           labelOpen="Fermer la note de lecture"
         >

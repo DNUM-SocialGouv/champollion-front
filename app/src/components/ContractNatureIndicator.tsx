@@ -64,6 +64,7 @@ export default function ContractNatureIndicator({
   return (
     <>
       <AppIndicator
+        id="contract-nature"
         title={title}
         readingNote={readingNote}
         subReadingNote={subReadingNote}
