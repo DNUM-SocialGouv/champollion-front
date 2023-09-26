@@ -50,7 +50,7 @@ export default function InfractionRatioIndicator({
   `
 
   return (
-    <AppIndicator title={title} readingNote={readingNote}>
+    <AppIndicator id="infraction-ratio" title={title} readingNote={readingNote}>
       <div className="h-16 w-1/2">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart

@@ -25,9 +25,10 @@ import {
   unitMoreInfo,
   unitsOptions,
 } from "../../helpers/effectifs"
+import { noticeCorrectData } from "../../helpers/carence"
 import { formatCorrectedDates } from "../../helpers/contrats"
 import { errorWording, isAppError } from "../../helpers/errors"
-import { getQueryDates } from "../../helpers/filters"
+import { filterDetails, getQueryDates } from "../../helpers/filters"
 import {
   createFiltersQuery,
   formatDate,
@@ -40,12 +41,13 @@ import {
 } from "../../helpers/format"
 import { initJobOptions } from "../../helpers/postes"
 
-import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
+import { Notice } from "@codegouvfr/react-dsfr/Notice"
 import { Select } from "@codegouvfr/react-dsfr/Select"
 import { Table } from "@codegouvfr/react-dsfr/Table"
+import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
 
 import AppCollapse from "../../components/AppCollapse"
 import AppRebound from "../../components/AppRebound"
@@ -87,7 +89,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
   const correctedDates = formatCorrectedDates(lsContrats)
 
-  const postes = await postPostes(etabType.id, formattedMergesIds)
+  const [postes, postesWithoutMerges] = await Promise.all([
+    postPostes(etabType.id, formattedMergesIds),
+    postPostes(etabType.id),
+  ])
+  const jobListWithoutMerges = isAppError(postesWithoutMerges) ? [] : postesWithoutMerges
 
   // AbortController to abort all deferred calls on route change
   const deferredCallsController = new AbortController()
@@ -121,6 +127,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       effectifsData,
     }),
     deferredCallsController,
+    jobListWithoutMerges,
+    formattedMergesIds,
     postes,
     queryEndDate,
     queryJobs,
@@ -185,6 +193,8 @@ export default function EtabRecours() {
           jobOptions={jobOptions}
           disabledFilters={{ natures: true }}
         />
+        <Notice title={noticeCorrectData} isClosable className="fr-mb-2w" />
+
         <div className="flex justify-between">
           <h2 className="fr-text--xl fr-mb-1w">Évolution des effectifs</h2>
           <Button
@@ -286,6 +296,8 @@ function EtabPostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
     return null
   }
 
+  const { jobListWithoutMerges, formattedMergesIds, queryJobs, queryMotives } =
+    useLoaderData<typeof loader>()
   const { effectifs: defaultEffectifs, meta } = deferredData
   const [searchParams, setSearchParams] = useSearchParams()
   const [areTempContractsStacked, setAreTempContractsStacked] = useState(false)
@@ -293,6 +305,7 @@ function EtabPostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
   const [effectifsData, setEffectifsData] = useState(
     formatEffectifs(defaultEffectifs, meta.firstValidDate, meta.lastValidDate)
   )
+  const [showTable, setShowTable] = useState(false)
   const tableRefs = useRef<HTMLDivElement[]>([])
   const lastInvalidPastMonth = formatDate(prevMonth(meta.firstValidDate), "YYYY-MM-DD")
   const firstInvalidFutureMonth = formatDate(nextMonth(meta.lastValidDate), "YYYY-MM-DD")
@@ -325,6 +338,13 @@ function EtabPostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
     searchParams.set("unit", unitValue)
     setSearchParams(searchParams)
   }
+
+  const filtersInfo = filterDetails({
+    queryMotives,
+    queryJobs,
+    jobListWithoutMerges,
+    localMerges: formattedMergesIds,
+  })
 
   // Create tables to display effectifs
 
@@ -379,9 +399,9 @@ function EtabPostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
 
   return (
     <>
-      <div className="fr-mb-2w">
+      <div className="fr-mb-3w">
         <Select
-          className="md:w-3/4"
+          className="fr-mb-1w md:w-3/4"
           label="Unité des effectifs mensuels"
           nativeSelectProps={{
             onChange: handleUnitSelected,
@@ -398,6 +418,7 @@ function EtabPostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
           initialUnitOption.value &&
           initialUnitOption.value in unitMoreInfo && (
             <AppCollapse
+              id="unit-collapse"
               borderLeft
               key={initialUnitOption.value} // add key to reinit open/closed state when new unit selected
               label="Plus d'informations sur l'unité"
@@ -407,62 +428,89 @@ function EtabPostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
             </AppCollapse>
           )}
       </div>
-      <div className="fr-mt-4w h-[550px]">
-        <h3 className="fr-text--xl text-center">{initialUnitOption?.label}</h3>
-        <EffectifBarChart
-          isStacked={areTempContractsStacked}
-          unit="contrats"
-          data={effectifsData}
-          grayAreasData={grayAreasData}
-        />
-      </div>
-      <Checkbox
-        className="fr-mt-4w"
-        options={[
-          {
-            label: "Cumuler les effectifs CDD et CTT (intérim)",
-            nativeInputProps: {
-              name: "stacked",
-              checked: areTempContractsStacked,
-              onChange: (event) => setAreTempContractsStacked(event.target.checked),
-            },
-          },
-        ]}
-      />
 
-      {initialUnitOption &&
-        initialUnitOption.value &&
-        filteredEffectifsData.length > 0 && (
-          <>
-            <h3 className="fr-text--md fr-mt-2w fr-mb-1v font-bold">Note de lecture</h3>
-            <p>{getReadingNotes(filteredEffectifsData[0], initialUnitOption.value)}</p>
-          </>
-        )}
-
-      <Accordion
-        label="Afficher les effectifs sous forme de tableau"
-        className="fr-mt-4w"
-      >
-        {tablesContent.map((subTable, index) => (
-          <Table
-            data={subTable.data}
-            headers={subTable.headers}
-            key={subTable.id}
-            ref={(el) => {
-              if (el) tableRefs.current[index] = el
-            }}
-            className="fr-my-2w fr-pt-0"
-          />
-        ))}
-        <Button
-          onClick={copyTableToClipboard}
-          iconId="fr-icon-download-line"
-          priority="secondary"
-          type="button"
+      {queryJobs.length > 0 && queryMotives.length > 0 && (
+        <AppCollapse
+          id="filters-collapse"
+          className="fr-mb-1w"
+          label="Afficher le détail des filtres sélectionnés"
+          labelOpen="Masquer le détail des filtres sélectionnés"
+          keepBtnOnTop
         >
-          Copier le tableau
-        </Button>
-      </Accordion>
+          {filtersInfo}
+        </AppCollapse>
+      )}
+
+      {showTable ? (
+        <>
+          {tablesContent.map((subTable, index) => (
+            <Table
+              data={subTable.data}
+              headers={subTable.headers}
+              key={subTable.id}
+              ref={(el) => {
+                if (el) tableRefs.current[index] = el
+              }}
+              className="fr-my-2w fr-pt-0"
+            />
+          ))}
+          <Button
+            onClick={copyTableToClipboard}
+            iconId="fr-icon-download-line"
+            priority="secondary"
+            type="button"
+            className="fr-mb-3w"
+          >
+            Copier le tableau
+          </Button>
+        </>
+      ) : (
+        <>
+          <div className="fr-mt-2w h-[550px]">
+            <h3 className="fr-text--xl text-center">{initialUnitOption?.label}</h3>
+            <EffectifBarChart
+              isStacked={areTempContractsStacked}
+              unit="contrats"
+              data={effectifsData}
+              grayAreasData={grayAreasData}
+            />
+          </div>
+
+          <Checkbox
+            className="fr-mt-4w"
+            options={[
+              {
+                label: "Cumuler les effectifs CDD et CTT (intérim)",
+                nativeInputProps: {
+                  name: "stacked",
+                  checked: areTempContractsStacked,
+                  onChange: (event) => setAreTempContractsStacked(event.target.checked),
+                },
+              },
+            ]}
+          />
+
+          {initialUnitOption &&
+            initialUnitOption.value &&
+            filteredEffectifsData.length > 0 && (
+              <>
+                <h3 className="fr-text--md fr-mt-2w fr-mb-1v font-bold">
+                  Note de lecture
+                </h3>
+                <p>
+                  {getReadingNotes(filteredEffectifsData[0], initialUnitOption.value)}
+                </p>
+              </>
+            )}
+        </>
+      )}
+
+      <ToggleSwitch
+        label="Afficher les données sous forme de tableau"
+        checked={showTable}
+        onChange={(checked) => setShowTable(checked)}
+        classes={{ label: "w-full" }}
+      />
     </>
   )
 }

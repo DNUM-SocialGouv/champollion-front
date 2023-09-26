@@ -8,7 +8,8 @@ import type {
 } from "../types"
 import type { CorrectedDates } from "../../helpers/contrats"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
-import { motivesCodeDict } from "../../helpers/filters"
+import { addMotivesEndpointParam } from "../../helpers/filters"
+import { addArrayParams } from "../../helpers/format"
 
 type EffectifsParams = {
   id: number
@@ -38,27 +39,9 @@ export const postEffectifs = async ({
   try {
     let params = `etablissement_id=${id}&start_date=${startDate}&end_date=${endDate}&unit=${unit}`
 
-    if (motives && motives.length > 0) {
-      const motivesCodes = motives
-        .map((motive) => motivesCodeDict[motive])
-        .filter(Boolean)
-        .flat()
-      const motivesParam = motivesCodes
-        .map((motive) => `motif_recours_ids=${motive}`)
-        .join("&")
-      params += `&${motivesParam}`
-    }
-
-    if (openDaysCodes && openDaysCodes.length > 0) {
-      const openDaysParam = openDaysCodes
-        .map((day) => `jour_ouverture_ids=${day}`)
-        .join("&")
-      params += `&${openDaysParam}`
-    }
-    if (postesIds && postesIds.length > 0) {
-      const postesParam = postesIds.map((poste) => `poste_ids=${poste}`).join("&")
-      params += `&${postesParam}`
-    }
+    params = addMotivesEndpointParam(params, motives)
+    params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
+    params = addArrayParams(params, postesIds, "poste_ids")
 
     const body: ModificationsBody = {}
 

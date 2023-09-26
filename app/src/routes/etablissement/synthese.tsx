@@ -275,6 +275,7 @@ function HeadcountIndicator() {
   )
   return (
     <AppIndicator
+      id="headcount"
       title={title}
       readingNote={readingNote}
       subReadingNote={subReadingNote}

@@ -4,7 +4,6 @@ import {
   useSearchParams,
   useNavigation,
   useAsyncValue,
-  Link,
 } from "react-router-dom"
 import { defer, useLoaderData } from "react-router-typesafe"
 import { Fragment } from "react"
@@ -23,6 +22,7 @@ import {
   getLegislationOptionFromKey,
   legislationDetails,
   legislationOptions,
+  noticeCorrectData,
 } from "../../helpers/carence"
 import {
   camelToSnakeCase,
@@ -162,15 +162,6 @@ export default function EtabCarence() {
     jobs: queryJobs,
   })
 
-  const noticeCorrectData = () => (
-    <>
-      Les calculs prennent en compte des paramètres que vous pouvez corriger d'après vos
-      constatations: les <Link to="../postes"> postes fusionnés</Link>, les{" "}
-      <Link to="../contrats">dates des contrats</Link> et les{" "}
-      <Link to="../">jours d'ouverture</Link>.
-    </>
-  )
-
   let legislationData: Record<string, IDCC> | null = null
   if (!isAppError(idccData)) legislationData = idccData
 
@@ -240,6 +231,8 @@ export default function EtabCarence() {
           disabledFilters={{ natures: true, motives: true }}
         />
 
+        <Notice title={noticeCorrectData} isClosable className="fr-mb-2w" />
+
         <div className="flex justify-between">
           <h2 className="fr-text--xl fr-mb-1w">
             Infractions potentielles au délai de carence
@@ -260,7 +253,6 @@ export default function EtabCarence() {
         </modal.Component>
 
         <hr />
-        <Notice title={noticeCorrectData()} isClosable className="fr-mb-2w" />
 
         {legislationData !== null && (
           <>
@@ -284,6 +276,7 @@ export default function EtabCarence() {
               Object.keys(selectedLegislationDetail).length > 0 && (
                 <>
                   <AppCollapse
+                    id="legislation-collapse"
                     className="fr-mb-2w"
                     label="Plus d'informations sur l'accord de branche"
                     labelOpen="Moins d'informations sur l'accord de branche"
@@ -493,6 +486,7 @@ function DelayByJobIndicator({
 
   return (
     <AppIndicator
+      id="delay"
       title={title}
       subTitle={subTitle}
       readingNote={readingNote}
