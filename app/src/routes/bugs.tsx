@@ -44,16 +44,6 @@ export default function Bugs() {
               sauvegardées de manière pérenne sur le site.
             </p>
           </li>
-          <li>
-            <b>Impossible de récupérer une date de contrat après l'avoir modifiée</b>
-            <p>
-              Si vous modifiez une date de statut Déclaré ou Inféré, il n'est pas possible
-              de retourner à la date initiale pour l'instant. En attendant que nous
-              fassions le nécessaire, une astuce est d'ouvrir le site en navigation privée
-              ou sur un autre navigateur : vos modifications n'apparaîtront pas, vous
-              aurez accès aux données initiales.
-            </p>
-          </li>
         </ul>
 
         <Notice title={notice()} />
