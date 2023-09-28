@@ -20,6 +20,7 @@ import {
   formatCorrectedDates,
   extensions,
   radioBtnOptions,
+  getStatusNameFromCode,
 } from "../../helpers/contrats"
 import { motiveOptions, contractNatures, getQueryDates } from "../../helpers/filters"
 import {
@@ -414,17 +415,12 @@ function ContratsTable({
     const startKey = `${contrat.contratId}-start`
     const start: EditableDate = {
       date: contrat.dateDebut,
-      status: contrat.statutFin === 3 ? "validated" : "declared",
+      status: getStatusNameFromCode(contrat.statutDebut),
       isEdit: false,
     }
     const end: EditableDate = {
       date: contrat.dateFin,
-      status:
-        contrat.statutFin === 1
-          ? "computed"
-          : contrat.statutFin === 3
-          ? "validated"
-          : "declared",
+      status: getStatusNameFromCode(contrat.statutFin),
       isEdit: false,
     }
     const endKey = `${contrat.contratId}-end`
@@ -439,7 +435,7 @@ function ContratsTable({
       end.status = "validated"
     }
 
-    if (!end.date) {
+    if (!end.date && contrat.statutFin !== 3) {
       end.status = "unknown"
     }
 

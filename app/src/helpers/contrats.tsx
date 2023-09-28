@@ -84,6 +84,16 @@ const statusBadgeData: Record<
   unknown: { text: "inconnu" },
 }
 
+export const getStatusNameFromCode = (statusCode: number | null): DateStatus => {
+  return statusCode === 1
+    ? "computed"
+    : statusCode === 2
+    ? "declared"
+    : statusCode === 3
+    ? "validated"
+    : "unknown"
+}
+
 const formatContrats = (
   items: EtuContrat[],
   contratsDatesState: ContratDatesState[],
@@ -122,34 +132,28 @@ const formatContrats = (
         setContratsDatesState(nextState)
       }
 
-      const handleCancel = (type: DateType) => {
-        const nextState = contratsDatesState.map((x) => {
-          if (x.id === contrat.contratId) {
-            return { ...x, [type]: { ...x[type], isEdit: false } }
-          } else {
-            return x
-          }
-        })
-        setContratsDatesState(nextState)
-      }
-
-      const handleReset = (type: DateType) => {
+      const handleReset = (type: DateType, status: DateStatus) => {
         const initDate = type === "start" ? contrat.dateDebut : contrat.dateFin
+        const initStatusCode = type === "start" ? contrat.statutDebut : contrat.statutFin
+        const initStatus = getStatusNameFromCode(initStatusCode)
 
-        // Remove the corrected date from localStorage
-        const lscontrats = ls.get(`contrats.${siret}`) as Record<string, string>
-        const key = `${contrat.contratId}-${type}`
-        delete lscontrats[key]
-        ls.set(`contrats.${siret}`, lscontrats)
+        // Remove the corrected date from localStorage if date was corrected
+        if (status === "validated") {
+          const lscontrats = ls.get(`contrats.${siret}`) as Record<string, string>
+          const key = `${contrat.contratId}-${type}`
+          delete lscontrats[key]
+          ls.set(`contrats.${siret}`, lscontrats)
+        }
 
         const nextState = contratsDatesState.map((x) => {
           if (x.id === contrat.contratId) {
-            if (x[type].date === initDate) {
-              // if we don't know the original date, because the last API call to contracts was sent with this date already corrected,
-              // we need to reload page to make new API call without correcting this date (it will send the original declared date)
+            if (initStatus === "validated") {
+              // if the backend provides a validated date, then we don't know the original date,
+              // so we need to reload page to make new API call without correcting this date (it will send the original declared date)
               window.location.reload()
             }
-            return { ...x, [type]: { date: initDate, isEdit: false, status: "declared" } }
+
+            return { ...x, [type]: { date: initDate, isEdit: false, status: initStatus } }
           } else {
             return x
           }
@@ -161,8 +165,8 @@ const formatContrats = (
         event.preventDefault()
         const input = document.getElementById(`${type}-date-${contrat.contratId}`)
 
-        const newDate = (input && "value" in input && (input.value as string)) || null
-        if (newDate) {
+        const newDate = input && "value" in input && (input.value as string)
+        if (newDate !== undefined) {
           const nextState = contratsDatesState.map((x) => {
             if (x.id === contrat.contratId) {
               const newDates = {
@@ -195,7 +199,6 @@ const formatContrats = (
           type="start"
           id={contrat.contratId}
           onValidate={handleValidate}
-          onCancel={handleCancel}
           onEdit={handleEdit}
           onReset={handleReset}
         />
@@ -206,7 +209,6 @@ const formatContrats = (
           type="end"
           id={contrat.contratId}
           onValidate={handleValidate}
-          onCancel={handleCancel}
           onEdit={handleEdit}
           onReset={handleReset}
         />
@@ -288,7 +290,6 @@ function ContratDate({
   contratDates,
   id,
   type,
-  onCancel,
   onEdit,
   onValidate,
   onReset,
@@ -296,10 +297,9 @@ function ContratDate({
   contratDates: ContratDatesState
   id: number
   type: DateType
-  onCancel: (type: DateType) => void
   onEdit: (type: DateType) => void
   onValidate: (event: FormEvent<HTMLFormElement>, type: DateType) => void
-  onReset: (type: DateType) => void
+  onReset: (type: DateType, status: DateStatus) => void
 }) {
   const editDateText = "Modifier la date de " + (type === "start" ? "début" : "fin")
 
@@ -318,7 +318,7 @@ function ContratDate({
               type: "date",
               name: `${type}-date`,
               defaultValue: contratDates[type].date || "",
-              required: true,
+              required: type === "start",
             }}
           />
           <div className="flex-row">
@@ -329,15 +329,8 @@ function ContratDate({
               type="submit"
             />
             <Button
-              iconId="fr-icon-close-line"
-              onClick={() => onCancel(type)}
-              priority="tertiary no outline"
-              title="Annuler"
-              type="button"
-            />
-            <Button
               iconId="fr-icon-arrow-go-back-fill"
-              onClick={() => contratDates[type].status === "validated" && onReset(type)}
+              onClick={() => onReset(type, contratDates[type].status)}
               priority="tertiary no outline"
               title="Réinitialiser"
               type="button"
@@ -356,7 +349,7 @@ function ContratDate({
               title={editDateText}
             />
           </div>
-          {contratDates[type].date && (
+          {contratDates[type].status !== "unknown" && (
             <DateStatusBadge status={contratDates[type].status} />
           )}
         </>
@@ -387,7 +380,10 @@ export const formatCorrectedDates = (
         dateType === "start" ? "date_debut" : dateType === "end" ? "date_fin" : null
 
       if (contractId && dateTypeKey) {
-        const dateObj = { ...(acc?.[contractId] || {}), [dateTypeKey]: value }
+        const dateObj = {
+          ...(acc?.[contractId] || {}),
+          [dateTypeKey]: value || "9999-01-01",
+        }
         acc[contractId] = dateObj
       }
       return acc
