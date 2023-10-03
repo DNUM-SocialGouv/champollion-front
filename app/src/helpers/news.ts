@@ -20,6 +20,54 @@ type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
   {
+    date: "2023-10-03",
+    news: [
+      {
+        category: "Liste des contrats",
+        list: [
+          {
+            type: "feat",
+            desc: "Possibilité de supprimer une date de fin de contrat.",
+          },
+          {
+            type: "feat",
+            desc: "Possibilité de réinitialiser une date de fin de contrat, pour récupérer la date d'origine et effacer la correction apportée.",
+          },
+          {
+            type: "fix",
+            desc: "Prise en compte des dates corrigées dans tous les onglets de l'application (chiffres clés, détection de fraude potentielle).",
+          },
+        ],
+      },
+      {
+        category: "Recours abusif",
+        list: [
+          {
+            type: "feat",
+            desc: "Affichage du détail des postes sélectionné au-dessus de l'histogramme (notamment des postes inclus dans des fusions).",
+          },
+          {
+            type: "chore",
+            desc: 'Un bouton "interrupteur" permet de choisir l\'affichage des effectifs entre graphique et tableau (précédemment, le tableau était affiché comme un encart déroulant).',
+          },
+        ],
+      },
+      {
+        category: "Délai de carence",
+        list: [
+          {
+            type: "feat",
+            desc: "Chiffres clés : ratio de contrats en infraction potentielle par rapport au total de contrats étudiés",
+          },
+          {
+            type: "feat",
+            desc: "Chiffres clés : répartition des contrats en infraction potentielle par libellé de poste",
+          },
+        ],
+      },
+    ],
+  },
+  {
     date: "2023-09-18",
     news: [
       {
