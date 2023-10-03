@@ -86,9 +86,9 @@ const unitsOptions: {
     label: "Sélectionnez l'unité des effectifs à afficher",
     attr: { disabled: true },
   },
-  { key: 1, value: "tot", label: "Nombre de contrats en vigueur chaque mois" },
+  { key: 1, value: "avg", label: "Nombre d'ETP-jours pour chaque mois" },
   { key: 2, value: "etp", label: "Nombre d'ETP-heures pour chaque mois" },
-  { key: 3, value: "avg", label: "Nombre d'ETP-jours pour chaque mois" },
+  { key: 3, value: "tot", label: "Nombre de contrats en vigueur chaque mois" },
 ]
 
 export const unitMoreInfo: Record<string, ReactNode> = {

@@ -3,7 +3,19 @@ import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from "recharts"
 import { formatNumber } from "../helpers/format"
 import { jobMergedBadgeSvg } from "../helpers/contrats"
 
-export type PieSlice = { name: string | null; value: number; percent: number }
+export type PieSlice = {
+  name: string | null
+  value: number
+  percent: number
+  merged?: number
+}
+
+type ReducedData = {
+  largestEl: PieSlice[]
+  groupedList: PieSlice[]
+  groupedValue: number
+  groupedPercent: number
+}
 
 type ContractsPieChartProps = {
   data: PieSlice[]
@@ -21,6 +33,45 @@ const calculateSvgTextWidth = (textContent: string, fontSize: string) => {
   const bbox = tempText.getBBox()
   document.body.removeChild(tempSvg)
   return bbox.width
+}
+
+/*
+    Sort and group method :
+    Regroup all the slices that are too small under a common slice called "Others"
+    Slices are sorted from bigger to smaller share, clockwise starting at 12 o'clock,
+    except for the "Others" share that goes last (i.e. last share before 12 o'clock)
+  */
+export const groupSmallData = (data: PieSlice[]) => {
+  const reducedData = data
+    .sort((a, b) => b.percent - a.percent)
+    .reduce(
+      (acc: ReducedData, curr) => {
+        const minShare = 2.3 // empirical minimum percentage of a pie slice to display data visibly
+        return {
+          largestEl: curr.percent > minShare ? [...acc.largestEl, curr] : acc.largestEl,
+          groupedList: curr.percent > minShare ? [] : [...acc.groupedList, curr],
+          groupedValue: curr.percent > minShare ? 0 : acc.groupedValue + curr.value,
+          groupedPercent:
+            curr.percent > minShare ? 0 : acc.groupedPercent + curr.percent * 100, // use integers to prevent js from adding extra fraction digits
+        }
+      },
+      {
+        largestEl: [] as PieSlice[],
+        groupedList: [] as PieSlice[],
+        groupedValue: 0,
+        groupedPercent: 0,
+      }
+    )
+
+  return [
+    ...reducedData.largestEl,
+    {
+      name: "Autres",
+      percent: reducedData.groupedPercent / 100,
+      value: reducedData.groupedValue,
+      merged: 0,
+    },
+  ].filter((slice) => slice.percent > 0)
 }
 
 export default function ContractsPieChart({

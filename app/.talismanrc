@@ -9,32 +9,36 @@ fileignoreconfig:
   checksum: a3c7443b73d65e5de5f88ce3a72cec2f05337b91b91d29b1ce06714ba26ea51a
 - filename: app/src/components/EtabFilters.tsx
   checksum: 4fb8b57addb47957611797a18a7bdf8679ca3ca3712cd9f3d7ce4b32a2539ba1
+- filename: app/src/components/InfractionRatioIndicator.tsx
+  checksum: 2e3800cf3c94b4464424a3f2f0cc673896f90c1578ad191be2b2948e5eeabaa0
 - filename: app/src/components/PrecariousJobsBarChart.tsx
   checksum: 2b601a8b8b84cc9db033b3b3cead3ebe0adf15906b8b525faa61cf0c59ff72a0
 - filename: app/src/helpers/carence.tsx
   checksum: 68161bf4d8d91747f6ee2be759a98239eec29ee0d294c0122aa3eb48c0aa195b
 - filename: app/src/helpers/contrats.tsx
-  checksum: 2f81ac0319a5f373317a093b2796ebde4a7653e2fa7508450f6d24cd2607c164
+  checksum: 8acf8f225326e590b8ad9578c24ae66c7d8b3b93401a510753653482786fa607
 - filename: app/src/helpers/effectifs.ts
   checksum: 19d893315ec9d917d778ea490c2c86d4ef3ab7d87ffddebe422807311a10bf94
 - filename: app/src/helpers/effectifs.tsx
-  checksum: 36645f0a3967f381f96c76566ebcac100384f75b209e17493cb90067bd5dbbe7
+  checksum: c6870d7b493dae2c759cbc93cc27717185a4773c5ee842e92792bb34b82fe4b0
 - filename: app/src/helpers/filters.ts
   checksum: 47afe0e0b4c83833e565c6e67e20cae2fc8bdcbcff98f62e810b9ab57346e080
+- filename: app/src/helpers/filters.tsx
+  checksum: 70c485ad563125659e38a840c6fc838aa6438532a63b8d60351b3d941c9df650
 - filename: app/src/helpers/format.ts
-  checksum: b1574cc2254ea15ef994298c8b5ce9b217225414e07076c644395ed00c5a84ac
+  checksum: c6ca62bb1dea8c213755031650138e2ace4164a92cdda39cb6fb555db5854e2e
 - filename: app/src/helpers/postes.tsx
   checksum: cd3d619b89c960a20bade6c5619bfdd9ba25283f157f90dbefbcc34f696eed6d
 - filename: app/src/routes/bugs.tsx
   checksum: e91d482a9b3da26bc38bd95c9f0d280f21dd00f1ed94567923bacdf3a159d61f
 - filename: app/src/routes/etablissement/carence.tsx
-  checksum: 0926df9bed2e0a8f79f9d78407d58b776aa1d128cf10da9c50286976f04d6321
+  checksum: 747ca99419adfa74e13919aeaf4f66a1f5a136daf765f48f56ba35772cb853c2
 - filename: app/src/routes/etablissement/contrats.tsx
-  checksum: b352ad4378ea7fd0ae1fda24bf51d6d662f236bc4f9d09f143748a7fe63b5a0f
+  checksum: 99a2cb8a922ca711985b651931b0ebdc7632bfba403601797cc3358a0a023f04
 - filename: app/src/routes/etablissement/postes.tsx
   checksum: e3d95e0ac64a6088c700826e257d27114db9789746f9a84f317e3cf6837dee10
 - filename: app/src/routes/etablissement/recours.tsx
-  checksum: da36cf6c3a88e1cdbdfd3a50c320e0826d3c0c3b21fe18d32bdc714a77459ef9
+  checksum: 85a81000772f09afd02f8d96718f1f3e9e57afe48b1cc5da9560e5e240d0a9ce
 - filename: app/src/routes/etablissement/synthese.tsx
   checksum: 64c3c0ce7fcec3dfbfd88dc1f8c062188c1542be8391c2896634cfb1053da597
 - filename: app/src/routes/ett.tsx

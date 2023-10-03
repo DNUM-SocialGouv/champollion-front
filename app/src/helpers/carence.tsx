@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import type { IllegalContract, Infractions, CarenceContract, IDCC } from "../api/types"
 import { getContractNature } from "./contrats"
 import { formatDate } from "./format"
@@ -94,42 +95,18 @@ export const legislationOptions = (data: Record<string, IDCC>) => {
   }))
 }
 
-export const legislationOptions2: {
-  key: number
-  value: string | null
-  label: string
-}[] = [
-  {
-    key: 1,
-    value: "droit_commun",
-    label: "Dispositions supplétives (pas d'accord de branche)",
-  },
-  { key: 2, value: "idcc_3248_2018", label: "IDCC 3248 - 2018 (2018) - Métallurgie" },
-  {
-    key: 3,
-    value: "idcc_2216_2018",
-    label: "IDCC 2216 - 2018 (2020) - Commerce alimentaire",
-  },
-  {
-    key: 4,
-    value: "idcc_3043_2018",
-    label: "IDCC 3043 - 2018 (2019) - Entreprises de propreté",
-  },
-  {
-    key: 5,
-    value: "idcc_1517_2021",
-    label: "IDCC 1517 -2021 (2022) - Commerces non alimentaires",
-  },
-  {
-    key: 6,
-    value: "idcc_176_2019",
-    label: "IDCC 176 - 2019 (2020) - Industrie pharmaceutique",
-  },
-]
-
 export const getLegislationOptionFromKey = (
   key: number | string,
   data: Record<string, IDCC>
 ) =>
   legislationOptions(data).find((option) => String(option.key) == String(key)) ??
   legislationOptions(data)[0]
+
+export const noticeCorrectData = (
+  <>
+    Les calculs prennent en compte des paramètres que vous pouvez corriger d'après vos
+    constatations : les <Link to="../postes"> postes fusionnés</Link>, les{" "}
+    <Link to="../contrats">dates des contrats</Link> et les{" "}
+    <Link to="../">jours d'ouverture</Link>.
+  </>
+)

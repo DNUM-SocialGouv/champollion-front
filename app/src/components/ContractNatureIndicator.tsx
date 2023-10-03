@@ -3,8 +3,8 @@ import { useAsyncValue } from "react-router-dom"
 import type { Indicator2, IndicatorMetaData } from "../api/types"
 import { formatDate } from "../helpers/format"
 
+import AppIndicator from "./AppIndicator"
 import ContractsPieChart, { type PieSlice } from "./ContractsPieChart"
-import AppCollapse from "./AppCollapse"
 
 type ContractNatureIndicatorProps = {
   collapseReadingNote?: boolean
@@ -50,41 +50,30 @@ export default function ContractNatureIndicator({
       ? " pour les motifs de recours sélectionnés, "
       : ""
 
-  const readingNote = (
-    <div className="fr-mb-2w">
-      <h5 className="fr-text--md fr-mt-3w fr-mb-1v font-bold">Note de lecture</h5>
-      <p className="fr-text--sm fr-mb-0">
-        De {start} à {end}, {filters}
-        les jours travaillés en CDI représentent {cdiPercent} % des jours travaillés en
+  const title = `Répartition des jours travaillés par nature de contrat entre ${start} et ${end} :`
+
+  const readingNote = `
+        De ${start} à ${end}, ${filters}
+        les jours travaillés en CDI représentent ${cdiPercent} % des jours travaillés en
         CDI, CDD et CTT.
-      </p>
-      {hasMotives && (
-        <p className="fr-text--sm fr-mb-0 italic">
-          Les CDI n'ont pas de motifs de recours : tous les CDI sont comptabilisés.
-        </p>
-      )}
-    </div>
-  )
+        `
+  const subReadingNote = hasMotives
+    ? "Les CDI n'ont pas de motifs de recours : tous les CDI sont comptabilisés."
+    : ""
 
   return (
     <>
-      <h4 className="fr-text--md">
-        Répartition des jours travaillés par nature de contrat entre {start} et {end} :
-      </h4>
-      <div className="h-60 w-full">
-        <ContractsPieChart data={data} sortData showLegend />
-      </div>
-      {collapseReadingNote ? (
-        <AppCollapse
-          className="fr-mb-1w"
-          label="Voir la note de lecture"
-          labelOpen="Fermer la note de lecture"
-        >
-          {readingNote}
-        </AppCollapse>
-      ) : (
-        <>{readingNote}</>
-      )}
+      <AppIndicator
+        id="contract-nature"
+        title={title}
+        readingNote={readingNote}
+        subReadingNote={subReadingNote}
+        collapseReadingNote={collapseReadingNote}
+      >
+        <div className="h-60 w-full">
+          <ContractsPieChart data={data} sortData showLegend />
+        </div>
+      </AppIndicator>
     </>
   )
 }

@@ -1,5 +1,6 @@
 import api from "../config"
-import type { IDCC, Infractions } from "../types"
+import type { IDCC, Infractions, MetaCarences, ModificationsBody } from "../types"
+import type { CorrectedDates } from "../../helpers/contrats"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import { addArrayParams } from "../../helpers/format"
 
@@ -10,6 +11,7 @@ type CarenceParams = {
   postesIds?: number[]
   openDaysCodes?: string[]
   legislation?: string
+  correctedDates?: CorrectedDates
   mergedPostesIds?: number[][]
   signal?: AbortSignal
 }
@@ -21,6 +23,7 @@ export const postCarences = async ({
   postesIds,
   openDaysCodes,
   legislation,
+  correctedDates,
   mergedPostesIds,
   signal,
 }: CarenceParams) => {
@@ -33,16 +36,21 @@ export const postCarences = async ({
     params = addArrayParams(params, postesIds, "poste_ids")
     params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
 
-    let body = {}
+    const body: ModificationsBody = {}
 
     if (mergedPostesIds && mergedPostesIds?.length > 0)
-      body = { merged_poste_ids: mergedPostesIds }
+      body.merged_poste_ids = mergedPostesIds
+    if (correctedDates) body.corrected_dates = correctedDates
 
     let config = {}
     if (signal) config = { signal }
 
     const response = await api.post(`/carences/?${params}`, body, config)
-    return (response.data.data as Infractions) ?? handleUndefinedData("/effectifs")
+    const infractions = response.data.data as Infractions
+    const meta = response.data.meta as MetaCarences
+
+    if (infractions && meta) return { infractions, meta }
+    else handleUndefinedData("/carences")
   } catch (err) {
     return handleEndpointError(err)
   }
@@ -51,7 +59,10 @@ export const postCarences = async ({
 export const getCarencesIdcc = async () => {
   try {
     const response = await api.get(`/carences/idcc`)
-    return response.data.data as Record<string, IDCC>
+    return (
+      (response.data.data as Record<string, IDCC>) ??
+      handleUndefinedData("/carences/idcc")
+    )
   } catch (err) {
     return handleEndpointError(err)
   }

@@ -2,7 +2,7 @@ import type { Dispatch, FormEvent, ReactNode, SetStateAction } from "react"
 import { Link } from "react-router-dom"
 import ls from "localstorage-slim"
 
-import { formatDate } from "./format"
+import { dateIsBefore, formatDate } from "./format"
 import type { EtuContrat, FileExtension } from "../api/types"
 
 import { AlertProps } from "@codegouvfr/react-dsfr/Alert"
@@ -84,6 +84,16 @@ const statusBadgeData: Record<
   unknown: { text: "inconnu" },
 }
 
+export const getStatusNameFromCode = (statusCode: number | null): DateStatus => {
+  return statusCode === 1
+    ? "computed"
+    : statusCode === 2
+    ? "declared"
+    : statusCode === 3
+    ? "validated"
+    : "unknown"
+}
+
 const formatContrats = (
   items: EtuContrat[],
   contratsDatesState: ContratDatesState[],
@@ -109,10 +119,11 @@ const formatContrats = (
           <></>
         )
       const contratDates =
-        contratsDatesState.find((x) => x.id === contrat.id) || ({} as ContratDatesState)
+        contratsDatesState.find((x) => x.id === contrat.contratId) ||
+        ({} as ContratDatesState)
       const handleEdit = (type: DateType) => {
         const nextState = contratsDatesState.map((x) => {
-          if (x.id === contrat.id) {
+          if (x.id === contrat.contratId) {
             return { ...x, [type]: { ...x[type], isEdit: true } }
           } else {
             return x
@@ -121,10 +132,28 @@ const formatContrats = (
         setContratsDatesState(nextState)
       }
 
-      const handleCancel = (type: DateType) => {
+      const handleReset = (type: DateType, status: DateStatus) => {
+        const initDate = type === "start" ? contrat.dateDebut : contrat.dateFin
+        const initStatusCode = type === "start" ? contrat.statutDebut : contrat.statutFin
+        const initStatus = getStatusNameFromCode(initStatusCode)
+
+        // Remove the corrected date from localStorage if date was corrected
+        if (status === "validated") {
+          const lscontrats = ls.get(`contrats.${siret}`) as Record<string, string>
+          const key = `${contrat.contratId}-${type}`
+          delete lscontrats[key]
+          ls.set(`contrats.${siret}`, lscontrats)
+        }
+
         const nextState = contratsDatesState.map((x) => {
-          if (x.id === contrat.id) {
-            return { ...x, [type]: { ...x[type], isEdit: false } }
+          if (x.id === contrat.contratId) {
+            if (initStatus === "validated") {
+              // if the backend provides a validated date, then we don't know the original date,
+              // so we need to reload page to make new API call without correcting this date (it will send the original declared date)
+              window.location.reload()
+            }
+
+            return { ...x, [type]: { date: initDate, isEdit: false, status: initStatus } }
           } else {
             return x
           }
@@ -134,23 +163,29 @@ const formatContrats = (
 
       const handleValidate = (event: FormEvent<HTMLFormElement>, type: DateType) => {
         event.preventDefault()
-        const input = document.getElementById(`${type}-date-${contrat.id}`)
+        const input = document.getElementById(`${type}-date-${contrat.contratId}`)
 
-        const newDate = (input && "value" in input && (input.value as string)) || null
-        if (newDate) {
+        const newDate = input && "value" in input && (input.value as string)
+        if (newDate !== undefined) {
           const nextState = contratsDatesState.map((x) => {
-            if (x.id === contrat.id) {
-              return {
+            if (x.id === contrat.contratId) {
+              const newDates = {
                 ...x,
                 [type]: { date: newDate, status: "validated", isEdit: false },
-              } as ContratDatesState
+              }
+              if (dateIsBefore(newDates.end.date, newDates.start.date)) {
+                window.alert(
+                  "Attention ! Désormais la date de fin est avant la date de début du contrat. Si vous ne changez pas les dates, le contrat sera considéré comme annulé et n'apparaîtra plus au prochain chargement de page."
+                )
+              }
+              return newDates
             } else {
               return x
             }
           })
           setContratsDatesState(nextState)
           const lscontrats = ls.get(`contrats.${siret}`) as Record<string, string>
-          const key = `${contrat.id}-${type}`
+          const key = `${contrat.contratId}-${type}`
           ls.set(`contrats.${siret}`, {
             ...lscontrats,
             [key]: newDate,
@@ -162,20 +197,20 @@ const formatContrats = (
         <ContratDate
           contratDates={contratDates}
           type="start"
-          id={contrat.id}
+          id={contrat.contratId}
           onValidate={handleValidate}
-          onCancel={handleCancel}
           onEdit={handleEdit}
+          onReset={handleReset}
         />
       )
       const endDate = (
         <ContratDate
           contratDates={contratDates}
           type="end"
-          id={contrat.id}
+          id={contrat.contratId}
           onValidate={handleValidate}
-          onCancel={handleCancel}
           onEdit={handleEdit}
+          onReset={handleReset}
         />
       )
       const motive =
@@ -185,7 +220,7 @@ const formatContrats = (
       if (contrat.dateNaissance) employee += ` (${contrat.dateNaissance})`
 
       return {
-        id: contrat.id,
+        id: contrat.contratId,
         jobTitle,
         employee,
         startDate,
@@ -255,16 +290,16 @@ function ContratDate({
   contratDates,
   id,
   type,
-  onCancel,
   onEdit,
   onValidate,
+  onReset,
 }: {
   contratDates: ContratDatesState
   id: number
   type: DateType
-  onCancel: (type: DateType) => void
   onEdit: (type: DateType) => void
   onValidate: (event: FormEvent<HTMLFormElement>, type: DateType) => void
+  onReset: (type: DateType, status: DateStatus) => void
 }) {
   const editDateText = "Modifier la date de " + (type === "start" ? "début" : "fin")
 
@@ -283,7 +318,7 @@ function ContratDate({
               type: "date",
               name: `${type}-date`,
               defaultValue: contratDates[type].date || "",
-              required: true,
+              required: type === "start",
             }}
           />
           <div className="flex-row">
@@ -294,10 +329,10 @@ function ContratDate({
               type="submit"
             />
             <Button
-              iconId="fr-icon-close-line"
-              onClick={() => onCancel(type)}
+              iconId="fr-icon-arrow-go-back-fill"
+              onClick={() => onReset(type, contratDates[type].status)}
               priority="tertiary no outline"
-              title="Annuler"
+              title="Réinitialiser"
               type="button"
             />
           </div>
@@ -314,7 +349,7 @@ function ContratDate({
               title={editDateText}
             />
           </div>
-          {contratDates[type].date && (
+          {contratDates[type].status !== "unknown" && (
             <DateStatusBadge status={contratDates[type].status} />
           )}
         </>
@@ -325,23 +360,30 @@ function ContratDate({
   )
 }
 
+type DateKeys = "date_debut" | "date_fin"
+
 export type CorrectedDates = Record<
   number,
   {
-    start_date?: string
-    end_date?: string
+    [K in DateKeys]?: string
   }
 >
 
-export const formatCorrectedDates = (contractsDates: Record<string, string> | null) => {
+export const formatCorrectedDates = (
+  contractsDates: Record<string, string> | null
+): CorrectedDates | undefined => {
   if (contractsDates) {
     return Object.entries(contractsDates).reduce((acc, [key, value]) => {
       const [id, dateType] = key.split("-")
       const contractId = Number(id)
-      const dateTypeKey = `${dateType}_date`
+      const dateTypeKey: DateKeys | null =
+        dateType === "start" ? "date_debut" : dateType === "end" ? "date_fin" : null
 
-      if (contractId && ["start_date", "end_date"].includes(dateTypeKey)) {
-        const dateObj = { ...(acc[contractId] || {}), [dateTypeKey]: value }
+      if (contractId && dateTypeKey) {
+        const dateObj = {
+          ...(acc?.[contractId] || {}),
+          [dateTypeKey]: value || "9999-01-01",
+        }
         acc[contractId] = dateObj
       }
       return acc

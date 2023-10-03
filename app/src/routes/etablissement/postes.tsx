@@ -23,7 +23,7 @@ import {
   getQueryAsArray,
   getQueryAsNumberArray,
 } from "../../helpers/format"
-import { JobMergedBadge } from "../../helpers/contrats"
+import { JobMergedBadge, formatCorrectedDates } from "../../helpers/contrats"
 import {
   parseAndFilterMergeStr,
   type MergeOptionObject,
@@ -35,9 +35,8 @@ import type { AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
-import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
-import { Table } from "@codegouvfr/react-dsfr/Table"
 
+import AppIndicator from "../../components/AppIndicator"
 import AppMultiSelect, { type Option } from "../../components/AppMultiSelect"
 import AppRebound from "../../components/AppRebound"
 import Deferring from "../../components/Deferring"
@@ -82,10 +81,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     (poste) => ({ value: poste.posteId, label: poste.libellePoste } as Option)
   )
 
+  // Get user modifications from localStorage
   const localOpenDays = ls.get(`etab.${params.siret}.openDays`)
   const savedOpenDaysCodes = formatLocalOpenDays(localOpenDays)
   const localMergesIds = ls.get(`etab.${params.siret}.merges`)
   const formattedMergesIds = formatLocalMerges(localMergesIds)
+  const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
+  const correctedDates = formatCorrectedDates(lsContrats)
 
   const savedMerges: MergeOptionObject[] = Array.isArray(formattedMergesIds)
     ? formattedMergesIds.map(
@@ -111,6 +113,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     startDate: queryStartDate,
     endDate: queryEndDate,
     openDaysCodes: savedOpenDaysCodes,
+    correctedDates,
     mergedPostesIds: formattedMergesIds,
     natures: queryNatures,
     motives: queryMotives,
@@ -121,6 +124,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     startDate: queryStartDate,
     endDate: queryEndDate,
     openDaysCodes: savedOpenDaysCodes,
+    correctedDates,
     mergedPostesIds: formattedMergesIds,
     motives: queryMotives,
     signal: indicatorController.signal,
@@ -136,6 +140,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   return {
+    correctedDates,
     deferredCalls: defer({
       jobProportionIndicator,
       precariousJobIndicator,
@@ -154,11 +159,17 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 }
 
+const modal = createModal({
+  id: "job-list-modal",
+  isOpenedByDefault: false,
+})
+
 export default function EtabPostes() {
   const {
+    correctedDates,
+    deferredCalls,
     etabId,
     jobList: initialJobList,
-    deferredCalls,
     openDaysCodes,
     options,
     queryEndDate,
@@ -195,10 +206,6 @@ export default function EtabPostes() {
     motives: queryMotives,
     natures: queryNatures,
   })
-  const modal = createModal({
-    id: "job-list-modal",
-    isOpenedByDefault: false,
-  })
 
   const handleAddMerge = () => setMerges([...merges, { id: uuid(), mergedOptions: [] }])
   const handleDeleteMerge = (id: number | string) =>
@@ -220,6 +227,7 @@ export default function EtabPostes() {
       startDate: queryStartDate,
       endDate: queryEndDate,
       openDaysCodes,
+      correctedDates,
       mergedPostesIds: merges,
       natures: queryNatures,
       motives: queryMotives,
@@ -230,6 +238,7 @@ export default function EtabPostes() {
       id: etabId,
       startDate: queryStartDate,
       endDate: queryEndDate,
+      correctedDates,
       openDaysCodes,
       mergedPostesIds: merges,
       motives: queryMotives,
@@ -487,7 +496,6 @@ function PrecariousJobsIndicator({ hasMotives = false }: PrecariousJobsIndicator
   }
 
   const { precariousJobs, meta } = deferredData
-  const [showTable, setShowTable] = useState(false)
   const start = formatDate(meta.startDate, "MMMM YYYY")
   const end = formatDate(meta.endDate, "MMMM YYYY")
 
@@ -531,43 +539,29 @@ function PrecariousJobsIndicator({ hasMotives = false }: PrecariousJobsIndicator
   const nbCdi = firstJob.nbCdi.toLocaleString("fr-FR")
   const nbCddCtt = firstJob.nbCddCtt.toLocaleString("fr-FR")
 
-  const readingNote = (
-    <div className="fr-mb-2w">
-      <h5 className="fr-text--md fr-mt-3w fr-mb-1v font-bold">Note de lecture</h5>
-      <p className="fr-text--sm fr-mb-0">
-        De {start} à {end}, pour le libellé de poste "{firstJobLabel}"{filters}
-        les jours travaillés en CDD et CTT représentent {cddCttShare}% des jours
-        travaillés en CDI, CDD et CTT soit {nbCdi} jours travaillés en CDI pour {nbCddCtt}{" "}
-        en CDD et CTT.
-      </p>
-      {hasMotives && (
-        <p className="fr-text--sm fr-mb-0 italic">
-          Les CDI n'ont pas de motifs de recours : tous les CDI sont comptabilisés.
-        </p>
-      )}
-    </div>
-  )
+  const title =
+    "Les dix libellés de poste comptant le plus de jours travaillés en CDD et CTT :"
+  const readingNote = `
+    De ${start} à ${end}, pour le libellé de poste "${firstJobLabel}"${filters}
+    les jours travaillés en CDD et CTT représentent ${cddCttShare}% des jours
+    travaillés en CDI, CDD et CTT soit ${nbCdi} jours travaillés en CDI pour
+    ${nbCddCtt} en CDD et CTT.
+  `
+  const subReadingNote = hasMotives
+    ? "Les CDI n'ont pas de motifs de recours : tous les CDI sont comptabilisés."
+    : ""
 
   return (
-    <>
-      <h4 className="fr-text--md">
-        Les dix libellés de poste comptant le plus de jours travaillés en CDD et CTT :{" "}
-      </h4>
-      {showTable ? (
-        <Table className="app-table--thin fr-mb-2w" headers={headers} data={tableData} />
-      ) : (
-        <div className="h-[28rem] w-full">
-          <PrecariousJobsBarChart data={data} />
-        </div>
-      )}
-      <ToggleSwitch
-        label="Afficher les données sous forme de tableau"
-        checked={showTable}
-        onChange={(checked) => setShowTable(checked)}
-        classes={{ label: "w-full" }}
-      />
-
-      {readingNote}
-    </>
+    <AppIndicator
+      id="precarious-jobs"
+      title={title}
+      readingNote={readingNote}
+      subReadingNote={subReadingNote}
+      table={{ headers, data: tableData }}
+    >
+      <div className="h-[28rem] w-full">
+        <PrecariousJobsBarChart data={data} />
+      </div>
+    </AppIndicator>
   )
 }

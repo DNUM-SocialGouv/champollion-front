@@ -1,7 +1,15 @@
 import api from "../config"
-import type { Effectif, EffectifUnit, IndicatorMetaData, LastEffectif } from "../types"
+import type {
+  Effectif,
+  EffectifUnit,
+  IndicatorMetaData,
+  LastEffectif,
+  ModificationsBody,
+} from "../types"
+import type { CorrectedDates } from "../../helpers/contrats"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
-import { motivesCodeDict } from "../../helpers/filters"
+import { addMotivesEndpointParam } from "../../helpers/filters"
+import { addArrayParams } from "../../helpers/format"
 
 type EffectifsParams = {
   id: number
@@ -11,6 +19,7 @@ type EffectifsParams = {
   motives?: number[]
   openDaysCodes?: string[]
   postesIds?: number[]
+  correctedDates?: CorrectedDates
   mergedPostesIds?: number[][]
   signal?: AbortSignal
 }
@@ -23,37 +32,22 @@ export const postEffectifs = async ({
   motives,
   postesIds,
   openDaysCodes,
+  correctedDates,
   mergedPostesIds,
   signal,
 }: EffectifsParams) => {
   try {
     let params = `etablissement_id=${id}&start_date=${startDate}&end_date=${endDate}&unit=${unit}`
 
-    if (motives && motives.length > 0) {
-      const motivesCodes = motives
-        .map((motive) => motivesCodeDict[motive])
-        .filter(Boolean)
-        .flat()
-      const motivesParam = motivesCodes
-        .map((motive) => `motif_recours_ids=${motive}`)
-        .join("&")
-      params += `&${motivesParam}`
-    }
+    params = addMotivesEndpointParam(params, motives)
+    params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
+    params = addArrayParams(params, postesIds, "poste_ids")
 
-    if (openDaysCodes && openDaysCodes.length > 0) {
-      const openDaysParam = openDaysCodes
-        .map((day) => `jour_ouverture_ids=${day}`)
-        .join("&")
-      params += `&${openDaysParam}`
-    }
-    if (postesIds && postesIds.length > 0) {
-      const postesParam = postesIds.map((poste) => `poste_ids=${poste}`).join("&")
-      params += `&${postesParam}`
-    }
+    const body: ModificationsBody = {}
 
-    let body = {}
     if (mergedPostesIds && mergedPostesIds?.length > 0)
-      body = { merged_poste_ids: mergedPostesIds }
+      body.merged_poste_ids = mergedPostesIds
+    if (correctedDates) body.corrected_dates = correctedDates
 
     let config = {}
     if (signal) config = { signal }
@@ -69,9 +63,12 @@ export const postEffectifs = async ({
   }
 }
 
-export const getEffectifsLast = async (id: number) => {
+export const postEffectifsLast = async (id: number, correctedDates?: CorrectedDates) => {
   try {
-    const response = await api.get(`/effectifs/last?etablissement_id=${id}`)
+    const body: ModificationsBody = {}
+    if (correctedDates) body.corrected_dates = correctedDates
+
+    const response = await api.post(`/effectifs/last?etablissement_id=${id}`, body)
     return (response.data?.data as LastEffectif) ?? handleUndefinedData("/effectifs/last")
   } catch (err) {
     return handleEndpointError(err)

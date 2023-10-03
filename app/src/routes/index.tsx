@@ -207,7 +207,7 @@ function SearchHistory({ searchHistory }: { searchHistory: string[][] }) {
         searchHistory.length > 2 ? (
           <>
             <ul className="fr-m-0">
-              <AppCollapse shortDesc={firstTwo()}>
+              <AppCollapse shortDesc={firstTwo()} id="search-history-collapse">
                 <ul className="fr-pl-0 fr-my-0">
                   {searchHistory
                     .slice(2)

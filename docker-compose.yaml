@@ -14,7 +14,7 @@ services:
     networks:
       - champollion
     volumes:
-    - ${LOGS_STORAGE_PATH}/champollion-front-app-${COMPOSE_PROJECT_NAME}/app:/var/log/nginx
+    - ${LOGS_STORAGE_PATH}/champollion-${COMPOSE_PROJECT_NAME}-front-app:/var/log/nginx
   
   oauth2-proxy:
     image: ${NEXUS_CHAMPOLLION_URL}/front/oauth2-proxy:${OAUTH2_PROXY_IMAGE_TAG}
@@ -50,7 +50,7 @@ services:
 
   reverse-proxy:
     image: ${NEXUS_CHAMPOLLION_URL}/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG}
-    container_name: champollion-front-${COMPOSE_PROJECT_NAME}-reverse-proxy
+    container_name: champollion-${COMPOSE_PROJECT_NAME}-front-reverse-proxy
     restart: on-failure
     networks:
       - champollion
@@ -63,4 +63,4 @@ services:
       - ${REVERSE_PROXY_HTTPS_PORT}:443
     volumes:
       - ${REVERSE_PROXY_SSL_STORAGE_PATH}:/etc/ssl
-      - ${LOGS_STORAGE_PATH}/champollion-front-reverse-proxy-${COMPOSE_PROJECT_NAME}/reverse-proxy:/var/log/nginx
+      - ${LOGS_STORAGE_PATH}/champollion-${COMPOSE_PROJECT_NAME}-front-reverse-proxy:/var/log/nginx

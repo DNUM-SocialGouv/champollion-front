@@ -7,7 +7,8 @@ type AppCollapseProps = {
   children: ReactNode
   className?: string
   defaultExpanded?: boolean
-  id?: string
+  id: string
+  keepBtnOnTop?: boolean
   label?: string
   labelOpen?: string
   shortDesc?: ReactNode
@@ -18,10 +19,11 @@ export default function AppCollapse({
   className,
   children,
   defaultExpanded = false,
-  id = "app-collapse",
+  id,
   label = "Voir plus",
   labelOpen: labelOpenProps,
   shortDesc,
+  keepBtnOnTop = false,
 }: AppCollapseProps) {
   const labelOpen = labelOpenProps || "Voir moins"
   const collapseElementId = `${id}-collapse`
@@ -31,7 +33,7 @@ export default function AppCollapse({
     setExpandedState((value) => !value)
   }, [])
   return (
-    <>
+    <div className="flex flex-col">
       {shortDesc}
       <div
         className={`fr-collapse ${
@@ -45,7 +47,7 @@ export default function AppCollapse({
       </div>
 
       <Button
-        className={`-ml-3 ${className}`}
+        className={`-ml-3 ${className} ${keepBtnOnTop ? "order-first" : ""}`}
         iconId="fr-icon-arrow-down-s-line"
         iconPosition="right"
         onClick={onExtendButtonClick}
@@ -61,6 +63,6 @@ export default function AppCollapse({
       >
         {!!labelOpenProps && expandedState ? labelOpen : label}
       </Button>
-    </>
+    </div>
   )
 }

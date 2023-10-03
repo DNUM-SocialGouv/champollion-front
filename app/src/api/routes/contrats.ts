@@ -1,11 +1,18 @@
 import api from "../config"
-import type { EttContrat, EtuContrat, FileExtension, PaginationMetaData } from "../types"
-import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
+import type {
+  EttContrat,
+  EtuContrat,
+  FileExtension,
+  ModificationsBody,
+  PaginationMetaData,
+} from "../types"
 import type { CorrectedDates } from "../../helpers/contrats"
-import { motivesCodeDict } from "../../helpers/filters"
+import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
+import { addMotivesEndpointParam } from "../../helpers/filters"
 import { addArrayParams } from "../../helpers/format"
 
 type Common = {
+  correctedDates?: CorrectedDates
   employeesIds?: number[]
   endDate?: string
   id: number
@@ -26,13 +33,7 @@ type ExportParams = Common & {
   isEtu?: boolean
   format: FileExtension
   companyName: string
-  correctedDates?: CorrectedDates
   siret: string
-}
-
-type Body = {
-  corrected_dates?: CorrectedDates
-  merged_poste_ids?: number[][]
 }
 
 export const postContratsEtu = async ({
@@ -43,6 +44,7 @@ export const postContratsEtu = async ({
   natures,
   postesIds,
   employeesIds,
+  correctedDates,
   mergedPostesIds,
   page = 1,
   per = 20,
@@ -53,17 +55,7 @@ export const postContratsEtu = async ({
     if (endDate) params += `&end_date=${endDate}`
     if (startDate) params += `&start_date=${startDate}`
 
-    if (motives && motives.length > 0) {
-      const motivesCodes = motives
-        .map((motive) => motivesCodeDict[motive])
-        .filter(Boolean)
-        .flat()
-      const motivesParam = motivesCodes
-        .map((motive) => `motif_recours_ids=${motive}`)
-        .join("&")
-      params += `&${motivesParam}`
-    }
-
+    params = addMotivesEndpointParam(params, motives)
     params = addArrayParams(params, natures, "nature_contrat_ids")
     params = addArrayParams(params, postesIds, "poste_ids")
     params = addArrayParams(params, employeesIds, "salarie_ids")
@@ -71,10 +63,11 @@ export const postContratsEtu = async ({
     if (page) params += `&page=${page}`
     if (per) params += `&per_page=${per}`
 
-    let body = {}
+    const body: ModificationsBody = {}
 
     if (mergedPostesIds && mergedPostesIds?.length > 0)
-      body = Object.assign(body, { merged_poste_ids: mergedPostesIds })
+      body.merged_poste_ids = mergedPostesIds
+    if (correctedDates) body.corrected_dates = correctedDates
 
     const response = await api.post(`/contrats/etu?${params}`, body)
     const contrats = response.data?.data as EtuContrat[]
@@ -95,7 +88,7 @@ export const getContratsEtt = async ({
   id,
   startDate,
   endDate,
-  postesIds: postes,
+  postesIds,
   page = 1,
   per = 20,
 }: ContratsParams) => {
@@ -106,10 +99,7 @@ export const getContratsEtt = async ({
     if (startDate) params += `&start_date=${startDate}`
     if (page) params += `&page=${page}`
     if (per) params += `&per_page=${per}`
-    if (postes && postes.length > 0) {
-      const postesParam = postes.map((poste) => `poste_ids=${poste}`).join("&")
-      params += `&${postesParam}`
-    }
+    params = addArrayParams(params, postesIds, "poste_ids")
 
     const response = await api.post(`/contrats/ett?${params}`)
     const contrats = response.data?.data as EttContrat[]
@@ -149,19 +139,12 @@ export const postContratsExport = async ({
     if (endDate) params += `&end_date=${endDate}`
     if (startDate) params += `&start_date=${startDate}`
 
-    if (motives && motives.length > 0) {
-      const motivesCodes = motives
-        .map((motive) => motivesCodeDict[motive])
-        .filter(Boolean)
-        .flat()
-      params = addArrayParams(params, motivesCodes, "motif_recours_ids")
-    }
-
+    params = addMotivesEndpointParam(params, motives)
     params = addArrayParams(params, natures, "nature_contrat_ids")
     params = addArrayParams(params, postesIds, "poste_ids")
     params = addArrayParams(params, employeesIds, "salarie_ids")
 
-    const body: Body = {}
+    const body: ModificationsBody = {}
 
     if (mergedPostesIds && mergedPostesIds?.length > 0)
       body.merged_poste_ids = mergedPostesIds
