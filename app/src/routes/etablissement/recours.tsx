@@ -28,7 +28,7 @@ import {
 import { noticeCorrectData } from "../../helpers/carence"
 import { formatCorrectedDates } from "../../helpers/contrats"
 import { errorWording, isAppError } from "../../helpers/errors"
-import { filterDetails, getQueryDates } from "../../helpers/filters"
+import { filtersDetail as filtersDetail, getQueryDates } from "../../helpers/filters"
 import {
   createFiltersQuery,
   formatDate,
@@ -79,7 +79,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const queryJobs = getQueryAsNumberArray(searchParams, "poste")
   const queryUnit = getQueryAsString(searchParams, "unit")
 
-  const unit: EffectifUnit = isEffectifUnit(queryUnit) ? queryUnit : "tot"
+  const unit: EffectifUnit = isEffectifUnit(queryUnit) ? queryUnit : "avg"
 
   // Get user modifications from localStorage
   const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
@@ -334,12 +334,12 @@ function EtabPostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
   const handleUnitSelected = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newKey = Number(event.target.value)
     const newUnitOption = getUnitOptionFromKey(newKey)
-    const unitValue = newUnitOption?.value || "tot"
+    const unitValue = newUnitOption?.value || "avg"
     searchParams.set("unit", unitValue)
     setSearchParams(searchParams)
   }
 
-  const filtersInfo = filterDetails({
+  const filtersInfo = filtersDetail({
     queryMotives,
     queryJobs,
     jobListWithoutMerges,
@@ -429,7 +429,7 @@ function EtabPostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
           )}
       </div>
 
-      {queryJobs.length > 0 && queryMotives.length > 0 && (
+      {(queryJobs.length > 0 || queryMotives.length > 0) && (
         <AppCollapse
           id="filters-collapse"
           className="fr-mb-1w"
