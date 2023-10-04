@@ -69,7 +69,7 @@ export const addMotivesEndpointParam = (params: string, motives?: number[]) => {
   return params
 }
 
-type filterDetailsArgs = {
+type filtersDetailArgs = {
   queryJobs?: number[]
   jobListWithoutMerges?: EtablissementPoste[]
   localMerges?: number[][]
@@ -79,11 +79,11 @@ type filterDetailsArgs = {
 const getFullJobTitle = (
   jobId: number,
   jobListWithoutMerges: EtablissementPoste[],
-  localMerges: number[][]
+  localMerges?: number[][]
 ): string => {
   const jobListData = jobListWithoutMerges.find((job) => job.posteId === jobId)
   if (jobListData) {
-    const isMerged = localMerges.flat().includes(jobId)
+    const isMerged = localMerges && localMerges.flat().includes(jobId)
     if (!isMerged) return jobListData.libellePoste
     else {
       const mergeArr = localMerges.find((merge) => merge.includes(jobId))
@@ -94,19 +94,19 @@ const getFullJobTitle = (
           )
           .filter(Boolean)
           .map((job) => job?.libellePoste)
-        return mergedLabelsList[0] + " fusion de : " + mergedLabelsList.join(", ")
+        return mergedLabelsList[0] + " – fusion de : " + mergedLabelsList.join(", ")
       }
     }
   }
-  return "never"
+  return ""
 }
 
-export const filterDetails = ({
+export const filtersDetail = ({
   queryJobs,
   jobListWithoutMerges,
   localMerges,
   queryMotives,
-}: filterDetailsArgs) => {
+}: filtersDetailArgs) => {
   return (
     <div className="fr-p-2w fr-mb-2w rounded-2xl border border-solid border-bd-default-grey bg-bg-alt-grey">
       {queryMotives && queryMotives.length > 0 && (
@@ -122,7 +122,7 @@ export const filterDetails = ({
           </ul>
         </div>
       )}
-      {queryJobs && queryJobs.length > 0 && jobListWithoutMerges && localMerges && (
+      {queryJobs && queryJobs.length > 0 && jobListWithoutMerges && (
         <div>
           <b>Libellés de poste : </b>
           <ul>
