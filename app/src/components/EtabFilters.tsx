@@ -74,7 +74,7 @@ export default function EtabFilters({
     ? motives
         .map(
           (motive) =>
-            motiveOptions.find((option) => option.value === Number(motive)) ||
+            motiveOptions.find((option) => Number(option.value) === motive) ||
             ({} as Option)
         )
         .filter((option) => Object.keys(option).length > 0)
