@@ -17,7 +17,7 @@ export default function LegalNotice() {
   return (
     <>
       <div className="fr-container fr-py-4w flex flex-col lg:w-3/5">
-        <h1 className="fr-h2 fr-pt-4w text-center">Mentions légales – Champollion</h1>
+        <h1 className="fr-h2 fr-pt-4w text-center">Mentions légales – VisuDSN</h1>
         <hr className="w-full" />
 
         {isAppError(legalNotice) ? (

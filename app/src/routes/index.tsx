@@ -13,6 +13,7 @@ import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Input } from "@codegouvfr/react-dsfr/Input"
 import { Notice } from "@codegouvfr/react-dsfr/Notice"
 import artworkDataViz from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/digital/data-visualization.svg"
+import artworkDocument from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/document/document.svg"
 import artworkMail from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/digital/mail-send.svg"
 import artworkCommunity from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/leisure/community.svg"
 import artworkPassport from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/document/passport.svg"
@@ -62,6 +63,7 @@ export default function Index() {
 
   const externalLinksPicto: Record<string, string> = {
     dataviz: artworkDataViz,
+    document: artworkDocument,
     passport: artworkPassport,
     mail: artworkMail,
     community: artworkCommunity,

@@ -301,15 +301,6 @@ export default function EffectifBarChart({
             isFront
           />
 
-          {/* This is a "hack" bar, invisible, just to create a legend for the ReferenceAreas */}
-          <Bar
-            dataKey="isEmpty"
-            name="Aucune donnée"
-            legendType="rect"
-            fill="var(--background-contrast-grey)"
-            stackId="fakeBarForLegend"
-          />
-
           <Brush
             dataKey="label"
             endIndex={brushIndexes.endIndex}

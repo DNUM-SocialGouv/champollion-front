@@ -2,10 +2,10 @@
 
 👉 _See French README [here](documentation/README.md)_
 
-Front-IT is the front-end repository of the web application dedicated to French Labour Inspection (IT) of the [Champollion project](https://eig.etalab.gouv.fr/defis/champollion/).
+Front-IT is the front-end repository of VisuDSN, the web application dedicated to French Labour Inspection (IT) of the [Champollion project](https://eig.etalab.gouv.fr/defis/champollion/).
 This project is developed at the digital direction of French social ministries.
 
-The Champollion project aims at facilitating secure access for labor inspectors to data on companies and employees, including fraud detection on precarious contracts.
+The VisuDSN website aims at facilitating secure access for labor inspectors to data on companies and employees, including fraud detection on precarious contracts. It's an internal tool.
 
 This project is built with [Vite](https://vitejs.dev/), [React](https://fr.reactjs.org/) and TypeScript.
 _See other dependencies [here.](documentation/5_dependances.md)📚_
