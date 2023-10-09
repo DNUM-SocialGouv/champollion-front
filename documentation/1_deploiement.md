@@ -1,6 +1,6 @@
 # 1. Déploiement
 
-L'application web Champollion est disponible sur le repository [front-it](..).
+L'application web VisuDSN est disponible sur le repository [front-it](..).
 
 > ⚠️ Pour lancer l'application en local voir la documentation sur [l'environnement de développement](2_developpement.md)
 

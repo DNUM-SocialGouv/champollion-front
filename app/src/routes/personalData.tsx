@@ -18,7 +18,7 @@ export default function PersonalData() {
     <>
       <div className="fr-container fr-py-4w flex flex-col lg:w-3/5">
         <h1 className="fr-h2 fr-pt-4w text-center">
-          Politique de conﬁdentialité – Plateforme Champollion
+          Politique de conﬁdentialité – Plateforme VisuDSN
         </h1>
         <hr className="w-full" />
 

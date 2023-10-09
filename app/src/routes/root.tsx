@@ -5,6 +5,7 @@ import { ScrollRestoration } from "react-router-dom"
 import { MuiDsfrThemeProvider } from "@codegouvfr/react-dsfr/mui"
 import { StyledEngineProvider } from "@mui/material/styles"
 import { headerFooterDisplayItem } from "@codegouvfr/react-dsfr/Display"
+import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Footer } from "@codegouvfr/react-dsfr/Footer"
 import { Header } from "@codegouvfr/react-dsfr/Header"
 
@@ -25,13 +26,14 @@ const brandTop = (
 
 const homeLinkProps = {
   to: "/",
-  title: "Accueil Champollion - Ministère du travail, du plein emploi et de l'insertion",
+  title: "Accueil VisuDSN - Ministère du travail, du plein emploi et de l'insertion",
 }
 
 const contentDescription = (
   <>
-    Champollion est un projet développé par les équipes de la Direction du numérique des
-    ministères sociaux, en collaboration avec la Direction Générale du Travail (DGT).
+    VisuDSN est un outil développé dans le cadre du projet Champollion par les équipes de
+    la Direction du numérique des ministères sociaux, en collaboration avec la Direction
+    Générale du Travail (DGT).
     <br />
     <br />
     Pour nous contacter par courriel :{" "}
@@ -65,8 +67,16 @@ export default function Root() {
           <Header
             brandTop={brandTop}
             homeLinkProps={homeLinkProps}
-            serviceTagline="L'outil d'aide au contrôle précarité"
-            serviceTitle="Champollion"
+            classes={{ serviceTagline: "fr-text--sm" }}
+            serviceTagline="Outil d'exploration des données sociales et d'aide au contrôle de l'inspection du travail"
+            serviceTitle={
+              <>
+                VisuDSN{" "}
+                <Badge noIcon severity="info">
+                  ex-Champollion
+                </Badge>
+              </>
+            }
             quickAccessItems={[
               {
                 iconId: "fr-icon-search-line",
