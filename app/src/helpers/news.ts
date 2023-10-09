@@ -20,6 +20,20 @@ type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
   {
+    date: "2023-10-05",
+    news: [
+      {
+        category: "Nouveau nom !",
+        list: [
+          {
+            type: "feat",
+            desc: "Le nouveau nom a été décidé : VisuDSN, pour remplacer Champollion.",
+          },
+        ],
+      },
+    ],
+  },
+  {
     date: "2023-10-03",
     news: [
       {
