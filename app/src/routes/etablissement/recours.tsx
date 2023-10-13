@@ -32,6 +32,8 @@ import { filtersDetail as filtersDetail, getQueryDates } from "../../helpers/fil
 import {
   createFiltersQuery,
   formatDate,
+  formatLocalClosedPublicHolidays,
+  formatLocalExceptionalDates,
   formatLocalMerges,
   formatLocalOpenDays,
   getQueryAsNumberArray,
@@ -85,8 +87,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // Get user modifications from localStorage
   const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
   const formattedMergesIds = formatLocalMerges(localMergesIds)
-  const openDays = ls.get(`etab.${params.siret}.openDays`)
-  const formattedOpenDays = formatLocalOpenDays(openDays)
+  const localOpenDays = ls.get(`etab.${params.siret}.openDays`)
+  const formattedOpenDays = formatLocalOpenDays(localOpenDays)
+  const localOpenDates = ls.get(`etab.${params.siret}.openDates`)
+  const formattedOpenDates = formatLocalExceptionalDates(localOpenDates)
+  const localClosedDates = ls.get(`etab.${params.siret}.closedDates`)
+  const formattedClosedDates = formatLocalExceptionalDates(localClosedDates)
+  const localClosedPublicHolidays = ls.get(`etab.${params.siret}.closedPublicHolidays`)
+  const formattedClosedPublicHolidays = formatLocalClosedPublicHolidays(
+    localClosedPublicHolidays
+  )
   const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
   const correctedDates = formatCorrectedDates(lsContrats)
 
@@ -108,6 +118,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     correctedDates,
     mergedPostesIds: formattedMergesIds,
     openDaysCodes: formattedOpenDays,
+    openDates: formattedOpenDates,
+    closedDates: formattedClosedDates,
+    closedPublicHolidays: formattedClosedPublicHolidays,
     signal: deferredCallsController.signal,
   })
   const contractNatureIndicator = postIndicateur2({
@@ -119,6 +132,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     correctedDates,
     mergedPostesIds: formattedMergesIds,
     openDaysCodes: formattedOpenDays,
+    openDates: formattedOpenDates,
+    closedDates: formattedClosedDates,
+    closedPublicHolidays: formattedClosedPublicHolidays,
     signal: deferredCallsController.signal,
   })
 

@@ -2,6 +2,23 @@ import api from "../config"
 import type { ExternalLink } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 
+export const getPublicHolidays = async ({
+  startDate,
+  endDate,
+}: {
+  startDate: string
+  endDate: string
+}) => {
+  try {
+    const response = await api.get(
+      `/contents/public_holidays?start_date=${startDate}&end_date=${endDate}`
+    )
+    return (response.data?.data as string[]) ?? handleUndefinedData("/postes/")
+  } catch (err) {
+    return handleEndpointError(err)
+  }
+}
+
 export const getCgu = async () => {
   try {
     const response = await api.get(`/contents/cgu`)

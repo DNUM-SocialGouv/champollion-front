@@ -2,7 +2,7 @@ import api from "../config"
 import type { IDCC, Infractions, MetaCarences, ModificationsBody } from "../types"
 import type { CorrectedDates } from "../../helpers/contrats"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
-import { addArrayParams } from "../../helpers/format"
+import { PublicHolidaysClosed, addArrayParams } from "../../helpers/format"
 
 type CarenceParams = {
   id: number
@@ -10,6 +10,9 @@ type CarenceParams = {
   endDate?: string
   postesIds?: number[]
   openDaysCodes?: string[]
+  openDates?: string[]
+  closedDates?: string[]
+  closedPublicHolidays?: PublicHolidaysClosed
   legislation?: string
   correctedDates?: CorrectedDates
   mergedPostesIds?: number[][]
@@ -22,6 +25,9 @@ export const postCarences = async ({
   endDate,
   postesIds,
   openDaysCodes,
+  openDates,
+  closedDates,
+  closedPublicHolidays,
   legislation,
   correctedDates,
   mergedPostesIds,
@@ -35,6 +41,9 @@ export const postCarences = async ({
     if (legislation) params += `&legislation_carence=${legislation}`
     params = addArrayParams(params, postesIds, "poste_ids")
     params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
+    params = addArrayParams(params, openDates, "jour_ouverture_dates")
+    params = addArrayParams(params, closedDates, "jour_fermeture_dates")
+    if (closedPublicHolidays === "no") params += `&jour_ferie_bool=${false}`
 
     const body: ModificationsBody = {}
 
