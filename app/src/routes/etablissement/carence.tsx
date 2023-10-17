@@ -6,7 +6,7 @@ import {
   useAsyncValue,
 } from "react-router-dom"
 import { defer, useLoaderData } from "react-router-typesafe"
-import { Fragment } from "react"
+import { Fragment, useEffect } from "react"
 
 import {
   getCarencesIdcc,
@@ -38,6 +38,7 @@ import { JobMergedBadge, formatCorrectedDates } from "../../helpers/contrats"
 import { errorWording, isAppError } from "../../helpers/errors"
 import { getQueryDates } from "../../helpers/filters"
 import { initJobOptions } from "../../helpers/postes"
+import { trackEvent } from "../../helpers/analytics"
 
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
@@ -114,6 +115,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     queryEndDate,
     queryJobs,
     queryStartDate,
+    raisonSociale: etabType.raisonSociale,
   }
 }
 
@@ -142,6 +144,7 @@ export default function EtabCarence() {
     queryJobs,
     queryStartDate,
     queryEndDate,
+    raisonSociale,
   } = useLoaderData<typeof loader>()
   const navigation = useNavigation()
   if (navigation.state === "loading") {
@@ -214,7 +217,16 @@ export default function EtabCarence() {
     const legislationValue = newLegislationOption?.value
     searchParams.set("legislation", legislationValue)
     setSearchParams(searchParams)
+    trackEvent({
+      category: "Carence",
+      action: "IDCC sélectionné",
+      properties: legislationValue,
+    })
   }
+
+  useEffect(() => {
+    document.title = `Délai de carence - ${raisonSociale}`
+  }, [])
 
   return (
     <>
@@ -305,6 +317,7 @@ export default function EtabCarence() {
                 },
               }}
               title="Fusion de postes"
+              tracking={{ category: "Carence" }}
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
@@ -317,6 +330,7 @@ export default function EtabCarence() {
                 },
               }}
               title="Contrats"
+              tracking={{ category: "Carence" }}
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
@@ -329,6 +343,7 @@ export default function EtabCarence() {
                 },
               }}
               title="Recours abusif"
+              tracking={{ category: "Carence" }}
             />
           </div>
         </div>
@@ -396,6 +411,7 @@ function EtabCarenceInfraction() {
             startDate={queryStartDate}
             endDate={queryEndDate}
             hasJobs={queryJobs.length > 0}
+            tracking={{ category: "Carence" }}
           />
 
           <h3 className="fr-text--md underline underline-offset-4">
@@ -491,6 +507,7 @@ function DelayByJobIndicator({
       subTitle={subTitle}
       readingNote={readingNote}
       table={{ headers, data: tableData }}
+      tracking={{ category: "Carence" }}
     >
       <div className="fr-mb-2w h-60 w-full">
         <ContractsPieChart data={data} />

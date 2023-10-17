@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react"
+import { Fragment, useEffect, useState } from "react"
 import { Form, Link, redirect } from "react-router-dom"
 import type { ActionFunctionArgs } from "react-router-dom"
 import { useActionData, useLoaderData } from "react-router-typesafe"
@@ -73,6 +73,10 @@ export default function Index() {
     lsSirets && lsSirets.length > 0
       ? lsSirets.filter((siretData) => siretData.length == 2)
       : []
+
+  useEffect(() => {
+    document.title = "VisuDSN - Accueil"
+  }, [])
 
   return (
     <>

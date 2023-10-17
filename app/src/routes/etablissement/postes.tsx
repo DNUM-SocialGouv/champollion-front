@@ -1,4 +1,4 @@
-import { type FormEvent, Fragment, useState } from "react"
+import { type FormEvent, Fragment, useState, useEffect } from "react"
 import { defer, useLoaderData } from "react-router-typesafe"
 import { useNavigation, type LoaderFunctionArgs, useAsyncValue } from "react-router-dom"
 import ls from "localstorage-slim"
@@ -29,6 +29,7 @@ import {
   type MergeOptionObject,
   filteredOptions,
 } from "../../helpers/postes"
+import { trackEvent } from "../../helpers/analytics"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import type { AlertProps } from "@codegouvfr/react-dsfr/Alert"
@@ -154,6 +155,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     queryMotives,
     queryNatures,
     queryStartDate,
+    raisonSociale: etabType.raisonSociale,
     savedMerges,
     siret,
   }
@@ -176,6 +178,7 @@ export default function EtabPostes() {
     queryMotives,
     queryNatures,
     queryStartDate,
+    raisonSociale,
     savedMerges,
     siret,
     indicatorController,
@@ -207,7 +210,10 @@ export default function EtabPostes() {
     natures: queryNatures,
   })
 
-  const handleAddMerge = () => setMerges([...merges, { id: uuid(), mergedOptions: [] }])
+  const handleAddMerge = () => {
+    setMerges([...merges, { id: uuid(), mergedOptions: [] }])
+    trackEvent({ category: "Postes", action: "Fusion ajoutée" })
+  }
   const handleDeleteMerge = (id: number | string) =>
     setMerges(merges.filter((merge) => merge.id !== id))
 
@@ -271,10 +277,19 @@ export default function EtabPostes() {
       severity = "success"
       title = "Sauvegardé"
       message = "Les fusions ont bien été prises en compte."
+      trackEvent({
+        category: "Postes",
+        action: "Fusions sauvegardées",
+        value: merges.length,
+      })
     }
 
     setAlertState({ severity, title, message })
   }
+
+  useEffect(() => {
+    document.title = `Postes - ${raisonSociale}`
+  }, [])
 
   return (
     <>
@@ -290,7 +305,16 @@ export default function EtabPostes() {
         />
         <h2 className="fr-text--xl fr-mb-1w">Etat des lieux des postes</h2>
         <hr />
-        <Button onClick={() => modal.open()} className="fr-mb-4w">
+        <Button
+          onClick={() => {
+            modal.open()
+            trackEvent({
+              category: "Postes",
+              action: "Liste de libellés ouverte",
+            })
+          }}
+          className="fr-mb-4w"
+        >
           Consulter la liste des libellés de poste
         </Button>
         <modal.Component title="Liste des postes de l'établissement">
@@ -315,6 +339,7 @@ export default function EtabPostes() {
             collapseReadingNote
             hasMotives={queryMotives.length > 0}
             natures={queryNatures}
+            tracking={{ category: "Postes" }}
           />
         </Deferring>
 
@@ -342,7 +367,15 @@ export default function EtabPostes() {
                 nativeInputProps: {
                   name: "filtered-options",
                   checked: areOptionsFiltered,
-                  onChange: (event) => setAreOptionsFiltered(event.target.checked),
+                  onChange: (event) => {
+                    const checked = event.target.checked
+                    trackEvent({
+                      category: "Postes",
+                      action: "Checkbox filtrer libellés des fusions cochée",
+                      properties: checked ? "oui" : "non",
+                    })
+                    setAreOptionsFiltered(checked)
+                  },
                 },
               },
             ]}
@@ -445,6 +478,7 @@ export default function EtabPostes() {
                 },
               }}
               title="Recours abusif"
+              tracking={{ category: "Postes" }}
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
@@ -457,6 +491,7 @@ export default function EtabPostes() {
                 },
               }}
               title="Délai de carence"
+              tracking={{ category: "Postes" }}
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
@@ -469,6 +504,7 @@ export default function EtabPostes() {
                 },
               }}
               title="Contrats"
+              tracking={{ category: "Postes" }}
             />
           </div>
         </div>
@@ -558,6 +594,7 @@ function PrecariousJobsIndicator({ hasMotives = false }: PrecariousJobsIndicator
       readingNote={readingNote}
       subReadingNote={subReadingNote}
       table={{ headers, data: tableData }}
+      tracking={{ category: "Postes" }}
     >
       <div className="h-[28rem] w-full">
         <PrecariousJobsBarChart data={data} />

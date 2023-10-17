@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { Notice } from "@codegouvfr/react-dsfr/Notice"
 
 export default function Bugs() {
@@ -7,6 +8,11 @@ export default function Bugs() {
       <a href="mailto:champollion@sg.social.gouv.fr">champollion@sg.social.gouv.fr</a>
     </>
   )
+
+  useEffect(() => {
+    document.title = "VisuDSN - Erreurs connues"
+  }, [])
+
   return (
     <>
       <div className="fr-container fr-py-4w flex flex-col">

@@ -12,6 +12,7 @@ type JobProportionIndicatorProps = {
   showLearnMore?: boolean
   natures?: string[]
   hasMotives?: boolean
+  tracking: { category: string }
 }
 
 type JobProportionIndicatorDeferred = {
@@ -24,6 +25,7 @@ export default function JobProportionIndicator({
   showLearnMore = false,
   hasMotives = false,
   natures,
+  tracking,
 }: JobProportionIndicatorProps) {
   const deferredData = useAsyncValue() as JobProportionIndicatorDeferred
 
@@ -87,15 +89,14 @@ export default function JobProportionIndicator({
     </p>
   )
 
+  const passedProps = { collapseReadingNote, title, readingNote, subTitle, tracking }
+
   return (
     <AppIndicator
       id="job-proportion"
-      title={title}
-      subTitle={subTitle}
-      readingNote={readingNote}
       bottomEl={learnMoreEl}
       table={{ headers, data: tableData }}
-      collapseReadingNote={collapseReadingNote}
+      {...passedProps}
     >
       <div className="fr-mb-2w h-60 w-full">
         <ContractsPieChart data={data} />

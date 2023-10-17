@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { useLoaderData } from "react-router-typesafe"
 
 import { getFaq } from "../api"
@@ -13,6 +14,10 @@ export async function loader() {
 
 export default function FAQ() {
   const faq = useLoaderData<typeof loader>()
+
+  useEffect(() => {
+    document.title = "VisuDSN - FAQ"
+  }, [])
 
   return (
     <>

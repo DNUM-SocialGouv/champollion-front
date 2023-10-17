@@ -1,6 +1,8 @@
 import { useEffect } from "react"
-import { Outlet } from "react-router-dom"
+import { Outlet, useLocation } from "react-router-dom"
 import { ScrollRestoration } from "react-router-dom"
+
+import { initMatomo, trackPageView } from "../helpers/analytics"
 
 import { MuiDsfrThemeProvider } from "@codegouvfr/react-dsfr/mui"
 import { StyledEngineProvider } from "@mui/material/styles"
@@ -11,6 +13,13 @@ import { Header } from "@codegouvfr/react-dsfr/Header"
 
 const logoutURL: string = import.meta.env.VITE_LOGOUT_URL as string
 const isProd: boolean = import.meta.env.PROD
+
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    _paq: any[]
+  }
+}
 
 const brandTop = (
   <>
@@ -52,6 +61,18 @@ export default function Root() {
       }
     }
   }
+
+  const routerLocation = useLocation()
+
+  // Initialize Matomo script
+  useEffect(() => {
+    initMatomo(isProd)
+  }, [])
+
+  // Create Pageview for Matomo analytics
+  useEffect(() => {
+    trackPageView()
+  }, [routerLocation])
 
   useEffect(() => {
     window.addEventListener("focus", onWindowFocus)
