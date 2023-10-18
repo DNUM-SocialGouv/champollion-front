@@ -1,5 +1,7 @@
 import { useState, type PropsWithChildren, type ReactNode } from "react"
 
+import { trackEvent } from "../helpers/analytics"
+
 import { Table } from "@codegouvfr/react-dsfr/Table"
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
 
@@ -14,6 +16,7 @@ type AppIndicatorProps = {
   collapseReadingNote?: boolean
   bottomEl?: ReactNode
   table?: { headers: ReactNode[]; data: ReactNode[][] }
+  tracking: { category: string }
 }
 
 export default function AppIndicator({
@@ -26,6 +29,7 @@ export default function AppIndicator({
   collapseReadingNote = false,
   bottomEl,
   table,
+  tracking,
 }: PropsWithChildren<AppIndicatorProps>) {
   const [showTable, setShowTable] = useState(false)
 
@@ -58,7 +62,14 @@ export default function AppIndicator({
         <ToggleSwitch
           label="Afficher les données sous forme de tableau"
           checked={showTable}
-          onChange={(checked) => setShowTable(checked)}
+          onChange={(checked) => {
+            setShowTable(checked)
+            trackEvent({
+              category: tracking.category,
+              action: "Indicateur vue tableau",
+              properties: checked ? "activée" : "désactivée",
+            })
+          }}
           classes={{ label: "w-full" }}
         />
       )}

@@ -36,6 +36,7 @@ import ContractNatureIndicator from "../../components/ContractNatureIndicator"
 import Deferring from "../../components/Deferring"
 import EtabInfo from "../../components/EtabInfo"
 import JobProportionIndicator from "../../components/JobProportionIndicator"
+import { useEffect } from "react"
 
 export async function action({ params, request }: ActionFunctionArgs) {
   const formData = await request.formData()
@@ -106,6 +107,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     deferredCallsController,
     info,
     lastEffectif,
+    raisonSociale: etabType.raisonSociale,
     savedOpenDaysCodes,
     siret,
   }
@@ -119,6 +121,7 @@ export default function EtabSynthese() {
     deferredCallsController,
     info,
     lastEffectif,
+    raisonSociale,
     savedOpenDaysCodes,
     siret,
   } = useLoaderData<typeof loader>()
@@ -152,6 +155,10 @@ export default function EtabSynthese() {
       },
     }
   })
+
+  useEffect(() => {
+    document.title = `Synthèse - ${raisonSociale}`
+  }, [])
 
   return (
     <>
@@ -205,7 +212,7 @@ export default function EtabSynthese() {
           Natures de contrat les plus utilisées
         </h3>
         <Deferring deferredPromise={deferredCalls.data.contractNatureIndicator}>
-          <ContractNatureIndicator />
+          <ContractNatureIndicator tracking={{ category: "Synthèse" }} />
         </Deferring>
 
         <h3 className="fr-text--md underline underline-offset-4">
@@ -213,7 +220,7 @@ export default function EtabSynthese() {
         </h3>
 
         <Deferring deferredPromise={deferredCalls.data.jobProportionIndicator}>
-          <JobProportionIndicator showLearnMore />
+          <JobProportionIndicator showLearnMore tracking={{ category: "Synthèse" }} />
         </Deferring>
       </div>
     </>
@@ -280,6 +287,7 @@ function HeadcountIndicator() {
       readingNote={readingNote}
       subReadingNote={subReadingNote}
       bottomEl={learnMore}
+      tracking={{ category: "Synthèse" }}
     >
       <div className="fr-mb-2w flex h-40 items-baseline">
         {data.map((item) => {

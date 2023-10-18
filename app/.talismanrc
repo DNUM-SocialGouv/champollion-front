@@ -1,4 +1,6 @@
 fileignoreconfig:
+- filename: .env.example
+  checksum: 9b654de24ee7dd49e78da15816ec32f690c363f31151c6adda197dc675be9bfb
 - filename: app/src/api/types.ts
   checksum: 8446ffa06211b4b813694f84fb130e4fcfd2fe3936d4a544c7359a805365d5a1
 - filename: app/src/components/ContractNatureIndicator.tsx
@@ -11,6 +13,8 @@ fileignoreconfig:
   checksum: 4fb8b57addb47957611797a18a7bdf8679ca3ca3712cd9f3d7ce4b32a2539ba1
 - filename: app/src/components/InfractionRatioIndicator.tsx
   checksum: 2e3800cf3c94b4464424a3f2f0cc673896f90c1578ad191be2b2948e5eeabaa0
+- filename: app/src/components/JobProportionIndicator.tsx
+  checksum: 03d011080148d0c31f647be25da65ba4814a3863d2768df56c3d63c68cdfb886
 - filename: app/src/components/PrecariousJobsBarChart.tsx
   checksum: 2b601a8b8b84cc9db033b3b3cead3ebe0adf15906b8b525faa61cf0c59ff72a0
 - filename: app/src/helpers/carence.tsx

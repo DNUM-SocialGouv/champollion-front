@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   type LoaderFunctionArgs,
   useSearchParams,
@@ -40,6 +40,7 @@ import {
   prevMonth,
 } from "../../helpers/format"
 import { initJobOptions } from "../../helpers/postes"
+import { trackEvent } from "../../helpers/analytics"
 
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
@@ -134,6 +135,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     queryJobs,
     queryMotives,
     queryStartDate,
+    raisonSociale: etabType.raisonSociale,
     unit,
   }
 }
@@ -152,6 +154,7 @@ export default function EtabRecours() {
     queryJobs,
     queryMotives,
     queryStartDate,
+    raisonSociale,
     unit,
   } = useLoaderData<typeof loader>()
   const navigation = useNavigation()
@@ -178,6 +181,10 @@ export default function EtabRecours() {
     setPrevEffectifs(initialEffectifs)
     setEffectifs(initialEffectifs)
   }
+
+  useEffect(() => {
+    document.title = `Recours abusif - ${raisonSociale}`
+  }, [])
 
   return (
     <>
@@ -236,6 +243,7 @@ export default function EtabRecours() {
           <ContractNatureIndicator
             hasMotives={queryMotives.length > 0}
             hasJobs={queryJobs.length > 0}
+            tracking={{ category: "Recours abusif" }}
           />
         </Deferring>
 
@@ -252,6 +260,7 @@ export default function EtabRecours() {
                 },
               }}
               title="Contrats"
+              tracking={{ category: "Recours abusif" }}
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
@@ -264,6 +273,7 @@ export default function EtabRecours() {
                 },
               }}
               title="Fusion de postes"
+              tracking={{ category: "Recours abusif" }}
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
@@ -276,6 +286,7 @@ export default function EtabRecours() {
                 },
               }}
               title="Délai de carence"
+              tracking={{ category: "Recours abusif" }}
             />
           </div>
         </div>
@@ -336,6 +347,11 @@ function EtabPostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
     const newUnitOption = getUnitOptionFromKey(newKey)
     const unitValue = newUnitOption?.value || "avg"
     searchParams.set("unit", unitValue)
+    trackEvent({
+      category: "Recours abusif",
+      action: "Sélection unité effectifs",
+      properties: { unit: unitValue },
+    })
     setSearchParams(searchParams)
   }
 
@@ -395,6 +411,7 @@ function EtabPostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
     } catch (error) {
       console.error("Failed to copy table: ", error)
     }
+    trackEvent({ category: "Recours abusif", action: "Tableau effectifs copié" })
   }
 
   return (
@@ -484,7 +501,15 @@ function EtabPostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
                 nativeInputProps: {
                   name: "stacked",
                   checked: areTempContractsStacked,
-                  onChange: (event) => setAreTempContractsStacked(event.target.checked),
+                  onChange: (event) => {
+                    const checked = event.target.checked
+                    setAreTempContractsStacked(checked)
+                    trackEvent({
+                      category: "Recours abusif",
+                      action: "Checkbox cumuler CDD CTT cochée",
+                      properties: checked ? "oui" : "non",
+                    })
+                  },
                 },
               },
             ]}
@@ -508,7 +533,14 @@ function EtabPostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
       <ToggleSwitch
         label="Afficher les données sous forme de tableau"
         checked={showTable}
-        onChange={(checked) => setShowTable(checked)}
+        onChange={(checked) => {
+          setShowTable(checked)
+          trackEvent({
+            category: "Recours abusif",
+            action: "Indicateur vue tableau",
+            properties: checked ? "activée" : "désactivée",
+          })
+        }}
         classes={{ label: "w-full" }}
       />
     </>

@@ -10,6 +10,7 @@ type ContractNatureIndicatorProps = {
   collapseReadingNote?: boolean
   hasJobs?: boolean
   hasMotives?: boolean
+  tracking: { category: string }
 }
 
 type ContractNatureIndicatorDeferred = {
@@ -21,6 +22,7 @@ export default function ContractNatureIndicator({
   collapseReadingNote = false,
   hasJobs = false,
   hasMotives = false,
+  tracking,
 }: ContractNatureIndicatorProps) {
   const deferredData = useAsyncValue() as ContractNatureIndicatorDeferred
 
@@ -69,6 +71,7 @@ export default function ContractNatureIndicator({
         readingNote={readingNote}
         subReadingNote={subReadingNote}
         collapseReadingNote={collapseReadingNote}
+        tracking={tracking}
       >
         <div className="h-60 w-full">
           <ContractsPieChart data={data} sortData showLegend />

@@ -18,6 +18,7 @@ type InfractionsRatioProps = {
   startDate: string
   endDate: string
   hasJobs?: boolean
+  tracking: { category: string }
 }
 
 export default function InfractionRatioIndicator({
@@ -25,6 +26,7 @@ export default function InfractionRatioIndicator({
   startDate,
   endDate,
   hasJobs,
+  tracking,
 }: InfractionsRatioProps) {
   const start = formatDate(startDate, "MMMM YYYY")
   const end = formatDate(endDate, "MMMM YYYY")
@@ -50,7 +52,12 @@ export default function InfractionRatioIndicator({
   `
 
   return (
-    <AppIndicator id="infraction-ratio" title={title} readingNote={readingNote}>
+    <AppIndicator
+      id="infraction-ratio"
+      title={title}
+      readingNote={readingNote}
+      tracking={tracking}
+    >
       <div className="h-16 w-1/2">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart

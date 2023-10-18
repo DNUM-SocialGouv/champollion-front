@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import type { ReactNode, FormEvent } from "react"
 import { useSearchParams, type LoaderFunctionArgs } from "react-router-dom"
 import { useLoaderData } from "react-router-typesafe"
@@ -40,6 +40,7 @@ import {
 } from "../../helpers/format"
 import { initEmployeeOptions, initJobOptions } from "../../helpers/postes"
 import { DateStatusBadge } from "../../helpers/contrats"
+import { trackEvent } from "../../helpers/analytics"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
@@ -110,6 +111,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     queryMotives,
     queryNature,
     queryStartDate,
+    raisonSociale: etabType.raisonSociale,
     siret,
   }
 }
@@ -139,6 +141,7 @@ export default function EtabContrats() {
     queryMotives,
     queryNature,
     queryStartDate,
+    raisonSociale,
     siret,
   } = useLoaderData<typeof loader>()
   const [exportedContracts, setExportedContracts] = useState<undefined | AppError>()
@@ -186,6 +189,11 @@ export default function EtabContrats() {
       startDate: queryStartDate,
     })
     setExportedContracts(newExportedContracts)
+    trackEvent({
+      category: "Contrats",
+      action: "Export téléchargé",
+      properties: { format: fileExtension },
+    })
   }
   const warningList = () => {
     return (
@@ -240,6 +248,10 @@ export default function EtabContrats() {
     ls.remove(`contrats.${siret}`)
     window.location.reload()
   }
+
+  useEffect(() => {
+    document.title = `Contrats - ${raisonSociale}`
+  }, [])
 
   return (
     <>
@@ -311,7 +323,13 @@ export default function EtabContrats() {
           title="Réinitialiser les dates"
           buttons={[
             { children: "Annuler" },
-            { onClick: () => resetDates(), children: "Oui" },
+            {
+              onClick: () => {
+                resetDates()
+                trackEvent({ category: "Contrats", action: "Dates réinitialisées" })
+              },
+              children: "Oui",
+            },
           ]}
         >
           <p>Souhaitez-vous réinitialiser les dates des contrats ? </p>
@@ -381,6 +399,7 @@ export default function EtabContrats() {
               },
             }}
             title="Recours abusif"
+            tracking={{ category: "Contrats" }}
           />
         </div>
         <div className="fr-col-12 fr-col-md-4">
@@ -393,6 +412,7 @@ export default function EtabContrats() {
               },
             }}
             title="Délai de carence"
+            tracking={{ category: "Contrats" }}
           />
         </div>
       </div>
