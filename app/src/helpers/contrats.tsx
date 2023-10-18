@@ -2,8 +2,9 @@ import type { Dispatch, FormEvent, ReactNode, SetStateAction } from "react"
 import { Link } from "react-router-dom"
 import ls from "localstorage-slim"
 
-import { dateIsBefore, formatDate } from "./format"
 import type { EtuContrat, FileExtension } from "../api/types"
+import { dateIsBefore, formatDate } from "./format"
+import { trackEvent } from "./analytics"
 
 import { AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
@@ -112,7 +113,13 @@ const formatContrats = (
         contrat.codeNatureContrat !== "03" ? (
           <p>n/a</p>
         ) : contrat.ettSiret ? (
-          <Link target="_blank" to={`/ett/${contrat.ettSiret}`}>
+          <Link
+            target="_blank"
+            to={`/ett/${contrat.ettSiret}`}
+            onClick={() =>
+              trackEvent({ category: "Contrats", action: "Lien ETT cliqué" })
+            }
+          >
             {contrat.ettRaisonSociale}
           </Link>
         ) : (
@@ -159,6 +166,7 @@ const formatContrats = (
           }
         })
         setContratsDatesState(nextState)
+        trackEvent({ category: "Contrats", action: "Date réinitialisée" })
       }
 
       const handleValidate = (event: FormEvent<HTMLFormElement>, type: DateType) => {
@@ -190,6 +198,7 @@ const formatContrats = (
             ...lscontrats,
             [key]: newDate,
           })
+          trackEvent({ category: "Contrats", action: "Date validée" })
         }
       }
 

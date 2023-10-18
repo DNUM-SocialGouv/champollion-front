@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import { useEffect, type ReactNode } from "react"
 import { Link, redirect } from "react-router-dom"
 import { useLoaderData } from "react-router-typesafe"
 import type { LoaderFunctionArgs } from "react-router-dom"
@@ -93,6 +93,9 @@ export default function ETT() {
   const { data, info, lastEffectif, raisonSociale, siret } =
     useLoaderData<typeof loader>()
 
+  useEffect(() => {
+    document.title = `VisuDSN - ETT ${raisonSociale}`
+  }, [])
   return (
     <div className="flex w-full flex-col">
       <EtabBanner etabName={raisonSociale} isEtt={true} siret={siret} />

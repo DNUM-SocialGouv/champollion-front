@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { useLoaderData } from "react-router-typesafe"
 
 import { getCgu } from "../api"
@@ -13,6 +14,10 @@ export async function loader() {
 
 export default function CGU() {
   const cgu = useLoaderData<typeof loader>()
+
+  useEffect(() => {
+    document.title = "VisuDSN - Conditions Générales d'Utilisation"
+  }, [])
 
   return (
     <>

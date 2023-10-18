@@ -1,7 +1,13 @@
+import { useEffect } from "react"
+
 import { formatDate } from "../helpers/format"
 import { newsTypeEmoji, releaseNotes } from "../helpers/news"
 
 export default function News() {
+  useEffect(() => {
+    document.title = "VisuDSN - Nouveautés"
+  }, [])
+
   return (
     <>
       <div className="fr-container fr-py-4w flex flex-col">

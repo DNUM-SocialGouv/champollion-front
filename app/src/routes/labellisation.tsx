@@ -88,6 +88,10 @@ export default function Labellisation() {
     (poste) => ({ value: poste.posteId, label: poste.libellePoste } as Option)
   )
 
+  useEffect(() => {
+    document.title = "VisuDSN - Labellisation"
+  }, [])
+
   return (
     <>
       <div className="flex w-full flex-col items-center">
