@@ -289,7 +289,7 @@ function HeadcountIndicator() {
       bottomEl={learnMore}
       tracking={{ category: "Synthèse" }}
     >
-      <div className="fr-mb-2w flex h-40 items-baseline">
+      <div className="fr-my-2w flex h-40 items-baseline">
         {data.map((item) => {
           const barHeight = (item.value / maxValue) * 100 // Scale the bar heights
           const barStyle = {
