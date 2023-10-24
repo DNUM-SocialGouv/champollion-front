@@ -242,10 +242,10 @@
     "@babel/helper-validator-identifier" "^7.19.1"
     to-fast-properties "^2.0.0"
 
-"@codegouvfr/react-dsfr@^0.72.4":
-  version "0.72.4"
-  resolved "https://registry.yarnpkg.com/@codegouvfr/react-dsfr/-/react-dsfr-0.72.4.tgz#b3edac1b878967a5273ff9664067dee60e9b7c36"
-  integrity sha512-LOp9EhS23ArI+/gVPGkbUVl11CPGWG5BZroonc95qCExG4OhuOFUYRSM1KWIcz07MNhyAVQlhiL3Iv3ITUDM5A==
+"@codegouvfr/react-dsfr@^0.78.1":
+  version "0.78.1"
+  resolved "https://registry.yarnpkg.com/@codegouvfr/react-dsfr/-/react-dsfr-0.78.1.tgz#43639a50dd638be49ae1ffe98d2279befaafe65f"
+  integrity sha512-lEeDU0D2WqlwdttsvxaXpxxAo3GlW6uXHe4QZWo279ceYGEA11E8yO/w0XkXaudOdYMqhRo2HvniMmV/Jc+8bA==
   dependencies:
     tsafe "^1.6.3"
 

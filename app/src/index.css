@@ -2,21 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Show native browser calendar */
-input[type="date"].fr-input::-webkit-inner-spin-button,
-input[type="date"].fr-input::-webkit-calendar-picker-indicator {
-  display: block;
-  margin-right: auto;
-  opacity: 1;
-}
-.fr-input-wrap[class*=" ri-"] input[type="date"].fr-input {
-  background-image: none;
-  padding-right: 1rem;
-}
-.fr-input-wrap.ri-calendar-line::before {
-  content: none;
-}
-
 /* Reduce header logo height */
 .fr-header__logo {
   padding: 0.75rem 1rem;

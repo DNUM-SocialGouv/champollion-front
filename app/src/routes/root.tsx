@@ -93,7 +93,7 @@ export default function Root() {
             serviceTitle={
               <>
                 VisuDSN{" "}
-                <Badge noIcon severity="info">
+                <Badge noIcon severity="info" as="span">
                   ex-Champollion
                 </Badge>
               </>
