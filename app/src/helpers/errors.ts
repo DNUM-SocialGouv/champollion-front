@@ -40,6 +40,7 @@ const backendErrorFr: Record<string, (arg: ErrorParams) => string> = {
   "forbidden.too_many_contracts_requested": () =>
     "Votre demande concerne un trop grand nombre de contrats, ce qui entraîne un temps de calcul excessif. Veuillez ajouter des filtres pour réduire le nombre de contrats à analyser.",
   "not_found.empty_contracts": () => "La liste de contrats est vide pour ces paramètres.",
+  "not_found.no_worked_days": () => "Il n'y a aucun jour travaillé pour ces paramètres.",
   "type_error.integer": ({ field }: ErrorParams) =>
     `Le champ ${field} doit être un nombre.`,
   "value_error.any_str.max_length": ({ field, value }: ErrorParams) =>

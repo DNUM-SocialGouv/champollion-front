@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react"
 import { Form, useSearchParams } from "react-router-dom"
 
 import { contractNatures, motiveOptions } from "../helpers/filters"
-import { arrayEquals } from "../helpers/format"
+import { arrayEquals, minDateWithData } from "../helpers/format"
 import { MultiValueWithMerge, OptionWithMerge } from "../helpers/postes"
 
 import { Button } from "@codegouvfr/react-dsfr/Button"
@@ -163,7 +163,7 @@ export default function EtabFilters({
             name: "debut",
             defaultValue: startDate,
             type: "date",
-            min: "2019-01-01",
+            min: minDateWithData,
           }}
         />
         <Input
@@ -174,7 +174,7 @@ export default function EtabFilters({
             name: "fin",
             defaultValue: endDate,
             type: "date",
-            min: "2019-01-01",
+            min: minDateWithData,
           }}
         />
         {/* // todo handle startDate after endDate */}

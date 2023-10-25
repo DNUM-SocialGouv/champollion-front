@@ -1,0 +1,138 @@
+/* Customize react multi date picker */
+
+/* Background and external triangle "ep-arrow" */
+.dsfr-calendar.rmdp-wrapper,
+.rmdp-container .dsfr-calendar.ep-arrow::after,
+.dsfr-calendar .rmdp-month-picker,
+.dsfr-calendar .rmdp-year-picker {
+  background-color: var(--background-default-grey);
+}
+
+.rmdp-container .dsfr-calendar.ep-arrow[direction="bottom"] {
+  border-top: 1px solid var(--background-default-grey);
+}
+
+.rmdp-container .dsfr-calendar.ep-arrow[direction="top"] {
+  border-bottom: 1px solid var(--background-default-grey);
+}
+
+.dsfr-calendar .rmdp-header-values,
+.dsfr-calendar .rmdp-day {
+  color: var(--text-title-grey);
+}
+
+.dsfr-calendar .rmdp-week-day {
+  color: var(--text-title-blue-ecume);
+}
+
+/* Arrows to change month */
+.dsfr-calendar .rmdp-arrow,
+.dsfr-calendar .rmdp-arrow-container:hover .rmdp-arrow {
+  border-color: var(--text-title-blue-ecume);
+}
+.dsfr-calendar .rmdp-arrow-container:hover {
+  box-shadow: none;
+}
+
+.dsfr-calendar .rmdp-day.rmdp-today span {
+  background-color: var(--background-contrast-grey);
+  color: var(--text-title-grey);
+}
+
+.dsfr-calendar .rmdp-color {
+  width: 10rem;
+  height: 2.5rem;
+  border-radius: 0;
+  font-size: 0.875rem;
+  position: relative;
+  margin: 0.5rem 0;
+}
+
+.dsfr-calendar .rmdp-color::before {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0.5rem;
+}
+
+.dsfr-calendar .rmdp-color.rmdp-blue {
+  background-color: var(--background-action-high-blue-ecume);
+}
+.dsfr-calendar .rmdp-color.rmdp-blue::before {
+  color: var(--text-inverted-blue-ecume);
+  content: "Jour de fermeture";
+}
+
+.dsfr-calendar .rmdp-day.rmdp-selected span.highlight-blue,
+.dsfr-calendar .rmdp-day span[closed="true"] {
+  background-color: var(--background-action-high-blue-ecume);
+  /* background-color: var(--background-action-high-blue-ecume); */
+  /* color: var(--text-inverted-blue-ecume); */
+  color: var(--text-inverted-blue-ecume);
+  box-shadow: none;
+}
+
+.dsfr-calendar .rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden) .highlight-blue:hover,
+.dsfr-calendar .rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden) span.hover-blue:hover,
+.dsfr-calendar .rmdp-color.rmdp-blue:hover {
+  background-color: var(--background-action-high-blue-ecume-hover);
+
+  color: var(--text-inverted-blue-ecume);
+}
+
+.dsfr-calendar .rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden) .highlight-blue:active,
+.dsfr-calendar .rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden) span.hover-blue:active,
+.dsfr-calendar .rmdp-color.rmdp-blue:active {
+  background-color: var(--background-action-high-blue-ecume-active);
+
+  color: var(--text-inverted-blue-ecume);
+}
+
+/* Exceptional closed days */
+.dsfr-calendar .rmdp-color.rmdp-green {
+  background-color: var(--background-action-high-green-bourgeon);
+}
+.dsfr-calendar .rmdp-color.rmdp-green::before {
+  color: var(--text-inverted-green-bourgeon);
+  content: "Jour d'ouverture";
+}
+.dsfr-calendar .rmdp-color.rmdp-green.active {
+  box-shadow: 0 0 4px 1px var(--border-default-green-bourgeon);
+}
+
+/* selected closed day */
+.dsfr-calendar .rmdp-day.rmdp-selected span.highlight-green {
+  background-color: var(--background-action-high-green-bourgeon);
+  box-shadow: none;
+  color: var(--text-inverted-green-bourgeon);
+}
+
+.dsfr-calendar .rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden) .highlight-green:hover,
+.dsfr-calendar .rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden) .hover-green:hover,
+.dsfr-calendar .rmdp-color.rmdp-green:hover {
+  background-color: var(--background-action-high-green-bourgeon-hover) !important;
+  color: var(--text-inverted-green-bourgeon);
+}
+
+.dsfr-calendar
+  .rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden)
+  .highlight-green:active,
+.dsfr-calendar .rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden) .hover-green:active,
+.dsfr-calendar .rmdp-color.rmdp-green:active {
+  background-color: var(--background-action-high-green-bourgeon-active);
+  color: var(--text-inverted-green-bourgeon);
+}
+
+/* month and year selectors */
+.dsfr-calendar .rmdp-day.rmdp-selected span:not(.highlight) {
+  background-color: var(--background-action-high-blue-france);
+  color: var(--text-inverted-blue-france);
+}
+.dsfr-calendar .rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden) span:hover {
+  background-color: var(--background-action-high-blue-france-hover);
+  color: var(--text-inverted-blue-france);
+}
+.dsfr-calendar .rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden) span:active {
+  background-color: var(--background-action-high-blue-france-active);
+  color: var(--text-inverted-blue-france);
+}

@@ -17,6 +17,8 @@ import { getQueryDates } from "../../helpers/filters"
 import {
   createFiltersQuery,
   formatDate,
+  formatLocalClosedPublicHolidays,
+  formatLocalExceptionalDates,
   formatLocalMerges,
   formatLocalOpenDays,
   formatNumber,
@@ -84,7 +86,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // Get user modifications from localStorage
   const localOpenDays = ls.get(`etab.${params.siret}.openDays`)
-  const savedOpenDaysCodes = formatLocalOpenDays(localOpenDays)
+  const formattedOpenDaysCodes = formatLocalOpenDays(localOpenDays)
+  const localOpenDates = ls.get(`etab.${params.siret}.openDates`)
+  const formattedOpenDates = formatLocalExceptionalDates(localOpenDates)
+  const localClosedDates = ls.get(`etab.${params.siret}.closedDates`)
+  const formattedClosedDates = formatLocalExceptionalDates(localClosedDates)
+  const localClosedPublicHolidays = ls.get(`etab.${params.siret}.closedPublicHolidays`)
+  const formattedClosedPublicHolidays = formatLocalClosedPublicHolidays(
+    localClosedPublicHolidays
+  )
   const localMergesIds = ls.get(`etab.${params.siret}.merges`)
   const formattedMergesIds = formatLocalMerges(localMergesIds)
   const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
@@ -113,7 +123,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     id: etabType.id,
     startDate: queryStartDate,
     endDate: queryEndDate,
-    openDaysCodes: savedOpenDaysCodes,
+    openDaysCodes: formattedOpenDaysCodes,
+    openDates: formattedOpenDates,
+    closedDates: formattedClosedDates,
+    closedPublicHolidays: formattedClosedPublicHolidays,
     correctedDates,
     mergedPostesIds: formattedMergesIds,
     natures: queryNatures,
@@ -124,7 +137,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     id: etabType.id,
     startDate: queryStartDate,
     endDate: queryEndDate,
-    openDaysCodes: savedOpenDaysCodes,
+    openDaysCodes: formattedOpenDaysCodes,
+    openDates: formattedOpenDates,
+    closedDates: formattedClosedDates,
+    closedPublicHolidays: formattedClosedPublicHolidays,
     correctedDates,
     mergedPostesIds: formattedMergesIds,
     motives: queryMotives,
@@ -149,7 +165,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     etabId: etabType.id,
     indicatorController,
     jobList: jobListWithMerge,
-    openDaysCodes: savedOpenDaysCodes,
+    openDaysCodes: formattedOpenDaysCodes,
+    openDates: formattedOpenDates,
+    closedDates: formattedClosedDates,
+    closedPublicHolidays: formattedClosedPublicHolidays,
     options,
     queryEndDate,
     queryMotives,
@@ -173,6 +192,9 @@ export default function EtabPostes() {
     etabId,
     jobList: initialJobList,
     openDaysCodes,
+    openDates,
+    closedDates,
+    closedPublicHolidays,
     options,
     queryEndDate,
     queryMotives,
@@ -233,6 +255,9 @@ export default function EtabPostes() {
       startDate: queryStartDate,
       endDate: queryEndDate,
       openDaysCodes,
+      openDates,
+      closedDates,
+      closedPublicHolidays,
       correctedDates,
       mergedPostesIds: merges,
       natures: queryNatures,
@@ -246,6 +271,9 @@ export default function EtabPostes() {
       endDate: queryEndDate,
       correctedDates,
       openDaysCodes,
+      openDates,
+      closedDates,
+      closedPublicHolidays,
       mergedPostesIds: merges,
       motives: queryMotives,
       signal: indicatorController.signal,

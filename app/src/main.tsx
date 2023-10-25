@@ -12,7 +12,6 @@ import Error from "./components/Error"
 import Etab, { loader as etabLoader } from "./routes/etablissement"
 import EtabSynthese, {
   loader as etabSyntheseLoader,
-  action as etabSyntheseAction,
 } from "./routes/etablissement/synthese"
 import EtabPostes, { loader as etabPostesLoader } from "./routes/etablissement/postes"
 import EtabContrats, {
@@ -71,7 +70,6 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <EtabSynthese />,
-            action: etabSyntheseAction,
             loader: etabSyntheseLoader,
           },
           {

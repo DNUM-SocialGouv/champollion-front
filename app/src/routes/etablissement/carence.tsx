@@ -28,6 +28,8 @@ import {
   camelToSnakeCase,
   createFiltersQuery,
   formatDate,
+  formatLocalClosedPublicHolidays,
+  formatLocalExceptionalDates,
   formatLocalMerges,
   formatLocalOpenDays,
   formatNumber,
@@ -84,10 +86,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // Get user modifications from localStorage
   const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
   const formattedMergesIds = formatLocalMerges(localMergesIds)
-  const openDays = ls.get(`etab.${params.siret}.openDays`)
-  const formattedOpenDays = formatLocalOpenDays(openDays)
   const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
   const correctedDates = formatCorrectedDates(lsContrats)
+  const localOpenDays = ls.get(`etab.${params.siret}.openDays`)
+  const formattedOpenDays = formatLocalOpenDays(localOpenDays)
+  const localOpenDates = ls.get(`etab.${params.siret}.openDates`)
+  const formattedOpenDates = formatLocalExceptionalDates(localOpenDates)
+  const localClosedDates = ls.get(`etab.${params.siret}.closedDates`)
+  const formattedClosedDates = formatLocalExceptionalDates(localClosedDates)
+  const localClosedPublicHolidays = ls.get(`etab.${params.siret}.closedPublicHolidays`)
+  const formattedClosedPublicHolidays = formatLocalClosedPublicHolidays(
+    localClosedPublicHolidays
+  )
 
   const postes = await postPostes(etabType.id, formattedMergesIds)
 
@@ -100,6 +110,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     correctedDates,
     mergedPostesIds: formattedMergesIds,
     openDaysCodes: formattedOpenDays,
+    openDates: formattedOpenDates,
+    closedDates: formattedClosedDates,
+    closedPublicHolidays: formattedClosedPublicHolidays,
     postesIds: queryJobs,
     signal: deferredCallsController.signal,
   })
