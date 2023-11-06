@@ -32,6 +32,7 @@ module.exports = {
     "text-bg-flat-info",
     "text-bg-flat-success",
     "text-bg-flat-warning",
+    "md:h-96"
   ],
   theme: {
     screens: {

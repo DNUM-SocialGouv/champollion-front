@@ -96,7 +96,7 @@ export const unitMoreInfo: Record<string, ReactNode> = {
     <>
       <p className="fr-text--sm fr-mb-1v">
         La notion d'ETP-jours ne correspond pas à la définition usuelle des ETP. Pour plus
-        d'informations, <Link to="/faq">voir la FAQ</Link>.
+        d'informations, <Link to="/faq#faq-etp">voir la FAQ</Link>.
       </p>
       <p className="fr-text--sm fr-mb-1v italic">
         La notion d'ETP-jours permet d'avoir une estimation fiabilisée de l'évolution des
@@ -109,7 +109,7 @@ export const unitMoreInfo: Record<string, ReactNode> = {
     <>
       <p className="fr-text--sm fr-mb-1v">
         La notion d'ETP-heures correspond à la définition usuelle des ETP. Pour plus
-        d'informations, <Link to="/faq">voir la FAQ</Link>.
+        d'informations, <Link to="/faq#faq-etp">voir la FAQ</Link>.
       </p>
       <p className="fr-text--sm fr-mb-1v italic">
         Les heures travaillées peuvent être mal déclarées dans la source de données
