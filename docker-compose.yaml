@@ -9,11 +9,10 @@ networks:
 
 services:
   app:
-    image: ${NEXUS_CHAMPOLLION_URL}/front/app:${APP_IMAGE_TAG}
+    image: ${NEXUS_URL}/front/app:${APP_IMAGE_TAG}
     container_name: champollion-${COMPOSE_PROJECT_NAME}-front-app
     environment:
       API_URL: ${API_URL}
-      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
     restart: on-failure
     networks:
       - champollion
@@ -21,39 +20,31 @@ services:
     - ${LOGS_STORAGE_PATH}/champollion-${COMPOSE_PROJECT_NAME}-front-app:/var/log/nginx
   
   oauth2-proxy:
-    image: ${NEXUS_CHAMPOLLION_URL}/front/oauth2-proxy:${OAUTH2_PROXY_IMAGE_TAG}
+    image: ${NEXUS_URL}/front/oauth2-proxy:${OAUTH2_PROXY_IMAGE_TAG}
     container_name: champollion-${COMPOSE_PROJECT_NAME}-front-oauth2-proxy
     restart: on-failure
     networks:
       - champollion
     environment:
       OAUTH2_PROXY_PROVIDER: keycloak-oidc
-      OAUTH2_PROXY_CLIENT_ID: ${OAUTH2_PROXY_CLIENT_ID}
+      OAUTH2_PROXY_CLIENT_ID: oauth2-proxy
       OAUTH2_PROXY_CLIENT_SECRET: ${OAUTH2_PROXY_CLIENT_SECRET}
       OAUTH2_PROXY_REDIRECT_URL: /oauth2/callback
-      OAUTH2_PROXY_OIDC_ISSUER_URL: ${OIDC_ISSUER_URL}/${KEYCLOAK_REALM}
+      OAUTH2_PROXY_OIDC_ISSUER_URL: https://${APP_URL}/auth/realms/visudsn
       OAUTH2_PROXY_COOKIE_SECRET: 580b11331e148cacf8428190758c4fe2
-      OAUTH2_PROXY_COOKIE_SECURE: 'true' # for local env only
-      OAUTH2_PROXY_REVERSE_PROXY: 'true'
-      OAUTH2_PROXY_COOKIE_REFRESH: '100ms'
-      OAUTH2_PROXY_SHOW_DEBUG_ON_ERROR: 'true' # for local env only
+      OAUTH2_PROXY_COOKIE_SECURE: "true" # for local env only
+      OAUTH2_PROXY_REVERSE_PROXY: "true"
+      OAUTH2_PROXY_COOKIE_REFRESH: "100ms"
+      OAUTH2_PROXY_SHOW_DEBUG_ON_ERROR: "false" # for local env only
       OAUTH2_PROXY_EMAIL_DOMAINS: "*" # allow any email
-      OAUTH2_PROXY_UPSTREAMS: 'http://app:8081/'
-      OAUTH2_PROXY_SSL_INSECURE_SKIP_VERIFY: 'true' # only for self-signed cert - unknown autority
-      OAUTH2_PROXY_HTTP_ADDRESS: 'oauth2-proxy:4180'
-      OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: 'true'
+      OAUTH2_PROXY_UPSTREAMS: "http://app:8081/"
+      OAUTH2_PROXY_SSL_INSECURE_SKIP_VERIFY: "true" # only for self-signed cert - unknown autority
+      OAUTH2_PROXY_HTTP_ADDRESS: "oauth2-proxy:4180"
+      OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: "true"
       OAUTH2_PROXY_WHITELIST_DOMAIN: ${APP_URL},${AUTH_URL}
-    # ports:
-    #   - '4180' # commented just for information on port used internally
-    healthcheck:
-      test: curl --fail http://127.0.0.1/auth/realms/${KEYCLOAK_REALM} || exit 1
-      interval: 5s
-      retries: 50
-      start_period: 0s
-      timeout: 3s
 
   reverse-proxy:
-    image: ${NEXUS_CHAMPOLLION_URL}/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG}
+    image: ${NEXUS_URL}/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG}
     container_name: champollion-${COMPOSE_PROJECT_NAME}-front-reverse-proxy
     restart: on-failure
     networks:
@@ -61,10 +52,8 @@ services:
     environment:
       APP_URL: ${APP_URL}
       AUTH_URL: ${AUTH_URL}
-      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
     ports:
-      - ${REVERSE_PROXY_HTTP_PORT}:80
-      - ${REVERSE_PROXY_HTTPS_PORT}:443
+      - 80:80
+      - 443:443
     volumes:
-      - ${REVERSE_PROXY_SSL_STORAGE_PATH}:/etc/ssl
       - ${LOGS_STORAGE_PATH}/champollion-${COMPOSE_PROJECT_NAME}-front-reverse-proxy:/var/log/nginx

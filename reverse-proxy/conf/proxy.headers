@@ -20,6 +20,9 @@ add_header Cache-Control no-cache;
 # HSTS
 add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
+# LARGE CLIENT HEADER
+large_client_header_buffers 4 64k;
+
 # NOT USED - ONLY IF NEEDED 
 #     proxy_set_header Upgrade $http_upgrade;
 #     proxy_set_header Connection 'upgrade';
