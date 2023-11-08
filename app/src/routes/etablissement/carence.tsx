@@ -61,6 +61,8 @@ import Deferring from "../../components/Deferring"
 import EtabFilters from "../../components/EtabFilters"
 import InfractionRatioIndicator from "../../components/InfractionRatioIndicator"
 
+import { filtersDetail as filtersDetail } from "../../helpers/filters"
+
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
 
@@ -99,8 +101,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     localClosedPublicHolidays
   )
 
-  const postes = await postPostes(etabType.id, formattedMergesIds)
-
   const deferredCallsController = new AbortController()
   const carences = postCarences({
     id: etabType.id,
@@ -117,6 +117,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     signal: deferredCallsController.signal,
   })
 
+  const [postes, postesWithoutMerges] = await Promise.all([
+    postPostes(etabType.id, formattedMergesIds),
+    postPostes(etabType.id),
+  ])
+
+  const jobListWithoutMerges = isAppError(postesWithoutMerges) ? [] : postesWithoutMerges
+
   return {
     deferredCalls: defer({
       carences,
@@ -129,6 +136,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     queryJobs,
     queryStartDate,
     raisonSociale: etabType.raisonSociale,
+    jobListWithoutMerges,
+    formattedMergesIds,
   }
 }
 
@@ -375,7 +384,13 @@ function EtabCarenceInfraction() {
     return null
   }
 
-  const { queryJobs, queryStartDate, queryEndDate } = useLoaderData<typeof loader>()
+  const {
+    queryJobs,
+    queryStartDate,
+    queryEndDate,
+    jobListWithoutMerges,
+    formattedMergesIds,
+  } = useLoaderData<typeof loader>()
 
   const formattedInfractions = formatInfractions(defaultData.infractions)
 
@@ -383,6 +398,12 @@ function EtabCarenceInfraction() {
     (acc, current) => acc + current.count,
     0
   )
+
+  const filtersInfo = filtersDetail({
+    queryJobs,
+    jobListWithoutMerges,
+    localMerges: formattedMergesIds,
+  })
 
   const pieData = groupSmallData(
     Object.values(defaultData.infractions).map((job) => ({
@@ -412,6 +433,18 @@ function EtabCarenceInfraction() {
       <p>
         <span className="font-bold">{totalInfractions} </span>infractions potentielles.
       </p>
+
+      {queryJobs.length > 0 && (
+        <AppCollapse
+          id="filters-collapse"
+          className="fr-mb-1w"
+          label="Afficher les postes sélectionnés"
+          labelOpen="Masquer les postes sélectionnés"
+          keepBtnOnTop
+        >
+          {filtersInfo}
+        </AppCollapse>
+      )}
 
       {totalInfractions > 0 && (
         <>
