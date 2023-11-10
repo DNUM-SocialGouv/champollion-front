@@ -32,9 +32,16 @@ export const initEmployeeOptions = (employees: Salarie[] | AppError) => {
   let options: Option[] = []
   if (!isAppError(employees)) {
     options = employees.map((employee) => {
+      let employeeSexe = ""
+
+      if (employee.sexe == 1) {
+        employeeSexe = " H –"
+      } else if (employee.sexe == 2) {
+        employeeSexe = " F –"
+      }
       return {
         value: employee.salarieId,
-        label: `${employee.nomFamille} ${employee.prenoms} – ${employee.dateNaissance}`,
+        label: `${employee.nomFamille} ${employee.prenoms} – ${employeeSexe} ${employee.dateNaissance}`,
       } as Option
     })
   }

@@ -226,7 +226,17 @@ const formatContrats = (
         contrat.codeNatureContrat === "01" ? "n/a" : contrat.libelleMotifRecours
 
       let employee = `${contrat.prenoms} ${contrat.nomFamille}`
-      if (contrat.dateNaissance) employee += ` (${contrat.dateNaissance})`
+
+      let employeeSexe = ""
+
+      if (contrat.sexe == 1) {
+        employeeSexe = "H "
+      } else if (contrat.sexe == 2) {
+        employeeSexe = "F "
+      }
+
+      if (contrat.dateNaissance || contrat.sexe)
+        employee += ` (${employeeSexe + contrat.dateNaissance})`
 
       return {
         id: contrat.contratId,

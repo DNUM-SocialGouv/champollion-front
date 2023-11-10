@@ -58,6 +58,7 @@ export type Salarie = {
   salarieId: number
   nomFamille: string
   prenoms: string
+  sexe: number
   dateNaissance: string
 }
 
@@ -79,6 +80,7 @@ type Contrat = {
   libelleConventionCollective: string | null
   codeMotifRecours: string | null
   libelleMotifRecours: string | null
+  sexe: number
 }
 
 export type EtuContrat = Contrat & {
