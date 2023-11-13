@@ -1,5 +1,5 @@
 import api from "../config"
-import type { EtablissementPoste } from "../types"
+import type { CountMetadata, EtablissementPoste, SuggestedMergedPoste } from "../types"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 
 export const postPostes = async (id: number, mergedPostesIds?: number[][]) => {
@@ -14,6 +14,19 @@ export const postPostes = async (id: number, mergedPostesIds?: number[][]) => {
     return (
       (response.data?.data as EtablissementPoste[]) ?? handleUndefinedData("/postes/")
     )
+  } catch (err) {
+    return handleEndpointError(err)
+  }
+}
+
+export const getPostesMerges = async (id: number) => {
+  try {
+    const response = await api.get(`/postes/merges?etablissement_id=${id}`)
+    const postes = response.data?.data as SuggestedMergedPoste[][]
+    const meta = response.data?.meta as CountMetadata
+
+    if (postes && meta) return { postes, meta }
+    else return handleUndefinedData("/postes/merges")
   } catch (err) {
     return handleEndpointError(err)
   }

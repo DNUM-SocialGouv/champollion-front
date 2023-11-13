@@ -54,6 +54,15 @@ export type EtablissementPoste = {
   merged: MergedCode
 }
 
+export type SuggestedMergedPoste = {
+  posteId: number
+  libellePoste: string
+}
+
+export type CountMetadata = {
+  count: number
+}
+
 export type Salarie = {
   salarieId: number
   nomFamille: string
