@@ -1,16 +1,35 @@
+import Badge from "@codegouvfr/react-dsfr/Badge"
+import { AlertProps } from "@codegouvfr/react-dsfr/Alert"
+
 type EtabBannerProps = {
   isEtt: boolean
   etabName: string
   siret: string
+  isOpen?: boolean
 }
 
-export default function EtabBanner({ isEtt = false, etabName, siret }: EtabBannerProps) {
+export default function EtabBanner({
+  isEtt = false,
+  etabName,
+  siret,
+  isOpen,
+}: EtabBannerProps) {
+  const etabSeverity: AlertProps.Severity = isOpen ? "success" : "error"
+  const etabStatus: string = isOpen ? "Ouvert" : "Fermé"
   const etabType = isEtt ? "Entreprise de Travail Temporaire" : "Établissement"
+
   return (
     <>
       <div className="fr-pt-3w fr-pb-2w fr-mb-1v w-full bg-bg-contrast-info">
         <div className="fr-container mx-auto">
-          <h1 className="fr-h4 fr-mb-3v">{`${etabType} : ${etabName}`}</h1>
+          <h1 className="fr-h4 fr-mb-3v">
+            {`${etabType} : ${etabName}`}
+            {isOpen != undefined && (
+              <Badge className="fr-ml-3v" severity={etabSeverity} small>
+                {etabStatus}
+              </Badge>
+            )}
+          </h1>
           <p className="fr-mb-1v">
             <span className="font-bold">SIRET : </span>
             {siret}

@@ -36,6 +36,7 @@ export type EtablissementInfo = {
   commune: string
   complementAdresse?: string
   libelleConventionCollective?: string
+  ouvert?: boolean
 }
 
 export type EtablissementDefaultPeriod = {
