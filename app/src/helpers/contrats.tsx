@@ -344,7 +344,7 @@ function ContratDate({
             <Button
               iconId="fr-icon-check-line"
               priority="tertiary no outline"
-              title="Valider"
+              title="Sauvegarder"
               type="submit"
             />
             <Button
