@@ -18,7 +18,7 @@ do
     case "${flag}" in
         h)  Help && exit 1;;
         e)  env=${OPTARG};;
-        p)  push=${OPTARG:-"enable"};;
+        p)  push=${OPTARG:-"disable"};;
         i)  ignore+=(${OPTARG});;
     esac
 done
@@ -29,7 +29,8 @@ if [[ -z $env ]]; then
 elif ! [[ -f $env ]]; then
     echo "file specified with -e argument does not exists. Help:" && Help && exit 0
 else
-    export $(grep -v "#" $env | xargs)
+    export $(grep -v "^#" $env | xargs)
+    export HTTPS_PROXY=$HTTP_PROXY
 fi
 
 # ignore images
@@ -47,37 +48,45 @@ if [ ${#ignore[@]} -ge 1 ]; then
     done
 fi
 
+# login to the nexus
+if ! [[ -z $push ]]; then
+    echo $NEXUS_PASSWORD | docker login nexus-ovh.intranet.social.gouv.fr:5000 --username $NEXUS_USER --password-stdin
+fi
+
 # build and push
 if [[ -z $ignore_app ]]; then
     docker build --rm --file ${HOME}/${APP_BUILD_CONTEXT}/Dockerfile \
     --build-arg HTTP_PROXY=${HTTP_PROXY} \
-    --build-arg HTTPS_PROXY=${HTTPS_PROXY} \
     --build-arg VITE_API_BASE_URL=${VITE_API_BASE_URL} \
     --build-arg VITE_LOGOUT_URL=${VITE_LOGOUT_URL} \
-    --tag ${NEXUS_CHAMPOLLION_URL}/front/app:${APP_IMAGE_TAG} \
+    --tag ${NEXUS_URL}/front/app:${APP_IMAGE_TAG} \
     ${HOME}/${APP_BUILD_CONTEXT}
 
     if ! [[ -z $push ]]; then
-        docker image push ${NEXUS_CHAMPOLLION_URL}/front/app:${APP_IMAGE_TAG}
+        docker image push ${NEXUS_URL}/front/app:${APP_IMAGE_TAG}
     fi
 fi
 
 if [[ -z $ignore_oauth2_proxy ]]; then
     docker build --rm --file ${HOME}/${OAUTH2_PROXY_BUILD_CONTEXT}/Dockerfile \
-    --tag ${NEXUS_CHAMPOLLION_URL}/front/oauth2-proxy:${OAUTH2_PROXY_IMAGE_TAG} \
+    --tag ${NEXUS_URL}/front/oauth2-proxy:${OAUTH2_PROXY_IMAGE_TAG} \
     ${HOME}/${OAUTH2_BUILD_CONTEXT}
 
     if ! [[ -z $push ]]; then
-        docker image push ${NEXUS_CHAMPOLLION_URL}/front/oauth2-proxy:${OAUTH2_PROXY_IMAGE_TAG}
+        docker image push ${NEXUS_URL}/front/oauth2-proxy:${OAUTH2_PROXY_IMAGE_TAG}
     fi
 fi
  
 if [[ -z $ignore_reverse_proxy ]];then
     docker build --rm --file ${HOME}/${REVERSE_PROXY_BUILD_CONTEXT}/Dockerfile \
-    --tag ${NEXUS_CHAMPOLLION_URL}/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG} \
+    --build-arg HTTP_PROXY=${HTTP_PROXY} \
+    --build-arg APP_URL=${APP_URL} \
+    --build-arg APP_CERTIFICATE_FILE=${APP_CERTIFICATE_FILE} \
+    --build-arg APP_CERTIFICATE_PASSWORD=${APP_CERTIFICATE_PASSWORD} \
+    --tag ${NEXUS_URL}/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG} \
     ${HOME}/${REVERSE_PROXY_BUILD_CONTEXT}
 
     if ! [[ -z $push ]]; then
-        docker image push ${NEXUS_CHAMPOLLION_URL}/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG}
+        docker image push ${NEXUS_URL}/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG}
     fi
 fi
