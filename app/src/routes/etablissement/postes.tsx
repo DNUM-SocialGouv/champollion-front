@@ -476,7 +476,7 @@ export default function EtabPostes() {
             onClick={handleAddMerge}
             priority="secondary"
           >
-            Ajouter une fusion
+            Créer une nouvelle fusion
           </Button>
           {alertState &&
             typeof alertState === "object" &&

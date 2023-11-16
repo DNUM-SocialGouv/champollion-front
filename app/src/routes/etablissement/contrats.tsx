@@ -507,7 +507,7 @@ function ContratsTable({
               {filtersInfo}
             </AppCollapse>
           )}
-          <AppTable headers={headers} items={formattedContrats} />
+          <AppTable className="fr-mb-1w" headers={headers} items={formattedContrats} />
           {meta.totalPages > 1 && (
             <Pagination
               count={meta.totalPages}
@@ -529,6 +529,7 @@ function ContratsTable({
       ) : (
         <p>Aucun résultat.</p>
       )}
+      <p>n/a : non applicable</p>
     </>
   )
 }
