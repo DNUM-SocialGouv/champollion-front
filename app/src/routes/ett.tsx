@@ -96,9 +96,12 @@ export default function ETT() {
   useEffect(() => {
     document.title = `VisuDSN - ETT ${raisonSociale}`
   }, [])
+
+  const isOpen = isAppError(info) ? undefined : info.ouvert
+
   return (
     <div className="flex w-full flex-col">
-      <EtabBanner etabName={raisonSociale} isEtt={true} siret={siret} />
+      <EtabBanner etabName={raisonSociale} isEtt={true} siret={siret} isOpen={isOpen} />
       <div className="fr-container fr-mt-3w">
         <h2 className="fr-text--xl fr-mb-1w">Informations sur l'établissement</h2>
         <hr />
