@@ -61,6 +61,14 @@ const contractNatureShort = [
 const getContractNature = (contractCode: string) =>
   contractNatureShort.find((item) => item.code === contractCode)?.label || "Autre"
 
+const sexShort = [
+  { code: 1, label: "H - " },
+  { code: 2, label: "F - " },
+]
+
+const getSexName = (sexCode: number) =>
+  sexShort.find((item) => item.code === sexCode)?.label || ""
+
 export type DateStatus = "declared" | "computed" | "validated" | "unknown"
 
 export type EditableDate = {
@@ -227,16 +235,8 @@ const formatContrats = (
 
       let employee = `${contrat.prenoms} ${contrat.nomFamille}`
 
-      let employeeSexe = ""
-
-      if (contrat.sexe == 1) {
-        employeeSexe = "H "
-      } else if (contrat.sexe == 2) {
-        employeeSexe = "F "
-      }
-
-      if (contrat.dateNaissance || contrat.sexe)
-        employee += ` (${employeeSexe + contrat.dateNaissance})`
+      if (contrat.dateNaissance || getSexName(contrat.sexe))
+        employee += ` (${getSexName(contrat.sexe) + contrat.dateNaissance})`
 
       return {
         id: contrat.contratId,
@@ -425,4 +425,4 @@ export const radioBtnOptions = extensions.map((key) => ({
   },
 }))
 
-export { formatContrats, getContractNature, headers }
+export { formatContrats, getContractNature, headers, contractNatureShort, getSexName }
