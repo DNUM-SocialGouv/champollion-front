@@ -20,6 +20,67 @@ type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
   {
+    date: "2023-11-20",
+    news: [
+      {
+        category: "Postes",
+        list: [
+          {
+            type: "feat",
+            desc: "Ajout de suggestions automatiques de fusion de postes.",
+          },
+          {
+            type: "feat",
+            desc: "Affichage du détail des postes fusionnés sélectionnés dans les onglets Délai de carence et Contrats.",
+          },
+        ],
+      },
+      {
+        category: "Synthèse",
+        list: [
+          {
+            type: "feat",
+            desc: "Possibilité de sélectionner des jours d'ouverture et fermeture exceptionnels",
+          },
+          {
+            type: "feat",
+            desc: "Définir si les jours fériés sont des jours habituellement chômés ou non.",
+          },
+          {
+            type: "ezwin",
+            desc: "On affiche le nombre total de salariés du dernier mois plutôt que le dernier effectif CDI et CDD, dans les informations globales.",
+          },
+          {
+            type: "feat",
+            desc: "A côté du nom de l'établissement, on indique s'il est ouvert ou fermé.",
+          },
+        ],
+      },
+      {
+        category: "Contrats",
+        list: [
+          {
+            type: "feat",
+            desc: "Affichage du sexe du salarié (H pour Homme, F pour Femme).",
+          },
+          {
+            type: "feat",
+            desc: "Si un établissement change de SIRET, la date de début de contrat est désormais la date initiale du contrat, et non la date de changement d'établissement",
+          },
+        ],
+      },
+      {
+        category: "FAQ",
+        list: [
+          {
+            type: "ezwin",
+            desc: "Mise à jour de la FAQ : vous y trouverez désormais des vidéos de démonstration de l'utilisation du site, ainsi que les liens vers les arrêtés sur lesquels s'appuie l'outil.",
+          },
+        ],
+      },
+    ],
+  },
+  {
     date: "2023-10-05",
     news: [
       {
