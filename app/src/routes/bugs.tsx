@@ -5,7 +5,7 @@ export default function Bugs() {
   const notice = () => (
     <>
       Si vous rencontrez d'autres problèmes, veuillez nous en faire part à{" "}
-      <a href="mailto:champollion@sg.social.gouv.fr">champollion@sg.social.gouv.fr</a>
+      <a href="mailto:visudsn@sg.social.gouv.fr">visudsn@sg.social.gouv.fr</a>
     </>
   )
 
