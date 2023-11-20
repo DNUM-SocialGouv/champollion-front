@@ -46,7 +46,7 @@ const contentDescription = (
     <br />
     <br />
     Pour nous contacter par courriel :{" "}
-    <a href="mailto:champollion@sg.social.gouv.fr">champollion@sg.social.gouv.fr</a>
+    <a href="mailto:visudsn@sg.social.gouv.fr">visudsn@sg.social.gouv.fr</a>
   </>
 )
 
