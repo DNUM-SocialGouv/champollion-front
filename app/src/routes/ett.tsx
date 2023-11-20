@@ -11,7 +11,12 @@ import {
   postEffectifsLast,
 } from "../api"
 import type { EttContrat, PaginationMetaData } from "../api/types"
-import { formatCorrectedDates } from "../helpers/contrats"
+import {
+  type ContratsHeader,
+  formatCorrectedDates,
+  getContractNature,
+  getSexName,
+} from "../helpers/contrats"
 import { errorWording, isAppError } from "../helpers/errors"
 import { formatDate } from "../helpers/format"
 
@@ -62,13 +67,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   }
 }
 
-type Column = "poste" | "etu" | "employee" | "startDate" | "endDate" | "motive"
-
-type ContratsHeader = {
-  key: Column
-  label: string
-  width: string
-}
+type Column = "poste" | "etu" | "employee" | "startDate" | "endDate" | "nature" | "motive"
 
 const headers = [
   { key: "poste", label: "Poste", width: "10%" },
@@ -76,8 +75,9 @@ const headers = [
   { key: "employee", label: "Salarié", width: "15%" },
   { key: "startDate", label: "Date de début", width: "10%" },
   { key: "endDate", label: "Date de fin", width: "10%" },
+  { key: "nature", label: "Nature contrat", width: "5%" },
   { key: "motive", label: "Motif de recours", width: "20%" },
-] as ContratsHeader[]
+] as ContratsHeader<Column>[]
 
 type FormattedContrat = {
   id: number
@@ -87,6 +87,7 @@ type FormattedContrat = {
   startDate: string
   endDate: string | null
   motive: string | null
+  nature: string
 }
 
 export default function ETT() {
@@ -158,16 +159,19 @@ function ETTContrats({
           {contrat.etuRaisonSociale} ({contrat.etuCodePostal})
         </Link>
       ) : (
-        <></>
+        <p>n/a</p>
       )
       return {
         id: contrat.contratId,
         poste: contrat.libellePoste,
         etu,
-        employee: `${contrat.prenoms} ${contrat.nomFamille}`,
+        employee: `${contrat.prenoms} ${contrat.nomFamille} (${getSexName(
+          contrat.sexe
+        )} ${contrat.dateNaissance})`,
         startDate: formatDate(contrat.dateDebut),
         endDate: formatDate(contrat.dateFin),
         motive: contrat.libelleMotifRecours,
+        nature: getContractNature(contrat.codeNatureContrat),
       } as FormattedContrat
     })
   const formattedContrats = contrats.length > 0 ? formatContrats(contrats) : []
