@@ -16,7 +16,7 @@ export default function EtabBanner({
 }: EtabBannerProps) {
   const etabSeverity: AlertProps.Severity = isOpen ? "success" : "error"
   const etabStatus: string = isOpen ? "Ouvert" : "Fermé"
-  const etabType = isEtt ? "Entreprise de Travail Temporaire" : "Établissement"
+  const etabType = isEtt ? "Etablissement de Travail Temporaire" : "Établissement"
 
   return (
     <>

@@ -10,6 +10,7 @@ import { AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Input } from "@codegouvfr/react-dsfr/Input"
+import { Option } from "../components/AppMultiSelect"
 
 type FormattedContrat = {
   id: number
@@ -110,6 +111,17 @@ const sexShort = [
   { code: 1, label: "H - " },
   { code: 2, label: "F - " },
 ]
+
+export const infoTable = (
+  <div>
+    <p className="fr-mb-0">n/a : non applicable</p>
+    <p className="italic">
+      Vous trouverez dans la FAQ le détail des abréviations des{" "}
+      <Link to="/faq#faq-natures">natures de contrat</Link> et{" "}
+      <Link to="/faq#faq-motifs">motifs de recours</Link>.
+    </p>
+  </div>
+)
 
 const getSexName = (sexCode: number) =>
   sexShort.find((item) => item.code === sexCode)?.label || ""
@@ -306,6 +318,79 @@ export function DateStatusBadge({ status }: { status: DateStatus }) {
   )
 }
 
+type FormattedDatesProps = {
+  startDate: string
+  endDate: string
+}
+
+type ContractNatureProps = {
+  key: string
+  code: string
+  label: string
+}
+
+const warningList = (
+  formattedDates: FormattedDatesProps,
+  queryJobs: number[],
+  options: Option[],
+  queryEmployee: number | undefined,
+  employeesOptions: Option[],
+  queryMotives: number[],
+  motiveOptions: Option[],
+  queryNature: string[],
+  contractNatures: ContractNatureProps[],
+  page: number
+) => {
+  return (
+    <>
+      <ul>
+        <li>
+          Contrats en cours au moins un jour sur la période du {formattedDates.startDate} au{" "}
+          {formattedDates.endDate}
+        </li>
+
+        {queryJobs.length > 0 && (
+          <li>
+            Intitulés de poste sélectionnés :{" "}
+            {queryJobs
+              .map((jobId) => options.find((x) => x.value === Number(jobId))?.label)
+              .filter(Boolean)
+              .join(", ")}
+          </li>
+        )}
+        {Boolean(queryEmployee) && (
+          <li>
+            Salarié sélectionné :{" "}
+            {employeesOptions.find((x) => x.value === Number(queryEmployee))?.label}
+          </li>
+        )}
+        {queryMotives.length > 0 && (
+          <li>
+            Motifs de recours sélectionnés :{" "}
+            {queryMotives
+              .map((motive) => motiveOptions.find((x) => x.value === Number(motive))?.label)
+              .filter(Boolean)
+              .join(", ")}
+          </li>
+        )}
+        {queryNature.length > 0 && (
+          <li>
+            Natures de contrat sélectionnées :{" "}
+            {queryNature
+              .map(
+                (nature: string) => contractNatures.find((x) => x.code === nature)?.label
+              )
+              .filter(Boolean)
+              .join(", ")}
+          </li>
+        )}
+        {page > 1 && <li>Page sélectionnée : {page}</li>}
+
+      </ul>
+    </>
+  ) as NonNullable<ReactNode>
+}
+
 export function JobMergedBadge({
   merged,
   short = false,
@@ -475,4 +560,5 @@ export {
   headers,
   contractNatureShort,
   getSexName,
+  warningList,
 }

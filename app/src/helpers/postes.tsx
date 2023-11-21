@@ -1,7 +1,7 @@
 import type { EtablissementPoste, Salarie } from "../api/types"
 import type { AppError } from "./errors"
 import { isAppError } from "./errors"
-import { JobMergedBadge } from "./contrats"
+import { JobMergedBadge, getSexName } from "./contrats"
 
 import { components } from "react-select"
 import type { MultiValueProps, OptionProps, SingleValueProps } from "react-select"
@@ -32,16 +32,11 @@ export const initEmployeeOptions = (employees: Salarie[] | AppError) => {
   let options: Option[] = []
   if (!isAppError(employees)) {
     options = employees.map((employee) => {
-      let employeeSexe = ""
-
-      if (employee.sexe == 1) {
-        employeeSexe = " H –"
-      } else if (employee.sexe == 2) {
-        employeeSexe = " F –"
-      }
       return {
         value: employee.salarieId,
-        label: `${employee.nomFamille} ${employee.prenoms} – ${employeeSexe} ${employee.dateNaissance}`,
+        label: `${employee.nomFamille} ${employee.prenoms} – ${getSexName(
+          employee.sexe
+        )} ${employee.dateNaissance}`,
       } as Option
     })
   }

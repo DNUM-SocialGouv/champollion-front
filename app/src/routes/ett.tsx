@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from "react"
-import { Link, redirect } from "react-router-dom"
+import { Link, redirect, useSearchParams } from "react-router-dom"
 import { useLoaderData } from "react-router-typesafe"
 import type { LoaderFunctionArgs } from "react-router-dom"
 import ls from "localstorage-slim"
@@ -9,29 +9,43 @@ import {
   getEtablissementsType,
   getContratsEtt,
   postEffectifsLast,
+  getEtablissementsDefaultPeriod,
+  postPostes,
+  getSalaries,
 } from "../api"
 import type { EttContrat, PaginationMetaData } from "../api/types"
+import { errorDescription, errorWording, isAppError } from "../helpers/errors"
 import {
   type ContratsHeader,
   formatCorrectedDates,
   getContractNature,
   getSexName,
   getMotivesRecours,
+  warningList,
+  infoTable,
 } from "../helpers/contrats"
-import { errorWording, isAppError } from "../helpers/errors"
+import { contractNatures, getQueryDates, motiveOptions } from "../helpers/filters"
+import { initEmployeeOptions, initJobOptions } from "../helpers/postes"
 import { formatDate } from "../helpers/date"
+import {
+  getQueryAsArray,
+  getQueryAsNumber,
+  getQueryAsNumberArray,
+  getQueryPage,
+} from "../helpers/format"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
 
 import EtabBanner from "../components/EtabBanner"
 import EtabInfo from "../components/EtabInfo"
+import EtabFilters from "../components/EtabFilters"
 import AppTable from "../components/AppTable"
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
-  const page = params.page && Number(params.page) ? Number(params.page) : 1
-
+  const { searchParams } = new URL(request.url)
+  const page = getQueryPage(searchParams)
   const etabType = await getEtablissementsType(siret)
 
   if (isAppError(etabType)) {
@@ -47,17 +61,40 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return redirect(`/etablissement/${siret}`)
   }
 
+  const etabDefaultPeriod = await getEtablissementsDefaultPeriod(etabType.id)
+
+  const { queryStartDate, queryEndDate } = getQueryDates({
+    etabDefaultPeriod,
+    searchParams,
+  })
+  const queryNature = getQueryAsArray(searchParams, "nature")
+  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
+  const queryEmployee = getQueryAsNumber(searchParams, "salarie")
+
+  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
+
   const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
   const correctedDates = formatCorrectedDates(lsContrats)
 
-  const [info, lastEffectif, data] = await Promise.all([
+  const [postes, info, lastEffectif, data, employeesList] = await Promise.all([
+    postPostes(etabType.id),
     getEtablissementsInfo(etabType.id),
     postEffectifsLast(etabType.id, correctedDates),
     getContratsEtt({
       id: etabType.id,
       page,
+      startDate: queryStartDate,
+      endDate: queryEndDate,
+      motives: queryMotives,
+      employeesIds: queryEmployee ? [queryEmployee] : undefined,
+      postesIds: queryJobs,
+      natures: queryNature,
     }),
+    getSalaries(etabType.id),
   ])
+  const options = initJobOptions(postes)
+  const employeesOptions = initEmployeeOptions(employeesList)
+
   return {
     info,
     lastEffectif,
@@ -65,6 +102,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
     raisonSociale: etabType.raisonSociale,
     siret,
     data,
+    queryStartDate,
+    queryEndDate,
+    queryNature,
+    queryJobs,
+    queryEmployee,
+    queryMotives,
+    options,
+    employeesOptions,
   }
 }
 
@@ -92,8 +137,22 @@ type FormattedContrat = {
 }
 
 export default function ETT() {
-  const { data, info, lastEffectif, raisonSociale, siret } =
-    useLoaderData<typeof loader>()
+  const {
+    data,
+    info,
+    lastEffectif,
+    raisonSociale,
+    siret,
+    queryStartDate,
+    queryEndDate,
+    queryNature,
+    queryJobs,
+    queryEmployee,
+    queryMotives,
+    options,
+    employeesOptions,
+    page,
+  } = useLoaderData<typeof loader>()
 
   useEffect(() => {
     document.title = `VisuDSN - ETT ${raisonSociale}`
@@ -101,6 +160,10 @@ export default function ETT() {
 
   const isOpen = isAppError(info) ? undefined : info.ouvert
 
+  const formattedDates = {
+    startDate: formatDate(queryStartDate),
+    endDate: formatDate(queryEndDate),
+  }
   return (
     <div className="flex w-full flex-col">
       <EtabBanner etabName={raisonSociale} isEtt={true} siret={siret} isOpen={isOpen} />
@@ -123,21 +186,52 @@ export default function ETT() {
             lastEffectif={(!isAppError(lastEffectif) && lastEffectif) || null}
           />
         )}
-        <h2 className="fr-text--xl fr-mt-3w fr-mb-1w">
-          Liste des contrats de mission déclarés
-        </h2>
+        <div>
+          <h2 className="fr-text--xl fr-mt-3w fr-mb-1w">Module de filtres</h2>
+          <hr />
+          <EtabFilters
+            startDate={queryStartDate}
+            endDate={queryEndDate}
+            natures={queryNature}
+            motives={queryMotives}
+            jobs={queryJobs}
+            jobOptions={options}
+            employee={queryEmployee}
+            employeeOptions={employeesOptions}
+          />
+        </div>
+
+        <h2 className="fr-text--xl fr-mt-3w fr-mb-1w">Liste des contrats</h2>
         <hr />
         {isAppError(data) ? (
           <>
             <Alert
               className="fr-mb-2w"
-              description={errorWording.etab}
+              description={errorDescription(data)}
               severity="error"
-              title="Erreur"
+              title={data.messageFr}
             />
           </>
-        ) : (
+        ) : data.contrats.length > 0 ? (
           <ETTContrats contrats={data.contrats} meta={data.meta} />
+        ) : (
+          <Alert
+            className="fr-mb-2w"
+            severity="warning"
+            title="Aucun contrat ne correspond à vos paramètres :"
+            description={warningList(
+              formattedDates,
+              queryJobs,
+              options,
+              queryEmployee,
+              employeesOptions,
+              queryMotives,
+              motiveOptions,
+              queryNature,
+              contractNatures,
+              page
+            )}
+          />
         )}
       </div>
     </div>
@@ -151,8 +245,7 @@ function ETTContrats({
   contrats: EttContrat[]
   meta: PaginationMetaData
 }) {
-  const { page, siret } = useLoaderData<typeof loader>()
-
+  const [searchParams] = useSearchParams()
   const formatContrats = (items: EttContrat[]) =>
     items.map((contrat) => {
       const etu = contrat.etuSiret ? (
@@ -182,20 +275,29 @@ function ETTContrats({
       {meta?.totalCount && formatContrats.length > 0 ? (
         <>
           <p>{meta.totalCount} résultats</p>
-          <AppTable headers={headers} items={formattedContrats} />
-          <Pagination
-            count={meta.totalPages}
-            defaultPage={page}
-            getPageLinkProps={(page) => ({ to: `/ett/${siret}/${page}` })}
-            showFirstLast
-            classes={{
-              list: "justify-center",
-            }}
-          />
+          <AppTable className="fr-mb-1w" headers={headers} items={formattedContrats} />
+          {meta.totalPages > 1 && (
+            <Pagination
+              count={meta.totalPages}
+              defaultPage={getQueryPage(searchParams)}
+              getPageLinkProps={(page) => {
+                const newQuery = new URLSearchParams(searchParams)
+                newQuery.set("page", String(page))
+                return {
+                  to: { search: newQuery.toString() },
+                }
+              }}
+              showFirstLast
+              classes={{
+                list: "justify-center",
+              }}
+            />
+          )}
         </>
       ) : (
         <p>Aucun résultat</p>
       )}
+      {infoTable}
     </>
   )
 }

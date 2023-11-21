@@ -237,7 +237,7 @@ export default function EtabFilters({
         ))}
       <div className="fr-mt-1w flex flex-col justify-end gap-3 lg:flex-row">
         <Button
-          linkProps={{ to: "" }}
+          linkProps={{ to: "", reloadDocument: true }}
           priority="secondary"
           className="w-full justify-center lg:w-auto"
         >
