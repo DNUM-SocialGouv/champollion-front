@@ -52,6 +52,7 @@ services:
     environment:
       APP_URL: ${APP_URL}
       AUTH_URL: ${AUTH_URL}
+      IPVM_PRODUCTION_ENS224_PLACEHOLDER: ${IPVM_PRODUCTION_ENS224_PLACEHOLDER}
     ports:
       - 80:80
       - 443:443
