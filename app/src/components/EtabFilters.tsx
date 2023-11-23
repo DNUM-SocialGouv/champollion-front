@@ -157,7 +157,7 @@ export default function EtabFilters({
       <div className="fr-grid-row fr-grid-row--gutters">
         <Input
           className="fr-col-12 fr-col-lg-6 fr-mb-1w"
-          label="Date de début"
+          label="Début de la période"
           ref={startDateRef}
           nativeInputProps={{
             name: "debut",
@@ -168,7 +168,7 @@ export default function EtabFilters({
         />
         <Input
           className="fr-col-12 fr-col-lg-6 fr-mb-1w"
-          label="Date de fin"
+          label="Fin de la période"
           ref={endDateRef}
           nativeInputProps={{
             name: "fin",
