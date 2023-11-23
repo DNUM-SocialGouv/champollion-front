@@ -9,9 +9,10 @@ import {
 } from "react-router-dom"
 import { defer, useLoaderData } from "react-router-typesafe"
 import Calendar from "react-multi-date-picker"
-import DateObject, { type DateType } from "react-date-object"
 import colors from "react-multi-date-picker/plugins/colors"
 import "../../styles/react-multi-date-picker.css"
+import { type DateType } from "react-date-object"
+import { DateObject } from "react-multi-date-picker"
 
 import {
   getEtablissementsInfo,
@@ -416,7 +417,7 @@ function OperatingDays({ publicHolidays }: OperatingDaysProps) {
             Ex: congés annuels, jour férié travaillé...
           </p>
           <Calendar
-            currentDate={new DateObject(new Date())} // open calendar on current day
+            currentDate={new DateObject()} // open calendar on current day
             className="dsfr-calendar"
             format="YYYY-MM-DD"
             minDate={minDateWithData}
