@@ -53,6 +53,8 @@ export const contractNatures = [
   { key: "cdi", code: "01", label: "CDI" },
   { key: "cdd", code: "02", label: "CDD" },
   { key: "ctt", code: "03", label: "CTT (intérim)" },
+  { key: "apprentissage", code: "0A", label: "Apprentissage" },
+  { key: "autres", code: "0X", label: "Autres" },
 ]
 
 export const addMotivesEndpointParam = (params: string, motives?: number[]) => {
