@@ -6,7 +6,6 @@ import { arrayEquals, minDateWithData } from "../helpers/format"
 import { MultiValueWithMerge, OptionWithMerge } from "../helpers/postes"
 
 import { Button } from "@codegouvfr/react-dsfr/Button"
-import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 import { Input } from "@codegouvfr/react-dsfr/Input"
 import { Select } from "@codegouvfr/react-dsfr/Select"
 
@@ -44,7 +43,7 @@ export default function EtabFilters({
 }: EtabFiltersProps) {
   const startDateRef = useRef<HTMLInputElement>(null)
   const endDateRef = useRef<HTMLInputElement>(null)
-  const naturesRef = useRef<HTMLFieldSetElement>(null)
+  const naturesRef = useRef<MultiSelectInstance<Option> | null>(null)
   const motivesRef = useRef<MultiSelectInstance<Option> | null>(null)
   const jobsRef = useRef<MultiSelectInstance<Option> | null>(null)
   const employeesRef = useRef<HTMLSelectElement | null>(null)
@@ -59,16 +58,19 @@ export default function EtabFilters({
       otherParamsToKeep.push(entry)
   }
 
-  const natureOptions = contractNatures.map((nature) => {
-    return {
-      label: nature.label,
-      nativeInputProps: {
-        name: "nature",
-        value: nature.code,
-        defaultChecked: natures && natures.includes(nature.code),
-      },
-    }
-  })
+  const natureOptions: Option[] = contractNatures.map((nature) => ({
+    value: nature.code,
+    label: nature.label,
+  }))
+
+  const natureSelectedOptions = natures
+    ? natures
+        .map(
+          (nature) =>
+            natureOptions.find((option) => option.value === nature) || ({} as Option)
+        )
+        .filter((option) => Object.keys(option).length > 0)
+    : []
 
   const motiveSelectedOptions = motives
     ? motives
@@ -97,17 +99,13 @@ export default function EtabFilters({
 
   useEffect(() => {
     if (natures && naturesRef.current) {
-      // todo find better way to update inputs
-      const cdiCheckboxEl = naturesRef.current.children[1].children[0]
-        .children[0] as HTMLInputElement
-      const cddCheckboxEl = naturesRef.current.children[1].children[1]
-        .children[0] as HTMLInputElement
-      const cttCheckboxEl = naturesRef.current.children[1].children[2]
-        .children[0] as HTMLInputElement
-
-      cdiCheckboxEl.checked = natures.includes("01")
-      cddCheckboxEl.checked = natures.includes("02")
-      cttCheckboxEl.checked = natures.includes("03")
+      const areStateAndPropsEquals = arrayEquals(
+        naturesRef.current.state.selectValue.map((option) => option.value),
+        natures
+      )
+      if (!areStateAndPropsEquals && natureSelectedOptions) {
+        naturesRef.current?.setValue(natureSelectedOptions, "select-option")
+      }
     }
   }, [natures])
 
@@ -177,17 +175,15 @@ export default function EtabFilters({
             min: minDateWithData,
           }}
         />
-        {/* // todo handle startDate after endDate */}
-        <div className="fr-col-12 fr-col-lg-6 fr-mb-1w">
-          {/* extra div necessary to display correctly checkboxes in the grid, since it has negative margins */}
-          <Checkbox
-            ref={naturesRef}
-            disabled={disabledFilters?.natures ?? false}
-            legend="Nature de contrat"
-            options={natureOptions}
-            orientation="horizontal"
-          />
-        </div>
+        <AppMultiSelect
+          className="fr-col-12 fr-col-lg-6 fr-mb-1w"
+          label="Nature de contrat"
+          name="nature"
+          ref={naturesRef}
+          options={natureOptions}
+          defaultValue={natureSelectedOptions}
+          disabled={disabledFilters?.natures ?? false}
+        />
         <AppMultiSelect
           className="fr-col-12 fr-col-lg-6 fr-mb-1w"
           label="Motif de recours (ne s'applique pas au CDI)"
