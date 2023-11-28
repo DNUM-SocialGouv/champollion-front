@@ -20,6 +20,37 @@ type ReleaseNote = {
 
 export const releaseNotes: ReleaseNote[] = [
   {
+    date: "2023-11-28",
+    news: [
+      {
+        category: "Contrats",
+        list: [
+          {
+            type: "feat",
+            desc: "Ajout de tous les types de contrats présents en DSN",
+          },
+          {
+            type: "feat",
+            desc: "Possibilité de filtrer les contrats d'apprentissages",
+          },
+          {
+            type: "ezwin",
+            desc: "Abréviations pour les natures de contrats et les motifs de recours",
+          },
+        ],
+      },
+      {
+        category: "FAQ",
+        list: [
+          {
+            type: "ezwin",
+            desc: "Tableaux de correspondance des abréviations de nature de contrats et motifs de recours avec les intitulés complets.",
+          },
+        ],
+      },
+    ],
+  },
+  {
     date: "2023-11-20",
     news: [
       {
