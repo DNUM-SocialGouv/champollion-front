@@ -52,6 +52,27 @@ const headers = [
   { key: "conventionCode", label: "Conv. collective", width: "5%" },
 ] as ContratsHeader<Column>[]
 
+const motivesRecoursShort = [
+  { code: "01", label: "Remplacement salarié" },
+  { code: "02", label: "ATA" },
+  { code: "03", label: "Saisonnier" },
+  { code: "04", label: "Vendange" },
+  { code: "05", label: "Usage" },
+  { code: "06", label: "CDI à objet défini" },
+  { code: "07", label: "Remplacement chef d’entreprise" },
+  { code: "08", label: "Remplacement chef exploit. agri." },
+  { code: "09", label: "Personnes sans emploi en difficulté" },
+  { code: "10", label: "Complément de formation pro." },
+  { code: "11", label: "Formation pro. par apprentissage" },
+  { code: "12", label: "Remplacement temps partiel provisoire" },
+  { code: "13", label: "Attente suppression de poste" },
+  { code: "14", label: "Contrat de voyage" },
+  { code: "15", label: "Intérimaire BOETH" },
+]
+
+const getMotivesRecours = (motiveCode: string | null) =>
+  motivesRecoursShort.find((item) => item.code === motiveCode)?.label || "n/a"
+
 const contractNatureShort = [
   { code: "01", label: "CDI" },
   { code: "02", label: "CDD" },
@@ -254,8 +275,6 @@ const formatContrats = (
           onReset={handleReset}
         />
       )
-      const motive =
-        contrat.codeNatureContrat === "01" ? "n/a" : contrat.libelleMotifRecours
 
       let employee = `${contrat.prenoms} ${contrat.nomFamille}`
 
@@ -269,7 +288,7 @@ const formatContrats = (
         startDate,
         endDate,
         nature: getContractNature(contrat.codeNatureContrat),
-        motive,
+        motive: getMotivesRecours(contrat.codeMotifRecours),
         conventionCode: contrat.codeConventionCollective,
         ett,
       }
@@ -449,4 +468,11 @@ export const radioBtnOptions = extensions.map((key) => ({
   },
 }))
 
-export { formatContrats, getContractNature, headers, contractNatureShort, getSexName }
+export {
+  formatContrats,
+  getContractNature,
+  getMotivesRecours,
+  headers,
+  contractNatureShort,
+  getSexName,
+}

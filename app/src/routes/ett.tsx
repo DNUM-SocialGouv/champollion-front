@@ -16,6 +16,7 @@ import {
   formatCorrectedDates,
   getContractNature,
   getSexName,
+  getMotivesRecours,
 } from "../helpers/contrats"
 import { errorWording, isAppError } from "../helpers/errors"
 import { formatDate } from "../helpers/format"
@@ -170,7 +171,7 @@ function ETTContrats({
         )} ${contrat.dateNaissance})`,
         startDate: formatDate(contrat.dateDebut),
         endDate: formatDate(contrat.dateFin),
-        motive: contrat.libelleMotifRecours,
+        motive: getMotivesRecours(contrat.codeMotifRecours),
         nature: getContractNature(contrat.codeNatureContrat),
       } as FormattedContrat
     })
