@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import type { ReactNode, FormEvent } from "react"
-import { useSearchParams, type LoaderFunctionArgs } from "react-router-dom"
+import { useSearchParams, type LoaderFunctionArgs, Link } from "react-router-dom"
 import { useLoaderData } from "react-router-typesafe"
 import ls from "localstorage-slim"
 
@@ -529,7 +529,12 @@ function ContratsTable({
       ) : (
         <p>Aucun résultat.</p>
       )}
-      <p>n/a : non applicable</p>
+      <p className="fr-mb-0">n/a : non applicable</p>
+      <p className="italic">
+        Vous trouverez dans la FAQ le détail des abréviations des{" "}
+        <Link to="/faq#faq-natures">natures de contrat</Link> et{" "}
+        <Link to="/faq#faq-motifs">motifs de recours</Link>.
+      </p>
     </>
   )
 }
