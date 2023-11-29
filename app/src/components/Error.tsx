@@ -46,7 +46,7 @@ export default function Error() {
             {
               children: "Contactez-nous",
               linkProps: {
-                to: "mailto:champollion@sg.social.gouv.fr",
+                to: "mailto:visudsn@sg.social.gouv.fr",
               },
               priority: "secondary",
             },

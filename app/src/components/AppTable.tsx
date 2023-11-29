@@ -9,15 +9,17 @@ export type Header<ObjectType> = {
 interface TableProps<ObjectType> {
   items: ObjectType[]
   headers: Header<ObjectType>[]
+  className?: string
 }
 
 export default function AppTable<T extends { id: number }>({
   items,
   headers,
+  className,
 }: TableProps<T>) {
   return (
     <>
-      <div className="fr-table">
+      <div className={`fr-table ${className}`}>
         <table className="table-fixed">
           <thead>
             <tr>

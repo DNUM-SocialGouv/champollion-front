@@ -67,8 +67,10 @@ const uncapitalize = (str: string) => str.charAt(0).toLowerCase() + str.slice(1)
 const formatDate = (date: string | dayjs.Dayjs | null, format = "DD/MM/YYYY") =>
   dayjs(date).isValid() ? dayjs(date).format(format) : ""
 
+export const minDateWithData = "2019-01-01"
 const today = dayjs().format("YYYY-MM-DD")
 const oneYearAgo = dayjs().subtract(1, "year").format("YYYY-MM-DD")
+const oneYearLater = dayjs().add(1, "year").format("YYYY-MM-DD")
 export const nextMonth = (date: string | null) =>
   dayjs(date).isValid() ? dayjs(date).add(1, "month") : ""
 export const prevMonth = (date: string | null) =>
@@ -154,6 +156,8 @@ export const formatLocalMerges = (data: unknown): number[][] | undefined => {
 }
 
 export type DayCode = "0" | "1" | "2" | "3" | "4" | "5" | "6"
+export type OpenDay = { code: DayCode; label: string; checked: boolean }
+export type PublicHolidaysClosed = "yes" | "no"
 
 export const formatLocalOpenDays = (
   dataFromLocalStorage: unknown
@@ -170,6 +174,33 @@ export const formatLocalOpenDays = (
 
   return formattedOpenDaysCode
 }
+
+export const formatLocalExceptionalDates = (
+  dataFromLocalStorage: unknown
+): string[] | undefined => {
+  let formattedExceptionalDate: string[] | undefined
+
+  if (Array.isArray(dataFromLocalStorage)) {
+    formattedExceptionalDate = dataFromLocalStorage.map((item) => String(item))
+  }
+
+  return formattedExceptionalDate
+}
+
+export const formatLocalClosedPublicHolidays = (
+  dataFromLocalStorage: unknown
+): PublicHolidaysClosed => {
+  if (
+    typeof dataFromLocalStorage === "string" &&
+    ["yes", "no"].includes(dataFromLocalStorage)
+  )
+    return dataFromLocalStorage as PublicHolidaysClosed
+
+  return "yes"
+}
+
+export const weekendDayCodes = (openDays: OpenDay[]) =>
+  openDays.filter((day) => !day.checked).map((day) => Number(day.code))
 
 export const addArrayParams = <T>(
   params: string,
@@ -215,6 +246,7 @@ export {
   isObject,
   keysToCamel,
   oneYearAgo,
+  oneYearLater,
   toCamel,
   today,
   uncapitalize,

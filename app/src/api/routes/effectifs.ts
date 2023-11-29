@@ -9,7 +9,7 @@ import type {
 import type { CorrectedDates } from "../../helpers/contrats"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import { addMotivesEndpointParam } from "../../helpers/filters"
-import { addArrayParams } from "../../helpers/format"
+import { PublicHolidaysClosed, addArrayParams } from "../../helpers/format"
 
 type EffectifsParams = {
   id: number
@@ -18,6 +18,9 @@ type EffectifsParams = {
   unit: EffectifUnit
   motives?: number[]
   openDaysCodes?: string[]
+  openDates?: string[]
+  closedDates?: string[]
+  closedPublicHolidays?: PublicHolidaysClosed
   postesIds?: number[]
   correctedDates?: CorrectedDates
   mergedPostesIds?: number[][]
@@ -32,6 +35,9 @@ export const postEffectifs = async ({
   motives,
   postesIds,
   openDaysCodes,
+  openDates,
+  closedDates,
+  closedPublicHolidays,
   correctedDates,
   mergedPostesIds,
   signal,
@@ -40,8 +46,11 @@ export const postEffectifs = async ({
     let params = `etablissement_id=${id}&start_date=${startDate}&end_date=${endDate}&unit=${unit}`
 
     params = addMotivesEndpointParam(params, motives)
-    params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
     params = addArrayParams(params, postesIds, "poste_ids")
+    params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
+    params = addArrayParams(params, openDates, "jour_ouverture_dates")
+    params = addArrayParams(params, closedDates, "jour_fermeture_dates")
+    if (closedPublicHolidays === "no") params += `&jour_ferie_bool=${false}`
 
     const body: ModificationsBody = {}
 

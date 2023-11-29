@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import type { ReactNode, FormEvent } from "react"
-import { useSearchParams, type LoaderFunctionArgs } from "react-router-dom"
+import { useSearchParams, type LoaderFunctionArgs, Link } from "react-router-dom"
 import { useLoaderData } from "react-router-typesafe"
 import ls from "localstorage-slim"
 
@@ -51,6 +51,9 @@ import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons"
 import AppTable from "../../components/AppTable"
 import EtabFilters from "../../components/EtabFilters"
 import AppRebound from "../../components/AppRebound"
+import AppCollapse from "../../components/AppCollapse"
+
+import { filtersDetail as filtersDetail } from "../../helpers/filters"
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
@@ -71,7 +74,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     etabDefaultPeriod,
     searchParams,
   })
-  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
   const queryNature = getQueryAsArray(searchParams, "nature")
   const queryJobs = getQueryAsNumberArray(searchParams, "poste")
   const queryEmployee = getQueryAsNumber(searchParams, "salarie")
@@ -82,7 +84,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
   const correctedDates = formatCorrectedDates(lsContrats)
 
-  const postes = await postPostes(etabType.id, formattedMergesIds)
+  const [postes, postesWithoutMerges] = await Promise.all([
+    postPostes(etabType.id, formattedMergesIds),
+    postPostes(etabType.id),
+  ])
+
+  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
+  const jobListWithoutMerges = isAppError(postesWithoutMerges) ? [] : postesWithoutMerges
+
   const employeesList = await getSalaries(etabType.id)
   const contratsData = await postContratsEtu({
     startDate: queryStartDate,
@@ -108,11 +117,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     queryEmployee,
     queryEndDate,
     queryJobs,
-    queryMotives,
     queryNature,
     queryStartDate,
     raisonSociale: etabType.raisonSociale,
     siret,
+    jobListWithoutMerges,
+    queryMotives,
+    formattedMergesIds,
   }
 }
 
@@ -428,7 +439,14 @@ function ContratsTable({
   meta: PaginationMetaData
 }) {
   const [searchParams] = useSearchParams()
-  const { siret } = useLoaderData<typeof loader>()
+  const { siret, jobListWithoutMerges, formattedMergesIds, queryJobs } =
+    useLoaderData<typeof loader>()
+
+  const filtersInfo = filtersDetail({
+    queryJobs,
+    jobListWithoutMerges,
+    localMerges: formattedMergesIds,
+  })
 
   const initialContratsDatesState = contrats.map((contrat) => {
     const savedContratsDates = ls.get(`contrats.${siret}`) as Record<string, string>
@@ -478,7 +496,18 @@ function ContratsTable({
       {meta.totalCount > 0 ? (
         <>
           <p className="fr-mb-0">{meta.totalCount} résultats</p>
-          <AppTable headers={headers} items={formattedContrats} />
+          {queryJobs.length > 0 && (
+            <AppCollapse
+              id="filters-collapse"
+              className="fr-mb-1w"
+              label="Afficher les postes sélectionnés"
+              labelOpen="Masquer les postes sélectionnés"
+              keepBtnOnTop
+            >
+              {filtersInfo}
+            </AppCollapse>
+          )}
+          <AppTable className="fr-mb-1w" headers={headers} items={formattedContrats} />
           {meta.totalPages > 1 && (
             <Pagination
               count={meta.totalPages}
@@ -500,6 +529,12 @@ function ContratsTable({
       ) : (
         <p>Aucun résultat.</p>
       )}
+      <p className="fr-mb-0">n/a : non applicable</p>
+      <p className="italic">
+        Vous trouverez dans la FAQ le détail des abréviations des{" "}
+        <Link to="/faq#faq-natures">natures de contrat</Link> et{" "}
+        <Link to="/faq#faq-motifs">motifs de recours</Link>.
+      </p>
     </>
   )
 }

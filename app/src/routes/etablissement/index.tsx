@@ -9,7 +9,7 @@ import {
 } from "react-router-dom"
 import { useLoaderData } from "react-router-typesafe"
 
-import { getEtablissementsType } from "../../api"
+import { getEtablissementsInfo, getEtablissementsType } from "../../api"
 import { errorWording, isAppError } from "../../helpers/errors"
 
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs"
@@ -19,7 +19,6 @@ import EtabBanner from "../../components/EtabBanner"
 export async function loader({ params }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
-
   if (isAppError(etabType)) {
     const responseParams: ResponseInit = {
       statusText: etabType.messageFr ?? errorWording.etab,
@@ -29,6 +28,20 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("", responseParams)
   }
 
+  const idEtab = etabType.id
+  const etabInformation = await getEtablissementsInfo(idEtab)
+
+  if (isAppError(etabInformation)) {
+    const responseParams: ResponseInit = {
+      statusText: etabInformation.messageFr ?? errorWording.etab,
+    }
+    if (etabInformation.status) responseParams.status = etabInformation.status
+    if (etabInformation.status == 404) responseParams.statusText = "ID introuvable."
+    throw new Response("", responseParams)
+  }
+
+  const isOpen = etabInformation.ouvert
+
   if (etabType.ett) {
     return redirect(`/ett/${siret}`)
   }
@@ -37,6 +50,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     etabId: etabType.id,
     raisonSociale: etabType.raisonSociale,
     siret,
+    isOpen,
   }
 }
 
@@ -51,7 +65,7 @@ const tabs = [
 type ContextType = { etabId: number }
 
 export default function Etab() {
-  const { etabId, raisonSociale, siret } = useLoaderData<typeof loader>()
+  const { etabId, raisonSociale, siret, isOpen } = useLoaderData<typeof loader>()
   const navigate = useNavigate()
   const { pathname } = useLocation()
 
@@ -78,7 +92,12 @@ export default function Etab() {
   return (
     <>
       <div className="flex w-full flex-col items-center">
-        <EtabBanner etabName={raisonSociale} isEtt={false} siret={siret} />
+        <EtabBanner
+          etabName={raisonSociale}
+          isEtt={false}
+          siret={siret}
+          isOpen={isOpen}
+        />
 
         <div className="fr-mt-2w fr-container">
           <Tabs selectedTabId={selectedTabId} tabs={tabs} onTabChange={handleTabChange}>

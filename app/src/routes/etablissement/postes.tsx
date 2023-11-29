@@ -7,6 +7,7 @@ import { v4 as uuid } from "uuid"
 import {
   getEtablissementsDefaultPeriod,
   getEtablissementsType,
+  getPostesMerges,
   postIndicateur3,
   postIndicateur5,
   postPostes,
@@ -17,6 +18,8 @@ import { getQueryDates } from "../../helpers/filters"
 import {
   createFiltersQuery,
   formatDate,
+  formatLocalClosedPublicHolidays,
+  formatLocalExceptionalDates,
   formatLocalMerges,
   formatLocalOpenDays,
   formatNumber,
@@ -36,6 +39,7 @@ import type { AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
+import { Tag } from "@codegouvfr/react-dsfr/Tag"
 
 import AppIndicator from "../../components/AppIndicator"
 import AppMultiSelect, { type Option } from "../../components/AppMultiSelect"
@@ -58,9 +62,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     })
   }
 
-  const [etabDefaultPeriod, etabPostes] = await Promise.all([
+  const [etabDefaultPeriod, etabPostes, suggestedJobMerges] = await Promise.all([
     getEtablissementsDefaultPeriod(etabType.id),
     postPostes(etabType.id),
+    getPostesMerges(etabType.id),
   ])
   const { queryStartDate, queryEndDate } = getQueryDates({
     etabDefaultPeriod,
@@ -84,7 +89,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // Get user modifications from localStorage
   const localOpenDays = ls.get(`etab.${params.siret}.openDays`)
-  const savedOpenDaysCodes = formatLocalOpenDays(localOpenDays)
+  const formattedOpenDaysCodes = formatLocalOpenDays(localOpenDays)
+  const localOpenDates = ls.get(`etab.${params.siret}.openDates`)
+  const formattedOpenDates = formatLocalExceptionalDates(localOpenDates)
+  const localClosedDates = ls.get(`etab.${params.siret}.closedDates`)
+  const formattedClosedDates = formatLocalExceptionalDates(localClosedDates)
+  const localClosedPublicHolidays = ls.get(`etab.${params.siret}.closedPublicHolidays`)
+  const formattedClosedPublicHolidays = formatLocalClosedPublicHolidays(
+    localClosedPublicHolidays
+  )
   const localMergesIds = ls.get(`etab.${params.siret}.merges`)
   const formattedMergesIds = formatLocalMerges(localMergesIds)
   const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
@@ -104,6 +117,22 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       )
     : []
 
+  let suggestedMerges: MergeOptionObject[] = []
+
+  if (!isAppError(suggestedJobMerges))
+    suggestedMerges = suggestedJobMerges.postes.map(
+      (merge): MergeOptionObject => ({
+        id: uuid(),
+        mergedOptions: merge
+          .map(
+            (job) =>
+              options.find((option) => option.value === Number(job.posteId)) ||
+              ({} as Option)
+          )
+          .filter((option) => Object.keys(option).length > 0),
+      })
+    )
+
   const jobListWithMerge = await postPostes(etabType.id, formattedMergesIds)
 
   // AbortController to abort deferred calls on route change
@@ -113,7 +142,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     id: etabType.id,
     startDate: queryStartDate,
     endDate: queryEndDate,
-    openDaysCodes: savedOpenDaysCodes,
+    openDaysCodes: formattedOpenDaysCodes,
+    openDates: formattedOpenDates,
+    closedDates: formattedClosedDates,
+    closedPublicHolidays: formattedClosedPublicHolidays,
     correctedDates,
     mergedPostesIds: formattedMergesIds,
     natures: queryNatures,
@@ -124,7 +156,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     id: etabType.id,
     startDate: queryStartDate,
     endDate: queryEndDate,
-    openDaysCodes: savedOpenDaysCodes,
+    openDaysCodes: formattedOpenDaysCodes,
+    openDates: formattedOpenDates,
+    closedDates: formattedClosedDates,
+    closedPublicHolidays: formattedClosedPublicHolidays,
     correctedDates,
     mergedPostesIds: formattedMergesIds,
     motives: queryMotives,
@@ -149,7 +184,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     etabId: etabType.id,
     indicatorController,
     jobList: jobListWithMerge,
-    openDaysCodes: savedOpenDaysCodes,
+    openDaysCodes: formattedOpenDaysCodes,
+    openDates: formattedOpenDates,
+    closedDates: formattedClosedDates,
+    closedPublicHolidays: formattedClosedPublicHolidays,
     options,
     queryEndDate,
     queryMotives,
@@ -158,6 +196,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     raisonSociale: etabType.raisonSociale,
     savedMerges,
     siret,
+    suggestedMerges,
   }
 }
 
@@ -171,8 +210,12 @@ export default function EtabPostes() {
     correctedDates,
     deferredCalls,
     etabId,
+    indicatorController,
     jobList: initialJobList,
     openDaysCodes,
+    openDates,
+    closedDates,
+    closedPublicHolidays,
     options,
     queryEndDate,
     queryMotives,
@@ -181,7 +224,7 @@ export default function EtabPostes() {
     raisonSociale,
     savedMerges,
     siret,
-    indicatorController,
+    suggestedMerges,
   } = useLoaderData<typeof loader>()
   const [merges, setMerges] = useState(savedMerges)
   const [jobList, setJobList] = useState(initialJobList)
@@ -196,12 +239,19 @@ export default function EtabPostes() {
     severity: AlertProps.Severity
     title: string
   } | null>(null)
+  const [showSavedAlert, setShowSavedAlert] = useState(false)
+
   const [areOptionsFiltered, setAreOptionsFiltered] = useState(false)
 
   const navigation = useNavigation()
   if (navigation.state === "loading") {
     indicatorController.abort()
   }
+
+  const mergesJobIds = merges.map((mergeObject) => {
+    return mergeObject.mergedOptions.map((option) => option.value)
+  })
+  const alreadyMergedJobs = new Set(mergesJobIds.flat())
 
   const filtersQuery = createFiltersQuery({
     startDate: queryStartDate,
@@ -217,7 +267,11 @@ export default function EtabPostes() {
   const handleDeleteMerge = (id: number | string) =>
     setMerges(merges.filter((merge) => merge.id !== id))
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const addSuggestionToMerges = (suggestedMerge: MergeOptionObject) => {
+    setMerges([...merges, { ...suggestedMerge }])
+  }
+
+  const handleSaveAllMerges = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     // it would probably be better to use state for formData instead of getting a FormData and parsing it,
     // but it was the code inside the former route action so quicker to keep it as is
@@ -233,6 +287,9 @@ export default function EtabPostes() {
       startDate: queryStartDate,
       endDate: queryEndDate,
       openDaysCodes,
+      openDates,
+      closedDates,
+      closedPublicHolidays,
       correctedDates,
       mergedPostesIds: merges,
       natures: queryNatures,
@@ -246,6 +303,9 @@ export default function EtabPostes() {
       endDate: queryEndDate,
       correctedDates,
       openDaysCodes,
+      openDates,
+      closedDates,
+      closedPublicHolidays,
       mergedPostesIds: merges,
       motives: queryMotives,
       signal: indicatorController.signal,
@@ -285,6 +345,8 @@ export default function EtabPostes() {
     }
 
     setAlertState({ severity, title, message })
+    setShowSavedAlert(true)
+    setTimeout(() => setShowSavedAlert(false), 4000)
   }
 
   useEffect(() => {
@@ -294,6 +356,7 @@ export default function EtabPostes() {
   return (
     <>
       <div className="fr-mb-3w">
+        {/******* FILTERS *******/}
         <h2 className="fr-text--xl fr-mb-1w">Module de filtres</h2>
         <hr />
         <EtabFilters
@@ -305,6 +368,8 @@ export default function EtabPostes() {
         />
         <h2 className="fr-text--xl fr-mb-1w">Etat des lieux des postes</h2>
         <hr />
+
+        {/******* LIST OF JOB TITLES *******/}
         <Button
           onClick={() => {
             modal.open()
@@ -331,6 +396,8 @@ export default function EtabPostes() {
             })}
           </ul>
         </modal.Component>
+
+        {/******* FIRST INDICATOR: PROPRORTION OF DAYS WORKED BY JOB TITLE *******/}
         <h3 className="fr-text--md underline underline-offset-4">
           Postes les plus occupés
         </h3>
@@ -343,6 +410,7 @@ export default function EtabPostes() {
           />
         </Deferring>
 
+        {/******* SECOND INDICATOR: JOBS WITH MOST PRECARIOUS WORKERS *******/}
         <h3 className="fr-text--md fr-mt-2w underline underline-offset-4">
           Postes les plus occupés en CDD et CTT
         </h3>
@@ -350,13 +418,18 @@ export default function EtabPostes() {
           <PrecariousJobsIndicator hasMotives={queryMotives.length > 0} />
         </Deferring>
 
-        <h2 className="fr-text--xl fr-mb-1w">Fusion de postes</h2>
+        <h2 className="fr-text--xl fr-mb-1w fr-mt-2w">Fusion de postes</h2>
         <hr />
-        <form className="flex flex-col" method="post" onSubmit={handleSubmit}>
+
+        {/******* SAVED MERGES *******/}
+        <form className="flex flex-col" method="post" onSubmit={handleSaveAllMerges}>
           <p>
             Vous pouvez choisir de fusionner certains libellés de postes correspondant à
             la même identité de poste.
           </p>
+          <h3 className="fr-text--md underline underline-offset-4">Fusions manuelles</h3>
+          {/******* Filter out merged jobs from job options *******/}
+
           <Checkbox
             className="fr-mb-2w"
             options={[
@@ -380,6 +453,8 @@ export default function EtabPostes() {
               },
             ]}
           />
+
+          {/******* List of manual merges *******/}
           {merges.length > 0 &&
             merges.map((merge) => (
               <div
@@ -387,6 +462,7 @@ export default function EtabPostes() {
                 className="fr-pt-2w fr-px-2w fr-mb-2w border border-solid border-bd-default-grey bg-bg-alt-grey"
               >
                 <div className="flex flex-initial flex-col items-center md:flex-row">
+                  {/******* Select job labels in the same merge *******/}
                   <AppMultiSelect
                     className="fr-mr-2w w-full"
                     label="Fusionner les postes suivants :"
@@ -415,6 +491,8 @@ export default function EtabPostes() {
                     name={`merge-${merge.id}`}
                     value={merge.mergedOptions.map((x) => String(x.value))}
                   />
+
+                  {/******* Delete this merge *******/}
                   <div className="fr-mt-1w fr-mb-2w fr-mb-md-0">
                     <Button
                       iconId="fr-icon-delete-line"
@@ -426,6 +504,8 @@ export default function EtabPostes() {
                     </Button>
                   </div>
                 </div>
+
+                {/******* Job label representing all other labels from the merge *******/}
                 <div className="fr-mb-3w flex flex-wrap">
                   <p className="fr-text--sm fr-mb-0 fr-mr-1v italic">
                     Le nouveau nom du poste ainsi constitué est le 1e libellé sélectionné
@@ -441,30 +521,105 @@ export default function EtabPostes() {
               </div>
             ))}
 
+          {/******* Add another merge *******/}
           <Button
-            className="fr-mt-2w fr-mb-8w"
+            className="fr-mb-3w"
             iconId="fr-icon-add-line"
             type="button"
             onClick={handleAddMerge}
             priority="secondary"
           >
-            Ajouter une fusion
+            Créer une nouvelle fusion
           </Button>
-          {alertState &&
-            typeof alertState === "object" &&
-            Object.keys(alertState).length > 0 && (
-              <Alert
-                className="fr-mb-2w"
-                description={alertState?.message}
-                severity={alertState.severity}
-                title={alertState.title}
-              />
-            )}
 
-          <div className="fr-mt-4w self-end">
+          {/******* Display success or error message after submitting merges *******/}
+          {showSavedAlert && alertState !== null && (
+            <Alert
+              className="fr-mb-2w"
+              description={alertState?.message}
+              severity={alertState.severity}
+              title={alertState.title}
+            />
+          )}
+
+          {/******* Save merges and submit the form *******/}
+          <div className="fr-mt-3w fr-mb-5w self-end">
             <Button type="submit">Sauvegarder</Button>
           </div>
+
+          {/******* SUGGESTED MERGES *******/}
+          {suggestedMerges.length > 0 && (
+            <>
+              <h3 className="fr-text--md underline underline-offset-4">
+                Suggestions automatiques
+              </h3>
+              <p>
+                Vous trouverez ci-dessous des suggestions de fusions automatiques. Elles
+                ne sont prises en compte que si vous les ajoutez. Vous pourrez les
+                modifier après les avoir ajoutées.
+              </p>
+              <p>
+                Un libellé de poste ne pouvant pas apparaître dans plusieurs fusions, les
+                suggestions contenant des libellés déjà fusionnés ne peuvent pas être
+                ajoutées.
+              </p>
+
+              {/******* Suggested merges list *******/}
+              {suggestedMerges.map((merge) => (
+                <div
+                  key={merge.id}
+                  className="fr-py-1w fr-px-2w fr-mb-2w border border-dashed border-bd-default-grey bg-bg-alt-grey"
+                >
+                  <div className="fr-mb-1v flex flex-initial flex-col items-center justify-between md:flex-row">
+                    <div>
+                      {/******* List of job labels *******/}
+                      {merge.mergedOptions.map((job) => (
+                        <Tag
+                          small
+                          key={job.value}
+                          className={`fr-m-1v ${
+                            alreadyMergedJobs.has(job.value)
+                              ? "bg-bg-action-low-pink-tuile text-tx-action-high-pink-tuile"
+                              : "bg-bg-action-low-blue-france text-tx-action-high-blue-france"
+                          }`}
+                        >
+                          {job.label}
+                        </Tag>
+                      ))}
+                    </div>
+                    {/******* Add current suggestion to merges *******/}
+                    <div className="fr-mt-1w fr-mb-2w fr-mb-md-0">
+                      <Button
+                        iconId="fr-icon-add-line"
+                        type="button"
+                        onClick={() => addSuggestionToMerges(merge)}
+                        priority="secondary"
+                        disabled={merge.mergedOptions.some((job) =>
+                          alreadyMergedJobs.has(job.value)
+                        )}
+                      >
+                        Ajouter
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/******* Duplicated jobs message *******/}
+                  {merge.mergedOptions.some((job) =>
+                    alreadyMergedJobs.has(job.value)
+                  ) && (
+                    <p className="fr-text--sm fr-mb-0 italic">
+                      Cette suggestion ne peut être ajoutée car un ou plusieurs de ses
+                      libellés (en orange ici) sont contenus dans une des fusions
+                      manuelles ci-dessus.
+                    </p>
+                  )}
+                </div>
+              ))}
+            </>
+          )}
         </form>
+
+        {/******* ACTIONS REBOUND LINKS TO OTHER PAGES *******/}
         <h2 className="fr-text--xl fr-mb-1w fr-mt-3w">Actions</h2>
         <hr />
         <div className="fr-grid-row fr-grid-row--gutters">

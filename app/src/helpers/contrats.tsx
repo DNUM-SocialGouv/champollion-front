@@ -52,14 +52,67 @@ const headers = [
   { key: "conventionCode", label: "Conv. collective", width: "5%" },
 ] as ContratsHeader<Column>[]
 
+const motivesRecoursShort = [
+  { code: "01", label: "Remplacement salarié" },
+  { code: "02", label: "ATA" },
+  { code: "03", label: "Saisonnier" },
+  { code: "04", label: "Vendange" },
+  { code: "05", label: "Usage" },
+  { code: "06", label: "CDI à objet défini" },
+  { code: "07", label: "Remplacement chef d’entreprise" },
+  { code: "08", label: "Remplacement chef exploit. agri." },
+  { code: "09", label: "Personnes sans emploi en difficulté" },
+  { code: "10", label: "Complément de formation pro." },
+  { code: "11", label: "Formation pro. par apprentissage" },
+  { code: "12", label: "Remplacement temps partiel provisoire" },
+  { code: "13", label: "Attente suppression de poste" },
+  { code: "14", label: "Contrat de voyage" },
+  { code: "15", label: "Intérimaire BOETH" },
+]
+
+const getMotivesRecours = (motiveCode: string | null) =>
+  motivesRecoursShort.find((item) => item.code === motiveCode)?.label || "n/a"
+
 const contractNatureShort = [
   { code: "01", label: "CDI" },
   { code: "02", label: "CDD" },
   { code: "03", label: "CTT" },
+  { code: "0A", label: "Apprentissage" },
+  { code: "07", label: "CDI intermittent" },
+  { code: "08", label: "CDI interimaire" },
+  { code: "09", label: "CDI (droit public)" },
+  { code: "10", label: "CDD (droit public)" },
+  { code: "20", label: "[FP] Détachement ECP" },
+  { code: "21", label: "[FP] Détachement ENCP" },
+  { code: "29", label: "Stage" },
+  { code: "32", label: "CAPE" },
+  { code: "50", label: "[FP] Nomination" },
+  { code: "51", label: "Contrat de mission COSP" },
+  { code: "52", label: "[FP] Cumul d’activité" },
+  { code: "53", label: "CEP" },
+  { code: "54", label: "Apprentissage détenu" },
+  { code: "60", label: "CEE" },
+  { code: "70", label: "Contrat ESAT" },
+  { code: "80", label: "Mandat social" },
+  { code: "81", label: "Mandat d'élu" },
+  { code: "82", label: "CDI chantier" },
+  { code: "89", label: "Service civique" },
+  { code: "90", label: "Autre" },
+  { code: "91", label: "CDI maritime" },
+  { code: "92", label: "CDD maritime" },
+  { code: "93", label: "Ligne de service" },
 ]
 
 const getContractNature = (contractCode: string) =>
   contractNatureShort.find((item) => item.code === contractCode)?.label || "Autre"
+
+const sexShort = [
+  { code: 1, label: "H - " },
+  { code: 2, label: "F - " },
+]
+
+const getSexName = (sexCode: number) =>
+  sexShort.find((item) => item.code === sexCode)?.label || ""
 
 export type DateStatus = "declared" | "computed" | "validated" | "unknown"
 
@@ -222,11 +275,11 @@ const formatContrats = (
           onReset={handleReset}
         />
       )
-      const motive =
-        contrat.codeNatureContrat === "01" ? "n/a" : contrat.libelleMotifRecours
 
       let employee = `${contrat.prenoms} ${contrat.nomFamille}`
-      if (contrat.dateNaissance) employee += ` (${contrat.dateNaissance})`
+
+      if (contrat.dateNaissance || getSexName(contrat.sexe))
+        employee += ` (${getSexName(contrat.sexe) + contrat.dateNaissance})`
 
       return {
         id: contrat.contratId,
@@ -235,7 +288,7 @@ const formatContrats = (
         startDate,
         endDate,
         nature: getContractNature(contrat.codeNatureContrat),
-        motive,
+        motive: getMotivesRecours(contrat.codeMotifRecours),
         conventionCode: contrat.codeConventionCollective,
         ett,
       }
@@ -334,7 +387,7 @@ function ContratDate({
             <Button
               iconId="fr-icon-check-line"
               priority="tertiary no outline"
-              title="Valider"
+              title="Sauvegarder"
               type="submit"
             />
             <Button
@@ -415,4 +468,11 @@ export const radioBtnOptions = extensions.map((key) => ({
   },
 }))
 
-export { formatContrats, getContractNature, headers }
+export {
+  formatContrats,
+  getContractNature,
+  getMotivesRecours,
+  headers,
+  contractNatureShort,
+  getSexName,
+}

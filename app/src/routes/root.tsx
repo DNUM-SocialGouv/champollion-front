@@ -46,7 +46,7 @@ const contentDescription = (
     <br />
     <br />
     Pour nous contacter par courriel :{" "}
-    <a href="mailto:champollion@sg.social.gouv.fr">champollion@sg.social.gouv.fr</a>
+    <a href="mailto:visudsn@sg.social.gouv.fr">visudsn@sg.social.gouv.fr</a>
   </>
 )
 
@@ -93,7 +93,7 @@ export default function Root() {
             serviceTitle={
               <>
                 VisuDSN{" "}
-                <Badge noIcon severity="info">
+                <Badge noIcon severity="info" as="span">
                   ex-Champollion
                 </Badge>
               </>

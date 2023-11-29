@@ -9,7 +9,7 @@ import type {
   ModificationsBody,
 } from "../types"
 import type { CorrectedDates } from "../../helpers/contrats"
-import { addArrayParams } from "../../helpers/format"
+import { PublicHolidaysClosed, addArrayParams } from "../../helpers/format"
 import { addMotivesEndpointParam } from "../../helpers/filters"
 
 type Indicateur1Params = {
@@ -25,6 +25,9 @@ type Filters = {
   motives?: number[]
   natures?: string[]
   openDaysCodes?: string[]
+  openDates?: string[]
+  closedDates?: string[]
+  closedPublicHolidays?: PublicHolidaysClosed
   postesIds?: number[]
 }
 
@@ -72,6 +75,9 @@ export async function postIndicateur2({
   motives,
   postesIds,
   openDaysCodes,
+  openDates,
+  closedDates,
+  closedPublicHolidays,
   signal,
 }: Indicateur2Params) {
   try {
@@ -79,8 +85,11 @@ export async function postIndicateur2({
     if (endDate) params += `&end_date=${endDate}`
     if (startDate) params += `&start_date=${startDate}`
     params = addMotivesEndpointParam(params, motives)
-    params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
     params = addArrayParams(params, postesIds, "poste_ids")
+    params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
+    params = addArrayParams(params, openDates, "jour_ouverture_dates")
+    params = addArrayParams(params, closedDates, "jour_fermeture_dates")
+    if (closedPublicHolidays === "no") params += `&jour_ferie_bool=${false}`
 
     const body: ModificationsBody = {}
     if (mergedPostesIds && mergedPostesIds?.length > 0)
@@ -106,6 +115,9 @@ export async function postIndicateur3({
   startDate,
   endDate,
   openDaysCodes,
+  openDates,
+  closedDates,
+  closedPublicHolidays,
   correctedDates,
   mergedPostesIds,
   natures,
@@ -120,6 +132,9 @@ export async function postIndicateur3({
     params = addMotivesEndpointParam(params, motives)
     params = addArrayParams(params, natures, "nature_contrat_ids")
     params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
+    params = addArrayParams(params, openDates, "jour_ouverture_dates")
+    params = addArrayParams(params, closedDates, "jour_fermeture_dates")
+    if (closedPublicHolidays === "no") params += `&jour_ferie_bool=${false}`
 
     const body: ModificationsBody = {}
     if (mergedPostesIds && mergedPostesIds?.length > 0)
@@ -145,6 +160,9 @@ export async function postIndicateur5({
   startDate,
   endDate,
   openDaysCodes,
+  openDates,
+  closedDates,
+  closedPublicHolidays,
   correctedDates,
   mergedPostesIds,
   motives,
@@ -157,6 +175,9 @@ export async function postIndicateur5({
     if (startDate) params += `&start_date=${startDate}`
     params = addMotivesEndpointParam(params, motives)
     params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
+    params = addArrayParams(params, openDates, "jour_ouverture_dates")
+    params = addArrayParams(params, closedDates, "jour_fermeture_dates")
+    if (closedPublicHolidays === "no") params += `&jour_ferie_bool=${false}`
 
     const body: ModificationsBody = {}
     if (mergedPostesIds && mergedPostesIds?.length > 0)

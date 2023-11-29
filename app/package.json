@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "yarn lint && vite build && ./obfuscate.sh",
     "lint:fix": "eslint ./src --ext .jsx,.js,.ts,.tsx --fix --ignore-path ./.gitignore",
-    "lint:format": "prettier  --loglevel warn --write \"./**/*.{js,jsx,ts,tsx,css,md,json}\" ",
+    "lint:format": "prettier  --loglevel warn --write \"./**/*.{js,jsx,ts,tsx,css,json}\" ",
     "lint:types": "tsc --noEmit",
     "lint": "yarn lint:format && yarn lint:fix && yarn lint:types",
     "preview": "vite preview",
@@ -17,7 +17,7 @@
     "postinstall": "copy-dsfr-to-public && is-ci || cd .. && husky install app/.husky"
   },
   "dependencies": {
-    "@codegouvfr/react-dsfr": "^0.72.4",
+    "@codegouvfr/react-dsfr": "0.78.1",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@mui/material": "^5.11.4",
@@ -25,7 +25,9 @@
     "dayjs": "^1.11.7",
     "localstorage-slim": "^2.4.0",
     "react": "^18.2.0",
+    "react-date-object": "^2.1.7",
     "react-dom": "^18.2.0",
+    "react-multi-date-picker": "^4.4.0",
     "react-router-dom": "^6.6.2",
     "react-router-typesafe": "^1.1.0",
     "react-select": "^5.7.0",

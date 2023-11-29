@@ -1,14 +1,9 @@
-# 3. Reverse proxy
-
-- schéma global du fonctionnement [TO DO]
-
-## Configuration
+# Reverse proxy (Nginx)
 
 La configuration Nginx est dynamique, c'est-à-dire qu'elle se génère lors du lancement du container Docker grâce au script [docker-entrypoint.sh](../reverse-proxy/docker-entrypoint.sh). Cela permet d'intégrer les variables d'environnement dans la configuration à la volée :
 - `APP_URL`
 - `API_URL`
 - `AUTH_URL`
-- `KEYCLOAK_REALM`
 
 > ⚠️ La variable d'environnement `API_URL` est intégrée à la [configuration Nginx de l'application](../app/default.conf.template) et non du reverse proxy. La logique reste même ([docker-entrypoints.sh](../app/docker-entrypoint.sh)).
 

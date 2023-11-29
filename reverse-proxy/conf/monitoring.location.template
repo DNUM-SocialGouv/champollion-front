@@ -1,0 +1,7 @@
+# Monitoring location only available from localhost
+location /nginx_status {
+        stub_status;
+        allow 127.0.0.1;        #only allow requests from localhost
+        allow ${IPVM_PRODUCTION_ENS224_PLACEHOLDER};
+        deny all;               #deny all other hosts
+}

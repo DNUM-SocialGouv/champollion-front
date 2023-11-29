@@ -34,8 +34,8 @@ export default function EtabInfo({ info, lastEffectif, siret }: EtabInfoProps) {
           : "Inconnu",
     },
     {
-      label: "Dernier effectif (CDD et CDI)",
-      value: lastEffectif !== null ? `${lastEffectif.value} contrats` : "Inconnu",
+      label: "Nombre de salariés au cours du dernier mois",
+      value: lastEffectif !== null ? `${lastEffectif.value}` : "Inconnu",
     },
     {
       label: "Convention collective",
