@@ -1,7 +1,8 @@
 import { EtablissementDefaultPeriod, EtablissementPoste } from "../api/types"
 import { Option } from "../components/AppMultiSelect"
 import { AppError, isAppError } from "./errors"
-import { getQueryAsString, oneYearAgo, today } from "./format"
+import { oneYearAgo, today } from "./date"
+import { getQueryAsString } from "./format"
 
 export const getQueryDates = ({
   etabDefaultPeriod,

@@ -14,10 +14,10 @@ import {
 } from "../../api"
 import type { Indicator5, IndicatorMetaData } from "../../api/types"
 import { errorWording, isAppError } from "../../helpers/errors"
+import { formatDate } from "../../helpers/date"
 import { getQueryDates } from "../../helpers/filters"
 import {
   createFiltersQuery,
-  formatDate,
   formatLocalClosedPublicHolidays,
   formatLocalExceptionalDates,
   formatLocalMerges,

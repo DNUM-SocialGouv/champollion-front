@@ -29,9 +29,9 @@ import {
   errorWording,
   isAppError,
 } from "../../helpers/errors"
+import { formatDate } from "../../helpers/date"
 import {
   createFiltersQuery,
-  formatDate,
   formatLocalMerges,
   getQueryAsArray,
   getQueryAsNumber,

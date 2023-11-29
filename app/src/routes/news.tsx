@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 
-import { formatDate } from "../helpers/format"
+import { formatDate } from "../helpers/date"
 import { newsTypeEmoji, releaseNotes } from "../helpers/news"
 
 export default function News() {

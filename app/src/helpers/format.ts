@@ -1,9 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import dayjs from "dayjs"
-import "dayjs/locale/fr"
-dayjs.locale("fr")
-
 const arrayEquals = <T>(a: Array<T>, b: Array<T>): boolean => {
   return (
     Array.isArray(a) &&
@@ -63,27 +59,6 @@ const keysToCamel = (input: any): any => {
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
 const uncapitalize = (str: string) => str.charAt(0).toLowerCase() + str.slice(1)
-
-const formatDate = (date: string | dayjs.Dayjs | null, format = "DD/MM/YYYY") =>
-  dayjs(date).isValid() ? dayjs(date).format(format) : ""
-
-export const minDateWithData = "2019-01-01"
-const today = dayjs().format("YYYY-MM-DD")
-const oneYearAgo = dayjs().subtract(1, "year").format("YYYY-MM-DD")
-const oneYearLater = dayjs().add(1, "year").format("YYYY-MM-DD")
-export const nextMonth = (date: string | null) =>
-  dayjs(date).isValid() ? dayjs(date).add(1, "month") : ""
-export const prevMonth = (date: string | null) =>
-  dayjs(date).isValid() ? dayjs(date).subtract(1, "month") : ""
-
-export const dateIsBefore = (
-  firstDate: string | dayjs.Dayjs | null,
-  secondDate: string | dayjs.Dayjs | null
-) => {
-  return dayjs(firstDate).isValid() && dayjs(secondDate).isValid()
-    ? dayjs(firstDate).isBefore(secondDate)
-    : false
-}
 
 const formatNumber = (value: number | string) =>
   value && Number(value)
@@ -236,7 +211,6 @@ export {
   capitalize,
   createFiltersQuery,
   findDuplicates,
-  formatDate,
   formatNumber,
   getQueryAsArray,
   getQueryAsNumber,
@@ -245,9 +219,6 @@ export {
   getQueryPage,
   isObject,
   keysToCamel,
-  oneYearAgo,
-  oneYearLater,
   toCamel,
-  today,
   uncapitalize,
 }

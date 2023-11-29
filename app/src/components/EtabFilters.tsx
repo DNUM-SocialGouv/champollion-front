@@ -2,7 +2,8 @@ import { useEffect, useRef } from "react"
 import { Form, useSearchParams } from "react-router-dom"
 
 import { contractNatures, motiveOptions } from "../helpers/filters"
-import { arrayEquals, minDateWithData } from "../helpers/format"
+import { minDateWithData } from "../helpers/date"
+import { arrayEquals } from "../helpers/format"
 import { MultiValueWithMerge, OptionWithMerge } from "../helpers/postes"
 
 import { Button } from "@codegouvfr/react-dsfr/Button"

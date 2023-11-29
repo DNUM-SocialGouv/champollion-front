@@ -27,16 +27,14 @@ import type { Indicator1, IndicatorMetaData } from "../../api/types"
 import { usualClosedDaysPlugin, calendarLocaleFr } from "../../helpers/calendar"
 import { formatCorrectedDates } from "../../helpers/contrats"
 import { errorWording, isAppError } from "../../helpers/errors"
+import { formatDate, minDateWithData, oneYearLater } from "../../helpers/date"
 import {
   OpenDay,
   PublicHolidaysClosed,
-  formatDate,
   formatLocalClosedPublicHolidays,
   formatLocalExceptionalDates,
   formatLocalMerges,
   formatLocalOpenDays,
-  minDateWithData,
-  oneYearLater,
   weekendDayCodes,
 } from "../../helpers/format"
 
