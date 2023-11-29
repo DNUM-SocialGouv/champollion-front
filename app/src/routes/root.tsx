@@ -7,7 +7,6 @@ import { initMatomo, trackPageView } from "../helpers/analytics"
 import { MuiDsfrThemeProvider } from "@codegouvfr/react-dsfr/mui"
 import { StyledEngineProvider } from "@mui/material/styles"
 import { headerFooterDisplayItem } from "@codegouvfr/react-dsfr/Display"
-import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Footer } from "@codegouvfr/react-dsfr/Footer"
 import { Header } from "@codegouvfr/react-dsfr/Header"
 
@@ -90,14 +89,7 @@ export default function Root() {
             homeLinkProps={homeLinkProps}
             classes={{ serviceTagline: "fr-text--sm" }}
             serviceTagline="Outil d'exploration des données sociales et d'aide au contrôle de l'inspection du travail"
-            serviceTitle={
-              <>
-                VisuDSN{" "}
-                <Badge noIcon severity="info" as="span">
-                  ex-Champollion
-                </Badge>
-              </>
-            }
+            serviceTitle="VisuDSN"
             quickAccessItems={[
               {
                 iconId: "fr-icon-search-line",
