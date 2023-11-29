@@ -24,10 +24,10 @@ import {
   legislationOptions,
   noticeCorrectData,
 } from "../../helpers/carence"
+import { formatDate } from "../../helpers/date"
 import {
   camelToSnakeCase,
   createFiltersQuery,
-  formatDate,
   formatLocalClosedPublicHolidays,
   formatLocalExceptionalDates,
   formatLocalMerges,

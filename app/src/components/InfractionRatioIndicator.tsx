@@ -9,7 +9,7 @@ import {
 } from "recharts"
 
 import type { MetaCarences } from "../api/types"
-import { formatDate } from "../helpers/format"
+import { formatDate } from "../helpers/date"
 
 import AppIndicator from "./AppIndicator"
 

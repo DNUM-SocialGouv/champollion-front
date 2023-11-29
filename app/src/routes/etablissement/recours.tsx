@@ -27,19 +27,17 @@ import {
 } from "../../helpers/effectifs"
 import { noticeCorrectData } from "../../helpers/carence"
 import { formatCorrectedDates } from "../../helpers/contrats"
+import { formatDate, nextMonth, prevMonth } from "../../helpers/date"
 import { errorWording, isAppError } from "../../helpers/errors"
 import { filtersDetail as filtersDetail, getQueryDates } from "../../helpers/filters"
 import {
   createFiltersQuery,
-  formatDate,
   formatLocalClosedPublicHolidays,
   formatLocalExceptionalDates,
   formatLocalMerges,
   formatLocalOpenDays,
   getQueryAsNumberArray,
   getQueryAsString,
-  nextMonth,
-  prevMonth,
 } from "../../helpers/format"
 import { initJobOptions } from "../../helpers/postes"
 import { trackEvent } from "../../helpers/analytics"

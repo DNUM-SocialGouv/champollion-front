@@ -19,7 +19,7 @@ import {
   getMotivesRecours,
 } from "../helpers/contrats"
 import { errorWording, isAppError } from "../helpers/errors"
-import { formatDate } from "../helpers/format"
+import { formatDate } from "../helpers/date"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination"

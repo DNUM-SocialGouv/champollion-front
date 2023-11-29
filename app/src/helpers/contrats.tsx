@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 import ls from "localstorage-slim"
 
 import type { EtuContrat, FileExtension } from "../api/types"
-import { dateIsBefore, formatDate } from "./format"
+import { dateIsBefore, formatDate } from "./date"
 import { trackEvent } from "./analytics"
 
 import { AlertProps } from "@codegouvfr/react-dsfr/Alert"

@@ -1,7 +1,8 @@
 import { Link, useAsyncValue } from "react-router-dom"
 
 import type { Indicator3, IndicatorMetaData } from "../api/types"
-import { formatDate, formatNumber } from "../helpers/format"
+import { formatDate } from "../helpers/date"
+import { formatNumber } from "../helpers/format"
 import { JobMergedBadge, getContractNature } from "../helpers/contrats"
 
 import AppIndicator from "./AppIndicator"

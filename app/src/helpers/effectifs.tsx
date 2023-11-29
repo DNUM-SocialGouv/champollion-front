@@ -2,7 +2,8 @@ import type { ReactNode } from "react"
 import { Link } from "react-router-dom"
 
 import type { Effectif, EffectifUnit } from "../api/types"
-import { formatDate, formatNumber } from "./format"
+import { formatDate } from "./date"
+import { formatNumber } from "./format"
 
 import type { GrayAreasInput, MonthData } from "../components/EffectifBarChart"
 

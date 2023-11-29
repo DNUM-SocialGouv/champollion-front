@@ -1,4 +1,4 @@
-import { formatDate } from "./format"
+import { formatDate } from "./date"
 
 const isDevMode = import.meta.env.DEV
 

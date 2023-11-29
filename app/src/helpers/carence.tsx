@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import type { IllegalContract, Infractions, CarenceContract, IDCC } from "../api/types"
 import { getContractNature } from "./contrats"
-import { formatDate } from "./format"
+import { formatDate } from "./date"
 
 export type FormattedCarenceContract = {
   id: number
