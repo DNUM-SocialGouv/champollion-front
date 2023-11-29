@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import type { ReactNode, FormEvent } from "react"
-import { useSearchParams, type LoaderFunctionArgs, Link } from "react-router-dom"
+import type { FormEvent } from "react"
+import { useSearchParams, type LoaderFunctionArgs } from "react-router-dom"
 import { useLoaderData } from "react-router-typesafe"
 import ls from "localstorage-slim"
 
@@ -21,6 +21,8 @@ import {
   extensions,
   radioBtnOptions,
   getStatusNameFromCode,
+  warningList,
+  infoTable,
 } from "../../helpers/contrats"
 import { motiveOptions, contractNatures, getQueryDates } from "../../helpers/filters"
 import {
@@ -206,53 +208,6 @@ export default function EtabContrats() {
       properties: { format: fileExtension },
     })
   }
-  const warningList = () => {
-    return (
-      <>
-        <li>
-          Contrats en cours au moins un jour sur la période du {formattedDates.startDate}{" "}
-          au {formattedDates.endDate}
-        </li>
-
-        {queryJobs.length > 0 && (
-          <li>
-            Intitulés de poste sélectionnés :{" "}
-            {queryJobs
-              .map((jobId) => options.find((x) => x.value === Number(jobId))?.label)
-              .filter(Boolean)
-              .join(", ")}
-          </li>
-        )}
-        {Boolean(queryEmployee) && (
-          <li>
-            Salarié sélectionné :{" "}
-            {employeesOptions.find((x) => x.value === Number(queryEmployee))?.label}
-          </li>
-        )}
-        {queryMotives.length > 0 && (
-          <li>
-            Motifs de recours sélectionnés :{" "}
-            {queryMotives
-              .map(
-                (motive) => motiveOptions.find((x) => x.value === Number(motive))?.label
-              )
-              .filter(Boolean)
-              .join(", ")}
-          </li>
-        )}
-        {queryNature.length > 0 && (
-          <li>
-            Natures de contrat sélectionnées :{" "}
-            {queryNature
-              .map((nature) => contractNatures.find((x) => x.code === nature)?.label)
-              .filter(Boolean)
-              .join(", ")}
-          </li>
-        )}
-        {page > 1 && <li>Page sélectionnée : {page}</li>}
-      </>
-    ) as NonNullable<ReactNode>
-  }
 
   const resetDates = () => {
     // Remove all corrected dates from localStorage and reload page to get original dates from new API call
@@ -394,7 +349,18 @@ export default function EtabContrats() {
           className="fr-mb-2w"
           severity="warning"
           title="Aucun contrat ne correspond à vos paramètres :"
-          description={warningList()}
+          description={warningList(
+            formattedDates,
+            queryJobs,
+            options,
+            queryEmployee,
+            employeesOptions,
+            queryMotives,
+            motiveOptions,
+            queryNature,
+            contractNatures,
+            page
+          )}
         />
       )}
       <h2 className="fr-text--xl fr-mb-1w fr-mt-3w">Actions</h2>
@@ -529,12 +495,7 @@ function ContratsTable({
       ) : (
         <p>Aucun résultat.</p>
       )}
-      <p className="fr-mb-0">n/a : non applicable</p>
-      <p className="italic">
-        Vous trouverez dans la FAQ le détail des abréviations des{" "}
-        <Link to="/faq#faq-natures">natures de contrat</Link> et{" "}
-        <Link to="/faq#faq-motifs">motifs de recours</Link>.
-      </p>
+      {infoTable}
     </>
   )
 }

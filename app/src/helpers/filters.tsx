@@ -40,7 +40,7 @@ const motivesLabels: Record<MotivesCode, string> = {
 }
 
 export const motiveOptions: Option[] = Object.entries(motivesLabels).map(
-  ([key, label]) => ({ value: key, label })
+  ([key, label]) => ({ value: Number(key), label })
 )
 
 export const motivesCodeDict: Record<MotivesCode, string[]> = {

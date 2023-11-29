@@ -89,6 +89,9 @@ export const getContratsEtt = async ({
   startDate,
   endDate,
   postesIds,
+  employeesIds,
+  motives,
+  natures,
   page = 1,
   per = 20,
 }: ContratsParams) => {
@@ -97,9 +100,14 @@ export const getContratsEtt = async ({
 
     if (endDate) params += `&end_date=${endDate}`
     if (startDate) params += `&start_date=${startDate}`
+
+    params = addArrayParams(params, postesIds, "poste_ids")
+    params = addMotivesEndpointParam(params, motives)
+    params = addArrayParams(params, employeesIds, "salarie_ids")
+    params = addArrayParams(params, natures, "nature_contrat_ids")
+
     if (page) params += `&page=${page}`
     if (per) params += `&per_page=${per}`
-    params = addArrayParams(params, postesIds, "poste_ids")
 
     const response = await api.post(`/contrats/ett?${params}`)
     const contrats = response.data?.data as EttContrat[]
