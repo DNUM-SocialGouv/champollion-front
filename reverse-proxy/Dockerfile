@@ -15,8 +15,8 @@ RUN chmod +x /docker-entrypoint.sh && \
     rm -rf /var/cache/apk/*
 
 RUN mkdir -p /etc/ssl/private /etc/ssl/certs && \
-    openssl pkcs12 -info -in /etc/ssl/${APP_CERTIFICATE_FILE} -out /etc/ssl/private/${APP_URL}.key -nodes -legacy -nocerts -password pass:${APP_CERTIFICATE_PASSWORD} && \
-    openssl pkcs12 -info -in /etc/ssl/${APP_CERTIFICATE_FILE} -out /etc/ssl/certs/${APP_URL}.crt -nodes -legacy -nokeys -password pass:${APP_CERTIFICATE_PASSWORD} && \
+    openssl pkcs12 -info -in /etc/ssl/${APP_CERTIFICATE_FILE} -out /etc/ssl/private/certificate.key -nodes -legacy -nocerts -password pass:${APP_CERTIFICATE_PASSWORD} && \
+    openssl pkcs12 -info -in /etc/ssl/${APP_CERTIFICATE_FILE} -out /etc/ssl/certs/certificate.crt -nodes -legacy -nokeys -password pass:${APP_CERTIFICATE_PASSWORD} && \
     openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
