@@ -1,0 +1,136 @@
+stages:
+  - build_app
+  - build_oauth2_proxy
+  - build_reverse_proxy
+
+before_script:
+  - export HTTP_PROXY=${HTTP_PROXY}
+  - export HTTPS_PROXY=${HTTP_PROXY}
+  - export NO_PROXY="${NO_PROXY}"
+  - echo "{\"auths\":{\"${CI_REGISTRY}:5000\":{\"auth\":\"$(echo -n $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD | base64)\"}}}" > /kaniko/.docker/config.json
+
+job:build:app:dev:
+  stage: build_app
+  image:
+    name: ${CI_REGISTRY}:5001/kaniko-executor:v1.9.0-debug
+    entrypoint: [""]
+  script:
+    - export $(grep -v "^#" ./env/.env.dev | xargs)
+    - /kaniko/executor
+      --insecure-registry "${CI_REGISTRY}:5000"
+      --skip-tls-verify
+      --context "dir://app"
+      --dockerfile "Dockerfile"
+      --build-arg HTTP_PROXY=${HTTP_PROXY} 
+      --build-arg VITE_API_BASE_URL=${VITE_API_BASE_URL}
+      --build-arg VITE_LOGOUT_URL=${VITE_LOGOUT_URL}
+      --destination "${CI_REGISTRY}:5000/champollion-dev/front/app:${APP_IMAGE_TAG}"
+  only:
+    - dev@champollion/front-it
+  tags:
+    - CHAM
+
+job:build:app:preprod:
+  stage: build_app
+  image:
+    name: ${CI_REGISTRY}:5001/kaniko-executor:v1.9.0-debug
+    entrypoint: [""]
+  script:
+    - export $(grep -v "^#" ./env/.env.preprod | xargs)
+    - /kaniko/executor
+      --insecure-registry "${CI_REGISTRY}:5000"
+      --skip-tls-verify
+      --context "dir://app"
+      --dockerfile "Dockerfile"
+      --build-arg HTTP_PROXY=${HTTP_PROXY} 
+      --build-arg VITE_API_BASE_URL=${VITE_API_BASE_URL}
+      --build-arg VITE_LOGOUT_URL=${VITE_LOGOUT_URL}
+      --destination "${CI_REGISTRY}:5000/champollion-preprod/front/app:${APP_IMAGE_TAG}"
+  only:
+    - preprod@champollion/front-it
+  tags:
+    - CHAM
+
+# job:build:app:prod:
+
+job:build:oauth2-proxy:dev:
+  stage: build_oauth2_proxy
+  image:
+    name: ${CI_REGISTRY}:5001/kaniko-executor:v1.9.0-debug
+    entrypoint: [""]
+  script:
+    - export $(grep -v "^#" ./env/.env.dev | xargs)
+    - /kaniko/executor
+      --insecure-registry "${CI_REGISTRY}:5000"
+      --skip-tls-verify
+      --context "dir://oauth2-proxy"
+      --dockerfile "Dockerfile"
+      --destination "${CI_REGISTRY}:5000/champollion-dev/front/oauth2-proxy:${OAUTH_PROXY_IMAGE_TAG}"
+  only:
+    - dev@champollion/front-it
+  tags:
+    - CHAM
+
+job:build:oauth2-proxy:preprod:
+  stage: build_oauth2_proxy
+  image:
+    name: ${CI_REGISTRY}:5001/kaniko-executor:v1.9.0-debug
+    entrypoint: [""]
+  script:
+    - export $(grep -v "^#" ./env/.env.preprod | xargs)
+    - /kaniko/executor
+      --insecure-registry "${CI_REGISTRY}:5000"
+      --skip-tls-verify
+      --context "dir://oauth2-proxy"
+      --dockerfile "Dockerfile"
+      --destination "${CI_REGISTRY}:5000/champollion-preprod/front/oauth2-proxy:${OAUTH_PROXY_IMAGE_TAG}"
+  only:
+    - preprod@champollion/front-it
+  tags:
+    - CHAM
+
+# job:build:oauth2-proxy:prod:
+
+job:build:reverse-proxy:dev:
+  stage: build_reverse_proxy
+  image:
+    name: ${CI_REGISTRY}:5001/kaniko-executor:v1.9.0-debug
+    entrypoint: [""]
+  script:
+    - export $(grep -v "^#" ./env/.env.dev | xargs)
+    - /kaniko/executor
+      --insecure-registry "${CI_REGISTRY}:5000"
+      --skip-tls-verify
+      --context "dir://reverse-proxy"
+      --dockerfile "Dockerfile"
+      --build-arg HTTP_PROXY=${HTTP_PROXY}
+      --build-arg APP_CERTIFICATE_FILE=${APP_CERTIFICATE_FILE}
+      --build-arg APP_CERTIFICATE_PASSWORD=${DEV__APP_CERTIFICATE_PASSWORD}
+      --destination "${CI_REGISTRY}:5000/champollion-dev/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG}"  
+  only:
+    - dev@champollion/front-it
+  tags:
+    - CHAM
+
+job:build:reverse-proxy:preprod:
+  stage: build_reverse_proxy
+  image:
+    name: ${CI_REGISTRY}:5001/kaniko-executor:v1.9.0-debug
+    entrypoint: [""]
+  script:
+    - export $(grep -v "^#" ./env/.env.preprod | xargs)
+    - /kaniko/executor
+      --insecure-registry "${CI_REGISTRY}:5000"
+      --skip-tls-verify
+      --context "dir://reverse-proxy"
+      --dockerfile "Dockerfile"
+      --build-arg HTTP_PROXY=${HTTP_PROXY}
+      --build-arg APP_CERTIFICATE_FILE=${APP_CERTIFICATE_FILE}
+      --build-arg APP_CERTIFICATE_PASSWORD=${PREPROD__APP_CERTIFICATE_PASSWORD}
+      --destination "${CI_REGISTRY}:5000/champollion-preprod/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG}"  
+  only:
+    - preprod@champollion/front-it
+  tags:
+    - CHAM
+
+# job:build:reverse-proxy:prod:

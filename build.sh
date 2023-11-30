@@ -50,43 +50,43 @@ fi
 
 # login to the nexus
 if ! [[ -z $push ]]; then
-    echo $NEXUS_PASSWORD | docker login nexus-ovh.intranet.social.gouv.fr:5000 --username $NEXUS_USER --password-stdin
+    echo $CI_REGISTRY_PASSWORD | docker login nexus-ovh.intranet.social.gouv.fr:5000 --username $CI_REGISTRY_USER --password-stdin
 fi
 
 # build and push
 if [[ -z $ignore_app ]]; then
-    docker build --rm --file ${HOME}/${APP_BUILD_CONTEXT}/Dockerfile \
+    docker build --rm --file ./app/Dockerfile \
     --build-arg HTTP_PROXY=${HTTP_PROXY} \
     --build-arg VITE_API_BASE_URL=${VITE_API_BASE_URL} \
     --build-arg VITE_LOGOUT_URL=${VITE_LOGOUT_URL} \
-    --tag ${NEXUS_URL}/front/app:${APP_IMAGE_TAG} \
-    ${HOME}/${APP_BUILD_CONTEXT}
+    --tag ${CI_REGISTRY}:5000/champollion-${CI_REGISTRY_ENV}/front/app:${APP_IMAGE_TAG} \
+    ./app
 
     if ! [[ -z $push ]]; then
-        docker image push ${NEXUS_URL}/front/app:${APP_IMAGE_TAG}
+        docker image push ${CI_REGISTRY}:5000/champollion-${CI_REGISTRY_ENV}/front/app:${APP_IMAGE_TAG}
     fi
 fi
 
 if [[ -z $ignore_oauth2_proxy ]]; then
-    docker build --rm --file ${HOME}/${OAUTH2_PROXY_BUILD_CONTEXT}/Dockerfile \
-    --tag ${NEXUS_URL}/front/oauth2-proxy:${OAUTH2_PROXY_IMAGE_TAG} \
-    ${HOME}/${OAUTH2_BUILD_CONTEXT}
+    docker build --rm --file ./oauth2-proxy/Dockerfile \
+    --tag ${CI_REGISTRY}:5000/champollion-${CI_REGISTRY_ENV}/front/oauth2-proxy:${OAUTH2_PROXY_IMAGE_TAG} \
+    ./oauth2-proxy
 
     if ! [[ -z $push ]]; then
-        docker image push ${NEXUS_URL}/front/oauth2-proxy:${OAUTH2_PROXY_IMAGE_TAG}
+        docker image push ${CI_REGISTRY}:5000/champollion-${CI_REGISTRY_ENV}/front/oauth2-proxy:${OAUTH2_PROXY_IMAGE_TAG}
     fi
 fi
  
 if [[ -z $ignore_reverse_proxy ]];then
-    docker build --rm --file ${HOME}/${REVERSE_PROXY_BUILD_CONTEXT}/Dockerfile \
+    docker build --rm --file ./reverse-proxy/Dockerfile \
     --build-arg HTTP_PROXY=${HTTP_PROXY} \
     --build-arg APP_URL=${APP_URL} \
     --build-arg APP_CERTIFICATE_FILE=${APP_CERTIFICATE_FILE} \
     --build-arg APP_CERTIFICATE_PASSWORD=${APP_CERTIFICATE_PASSWORD} \
-    --tag ${NEXUS_URL}/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG} \
-    ${HOME}/${REVERSE_PROXY_BUILD_CONTEXT}
+    --tag ${CI_REGISTRY}:5000/champollion-${CI_REGISTRY_ENV}/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG} \
+    ./reverse-proxy
 
     if ! [[ -z $push ]]; then
-        docker image push ${NEXUS_URL}/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG}
+        docker image push ${CI_REGISTRY}:5000/champollion-${CI_REGISTRY_ENV}/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG}
     fi
 fi

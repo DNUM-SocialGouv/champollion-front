@@ -1,2 +1,0 @@
-ssl_certificate /etc/ssl/certs/${APP_URL}.crt;
-ssl_certificate_key /etc/ssl/private/${APP_URL}.key;
