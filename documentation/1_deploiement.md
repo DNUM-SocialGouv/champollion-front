@@ -16,6 +16,25 @@ Côté code, pour conserver un historique propre des différents déploiements e
 
 ## Build
 
+2 manière de build les images du repository :
+1. [Automatiquement (CI/CD)](#build-automatisé-cicd)
+2. [Manuellement](#build-manuel)
+
+### Build automatisé (CI/CD)
+
+!# todo
+
+[.gitlab.yaml](../.gitlab.yaml)
+
+https://gitlab.intranet.social.gouv.fr/champollion/front-it/settings/ci_cd
+    - runner
+    - secret
+    [environment_variables_cicd.xlxs](https://msociauxfr.sharepoint.com/:x:/r/teams/EIG71/Documents%20partages/General/Commun/D%C3%A9veloppement/environment_variables/environment_variables_cicd.xlsx?d=we5bd8f0a43d5480f9de7f3e8e22cf79b&csf=1&web=1&e=UwZqIH)
+
+https://gitlab.intranet.social.gouv.fr/champollion/front-it/pipelines
+
+### Build manuel
+
 > ⚠️ **L'étape de build n'est pas nécessaire si vous n'avez pas modifié le code de l'application que vous souhaitez déployer.** Pour vérifier s'il faut build les images pour lancer le service docker, rendez vous sur [le dépôt Nexus du projet Champollion](https://10.252.1.10/#browse/browse:Champollion:v2%2Fchampollion-dev)\* pour voir les images disponibles.
 
 **Listes des images nécessaires :**

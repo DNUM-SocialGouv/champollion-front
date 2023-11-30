@@ -65,8 +65,8 @@ job:build:oauth2-proxy:dev:
       --skip-tls-verify
       --context "dir://oauth2-proxy"
       --dockerfile "Dockerfile"
-      --destination "${CI_REGISTRY}:5000/champollion-dev/front/oauth2-proxy:${OAUTH_PROXY_IMAGE_TAG}"
-  only:
+      --destination "${CI_REGISTRY}:5000/champollion-dev/front/oauth2-proxy:${OAUTH2_PROXY_IMAGE_TAG}"
+  only:                                                                             
     - dev@champollion/front-it
   tags:
     - CHAM
@@ -83,7 +83,7 @@ job:build:oauth2-proxy:preprod:
       --skip-tls-verify
       --context "dir://oauth2-proxy"
       --dockerfile "Dockerfile"
-      --destination "${CI_REGISTRY}:5000/champollion-preprod/front/oauth2-proxy:${OAUTH_PROXY_IMAGE_TAG}"
+      --destination "${CI_REGISTRY}:5000/champollion-preprod/front/oauth2-proxy:${OAUTH2_PROXY_IMAGE_TAG}"
   only:
     - preprod@champollion/front-it
   tags:
