@@ -1,4 +1,4 @@
-# 2. Déploiement
+# Déploiement
 
 > ⚠️ Pour lancer l'application en local voir la documentation sur [l'environnement de développement](1_developpement.md)
 
@@ -18,54 +18,58 @@ Côté code, pour conserver un historique propre des différents déploiements e
 1. [Automatiquement (CI/CD)](#build-automatisé-cicd)
 2. [Manuellement](#build-manuel)
 
-### Build automatisé (CI/CD)
-
-!# todo
-
-[.gitlab.yaml](../.gitlab.yaml)
-
-https://gitlab.intranet.social.gouv.fr/champollion/front-it/settings/ci_cd
-    - runner
-    - secret
-    [environment_variables_cicd.xlxs](https://msociauxfr.sharepoint.com/:x:/r/teams/EIG71/Documents%20partages/General/Commun/D%C3%A9veloppement/environment_variables/environment_variables_cicd.xlsx?d=we5bd8f0a43d5480f9de7f3e8e22cf79b&csf=1&web=1&e=UwZqIH)
-
-https://gitlab.intranet.social.gouv.fr/champollion/front-it/pipelines
-
-### Build manuel
-
-> ⚠️ **L'étape de build n'est pas nécessaire si vous n'avez pas modifié le code de l'application que vous souhaitez déployer.** Pour vérifier s'il faut build les images pour lancer le service docker, rendez vous sur [le dépôt Nexus du projet Champollion](https://10.252.1.10/#browse/browse:Champollion:v2%2Fchampollion-dev)\* pour voir les images disponibles.
-
-**Listes des images nécessaires :**
+**Listes des images :**
 
 - `front/app`
 - `front/reverse-proxy`
 - `front/oauth2-proxy`
 
+### Build automatisé (CI/CD)
+
+Grâce au fichier [.gitlab.yaml](../.gitlab.yaml) les images se build automatiquement dès lors qu'un commit est passé sur les branches suivantes du reposition [champollion/front-it](https://gitlab.intranet.social.gouv.fr/champollion/front-it) et push les images sur [le dépôt Nexus du projet Champollion](https://10.252.1.10/#browse/browse:Champollion:v2%2Fchampollion-dev).
+- branch gitlab : dev     => dossier nexus : champollion-dev 
+- branch gitlab : preprod => dossier nexus : champollion-preprod
+
+Ainsi lorsque vous acceptez une merge request d'un fork sur la branche dev, cela va build et push les images sur [le dépôt Nexus du projet Champollion](https://10.252.1.10/#browse/browse:Champollion:v2%2Fchampollion-dev). De même lorsque vous mergez dev vers preprod. Les images sont organisés sur le dépot Nexus par dossier : champollion-dev et champollion-preprod.
+
+Vous pouvez suivre le build dans l'onglet [CI / CD > Pipelines](https://gitlab.intranet.social.gouv.fr/champollion/front-it/pipelines) du repository [champollion/front-it](https://gitlab.intranet.social.gouv.fr/champollion/front-it).
+
+🚨 **Important :** Pensez à mettre à jour la version du tag sur les variables des 3 images que vous modifiez pour ne pas écraser les images précédentes et conserver un historique (sauf en cas de correctif : on ne veut pas conserver des images qui ne fonctionnent pas).
+
+Pour cela éditez les variables `..._IMAGE_TAG` des fichiers présents sur le repository selon la branche sur laquelle vous faite le merge :
+- dev : [`env/.env.dev`](../env/.env.dev)
+- preprod : [`env/.env.preprod`](../env/.env.preprod)
+
+Ces fichiers sont donc versionnés, ce qui permet d'avoir un historique des ajouts, suppressions et modifications des variables d'environnements.
+
+
+⚠ Les variables qui ne peuvent être en clair (les mots de passe par exemple) sont commentées dans les fichiers d'env. Ces variables sont configurées sur le repository [champollion/front-it](https://gitlab.intranet.social.gouv.fr/champollion/front-it) dans [Settings > CI / CD > Secret variables](https://gitlab.intranet.social.gouv.fr/champollion/front-it/settings/ci_cd). Les valeurs de ces variables se trouvent dans la feuille *front-it* de l'excel [environment_variables_cicd.xlxs](https://msociauxfr.sharepoint.com/:x:/r/teams/EIG71/Documents%20partages/General/Commun/D%C3%A9veloppement/environment_variables/environment_variables_cicd.xlsx?d=we5bd8f0a43d5480f9de7f3e8e22cf79b&csf=1&web=1&e=UwZqIH) dans l'espace Teams Champollion.
+
+*Comment cela marche t-il ?*
+
+Si vous explorez les configurations [champollion/front-it](https://gitlab.intranet.social.gouv.fr/champollion/front-it), dans [Settings > CI / CD](https://gitlab.intranet.social.gouv.fr/champollion/front-it/settings/ci_cd), rendez vous dans l'onglet "runner settings".
+
+Vous constaterez qu'une VM Runner est configurée et active (pastille verte). C'est cette VM qui écoute Gitlab et qui déclenche le build à chaque commit.
+
+![](./assets/1_deploiement_001.png)
+
+Si ce n'est pas le cas, faites la demande auprès de l'infogérance de l'infrastructure OVH en transmettant le "registration token" indiqué.
+
+### Build manuel
+
+> ⚠️ **L'étape de build n'est pas nécessaire si vous n'avez pas modifié le code de l'application que vous souhaitez déployer.** Pour vérifier s'il faut build les images pour lancer le service docker, rendez vous sur [le dépôt Nexus du projet Champollion](https://10.252.1.10/#browse/browse:Champollion:v2%2Fchampollion-dev)\* pour voir les images disponibles.
+
 _\*Le nexus n'est accessible que depuis la PMAD. Continuez sur l'url même si elle n'est pas sécurisée_
 
-1. Créer une merge request (MR) de la branche dev vers la branche main. Cela permet de vérifier les nouveautés à déployer et de revenir en arrière facilement s'il y a un problème. Vous pouvez le faire manuellement ou [cliquer ici](https://gitlab.intranet.social.gouv.fr/champollion/front-it/merge_requests/new?merge_request[source_branch]=dev&merge_request[target_branch]=main).
+1. Créez un fichier de variable d'environnement sur la base du [fichier d'exemple](../.env.example) en remplissant les valeurs des variables nécessaires au build
 
-     > ✅ Bonne pratique : lister les commits déployés dans la description de la MR, trier par feat / fix / chore pour visualiser rapidement ce qui va être déployé.
+    Les valeurs des variables se trouveront d'une part dans le dossier [env](../env) et d'autre part pour la variables sensibles dans la feuille *front-it* de l'excel [environment_variables_cicd.xlxs](https://msociauxfr.sharepoint.com/:x:/r/teams/EIG71/Documents%20partages/General/Commun/D%C3%A9veloppement/environment_variables/environment_variables_cicd.xlsx?d=we5bd8f0a43d5480f9de7f3e8e22cf79b&csf=1&web=1&e=UwZqIH) dans l'espace Teams Champollion.
+   
+    🚨 **Important :** Pensez à mettre à jour la version du tag sur les variables des 3 images pour ne pas écraser les images précédentes et conserver un historique (sauf en cas de correctif : on ne veut pas conserver des images qui ne fonctionnent pas).
 
-2. Créez un fichier de variable d'environnement sur la base du [fichier d'exemple](../.env.example) et des variables nécessaires au déploiement. Chaque variable est déclaré au format `MA_VARIABLE_D_ENV=valeur`.
+2. Build et push les images sur les dépôt Nexus
 
-     Les valeurs des variables sont dans la feuille "docker - front" des excels du dossier [environment_variables](https://msociauxfr.sharepoint.com/:f:/r/teams/EIG71/Documents%20partages/General/Commun/D%C3%A9veloppement/environment_variables?csf=1&web=1&e=2JoDog) sur l'espace Teams du projet Champollion.
-
-     🚨 **Important :** Pensez à mettre à jour la version du tag sur les variables des 3 images pour ne pas écraser les images précédentes et conserver un historique (sauf en cas de correctif : on ne veut pas conserver des images qui ne fonctionnent pas).
-
-     > ✅ Bonne pratique : à chaque ajout d'une variable d'environnement dans le fichier .env.local (non versioné sur git car confidentiel), spécifiez le nom de la variable dans le fichier .env.example. Ainsi, en créant la MR de dev -> main, on peut visualiser dans la liste des changements s'il y a de nouvelles valeurs dans ce fichier.
-
-3. Merge la branche dev sur main et se mettre à jour sur main en local.
-
-     ```bash
-     # cd code/front-it
-     git fetch upstream main
-     git checkout -B main -t upstream/main
-     ```
-
-4. Build et push les images sur les dépôt Nexus
-
-     > ⚠️ **Le build va récupérer le code présent localement, vérifiez que vous êtes sur la bonne branche et le bon commit que vous souhaitez déployer !** Cf étape précédente.
+     > ⚠️ **Le build va récupérer le code présent localement, vérifiez que vous êtes sur la bonne branche et le bon commit que vous souhaitez déployer !**
 
      Placez-vous dans le dossier qui contient le fichier `build.sh` : racine de `front-it/` pour le front. Spécifiez avec l'argument -e le chemin vers le fichier d'environnement que vous venez de créer.
 
