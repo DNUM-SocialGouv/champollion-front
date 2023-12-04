@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import type { FormEvent } from "react"
 import { useSearchParams, type LoaderFunctionArgs } from "react-router-dom"
 import { useLoaderData } from "react-router-typesafe"
 import ls from "localstorage-slim"
@@ -9,28 +8,20 @@ import {
   getSalaries,
   postPostes,
   postContratsEtu,
-  postContratsExport,
   getEtablissementsDefaultPeriod,
 } from "../../api"
-import type { EtuContrat, FileExtension, PaginationMetaData } from "../../api/types"
+import type { EtuContrat, PaginationMetaData } from "../../api/types"
 import type { EditableDate, ContratDatesState } from "../../helpers/contrats"
 import {
   formatContrats,
   headers,
   formatCorrectedDates,
-  extensions,
-  radioBtnOptions,
   getStatusNameFromCode,
   warningList,
   infoTable,
 } from "../../helpers/contrats"
 import { motiveOptions, contractNatures, getQueryDates } from "../../helpers/filters"
-import {
-  type AppError,
-  errorDescription,
-  errorWording,
-  isAppError,
-} from "../../helpers/errors"
+import { errorDescription, errorWording, isAppError } from "../../helpers/errors"
 import { formatDate } from "../../helpers/date"
 import {
   createFiltersQuery,
@@ -40,6 +31,7 @@ import {
   getQueryAsNumberArray,
   getQueryPage,
 } from "../../helpers/format"
+import { filtersDetail as filtersDetail } from "../../helpers/filters"
 import { initEmployeeOptions, initJobOptions } from "../../helpers/postes"
 import { DateStatusBadge } from "../../helpers/contrats"
 import { trackEvent } from "../../helpers/analytics"
@@ -48,14 +40,14 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
-import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons"
 
+import AppCollapse from "../../components/AppCollapse"
+import AppRebound from "../../components/AppRebound"
 import AppTable from "../../components/AppTable"
 import EtabFilters from "../../components/EtabFilters"
-import AppRebound from "../../components/AppRebound"
-import AppCollapse from "../../components/AppCollapse"
-
-import { filtersDetail as filtersDetail } from "../../helpers/filters"
+import ExportContractsModal, {
+  exportContractsModal,
+} from "../../components/ExportContractsModal"
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
@@ -126,13 +118,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     jobListWithoutMerges,
     queryMotives,
     formattedMergesIds,
+    correctedDates,
   }
 }
-
-const exportModal = createModal({
-  id: "export-modal",
-  isOpenedByDefault: false,
-})
 
 const resetDatesModal = createModal({
   id: "reset-dates-modal",
@@ -156,8 +144,8 @@ export default function EtabContrats() {
     queryStartDate,
     raisonSociale,
     siret,
+    correctedDates,
   } = useLoaderData<typeof loader>()
-  const [exportedContracts, setExportedContracts] = useState<undefined | AppError>()
   const filtersQuery = createFiltersQuery({
     startDate: queryStartDate,
     endDate: queryEndDate,
@@ -172,41 +160,6 @@ export default function EtabContrats() {
   const formattedDates = {
     startDate: formatDate(queryStartDate),
     endDate: formatDate(queryEndDate),
-  }
-  const onDownloadExport = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-
-    const formData = new FormData(event.currentTarget)
-    const fileExtension = formData.get("file-extension") as FileExtension
-    const format: FileExtension =
-      typeof fileExtension === "string" && extensions.includes(fileExtension)
-        ? fileExtension
-        : "ods"
-
-    const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
-    const correctedDates = formatCorrectedDates(lsContrats)
-
-    const newExportedContracts = await postContratsExport({
-      companyName,
-      correctedDates,
-      employeesIds: queryEmployee ? [queryEmployee] : undefined,
-      endDate: queryEndDate,
-      format,
-      id: etabId,
-      mergedPostesIds,
-      motives: queryMotives,
-      natures: queryNature,
-      page,
-      postesIds: queryJobs,
-      siret,
-      startDate: queryStartDate,
-    })
-    setExportedContracts(newExportedContracts)
-    trackEvent({
-      category: "Contrats",
-      action: "Export téléchargé",
-      properties: { format: fileExtension },
-    })
   }
 
   const resetDates = () => {
@@ -236,7 +189,7 @@ export default function EtabContrats() {
       <div className="flex justify-between">
         <h2 className="fr-text--xl fr-mb-1w">Liste des contrats</h2>
         <Button
-          onClick={() => exportModal.open()}
+          onClick={() => exportContractsModal.open()}
           iconId="fr-icon-download-line"
           priority="tertiary no outline"
           type="button"
@@ -244,35 +197,20 @@ export default function EtabContrats() {
           Exporter
         </Button>
       </div>
-      <exportModal.Component title="Exporter les contrats">
-        <p>
-          Vous pouvez exporter les contrats au format tableur (Excel, LibreOffice ou CSV).
-        </p>
-        <p>
-          Tous les filtres sauvegardés, les fusions de postes et les corrections de date
-          seront pris en compte.
-        </p>
-        <form onSubmit={onDownloadExport}>
-          <RadioButtons
-            legend="Sélectionnez le format de fichier :"
-            name="file-extension"
-            options={radioBtnOptions}
-          />
-          <Button type="submit">Télécharger</Button>
-        </form>
-        <p className="fr-mt-2w italic">
-          ⚠️ Si vous exportez un gros volume de contrats, le téléchargement peut durer
-          plusieurs secondes.
-        </p>
-        {isAppError(exportedContracts) && (
-          <Alert
-            className="fr-mb-2w"
-            severity="error"
-            title={exportedContracts.messageFr}
-            description={errorDescription(exportedContracts)}
-          />
-        )}
-      </exportModal.Component>
+      <ExportContractsModal
+        companyName={companyName}
+        correctedDates={correctedDates}
+        queryEmployee={queryEmployee}
+        queryEndDate={queryEndDate}
+        etabId={etabId}
+        queryMotives={queryMotives}
+        queryNature={queryNature}
+        page={page}
+        queryJobs={queryJobs}
+        siret={siret}
+        queryStartDate={queryStartDate}
+        mergedPostesIds={mergedPostesIds}
+      ></ExportContractsModal>
       <hr />
       <div className="flex items-start justify-between">
         <p>Vous pouvez corriger les dates d'après vos observations.</p>

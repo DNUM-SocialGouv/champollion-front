@@ -345,8 +345,8 @@ const warningList = (
     <>
       <ul>
         <li>
-          Contrats en cours au moins un jour sur la période du {formattedDates.startDate} au{" "}
-          {formattedDates.endDate}
+          Contrats en cours au moins un jour sur la période du {formattedDates.startDate}{" "}
+          au {formattedDates.endDate}
         </li>
 
         {queryJobs.length > 0 && (
@@ -368,7 +368,9 @@ const warningList = (
           <li>
             Motifs de recours sélectionnés :{" "}
             {queryMotives
-              .map((motive) => motiveOptions.find((x) => x.value === Number(motive))?.label)
+              .map(
+                (motive) => motiveOptions.find((x) => x.value === Number(motive))?.label
+              )
               .filter(Boolean)
               .join(", ")}
           </li>
@@ -385,7 +387,6 @@ const warningList = (
           </li>
         )}
         {page > 1 && <li>Page sélectionnée : {page}</li>}
-
       </ul>
     </>
   ) as NonNullable<ReactNode>

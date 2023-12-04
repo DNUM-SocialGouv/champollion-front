@@ -36,11 +36,15 @@ import {
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
+import { Button } from "@codegouvfr/react-dsfr/Button"
 
 import EtabBanner from "../components/EtabBanner"
 import EtabInfo from "../components/EtabInfo"
 import EtabFilters from "../components/EtabFilters"
 import AppTable from "../components/AppTable"
+import ExportContractsModal, {
+  exportContractsModal,
+} from "../components/ExportContractsModal"
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
@@ -110,6 +114,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     queryMotives,
     options,
     employeesOptions,
+    etabType,
+    correctedDates,
   }
 }
 
@@ -152,6 +158,8 @@ export default function ETT() {
     options,
     employeesOptions,
     page,
+    etabType,
+    correctedDates,
   } = useLoaderData<typeof loader>()
 
   useEffect(() => {
@@ -201,7 +209,30 @@ export default function ETT() {
           />
         </div>
 
-        <h2 className="fr-text--xl fr-mt-3w fr-mb-1w">Liste des contrats</h2>
+        <div className="flex justify-between">
+          <h2 className="fr-text--xl fr-mb-1w">Liste des contrats</h2>
+          <Button
+            onClick={() => exportContractsModal.open()}
+            iconId="fr-icon-download-line"
+            priority="tertiary no outline"
+            type="button"
+          >
+            Exporter
+          </Button>
+        </div>
+        <ExportContractsModal
+          companyName={etabType.raisonSociale}
+          correctedDates={correctedDates}
+          queryEmployee={queryEmployee}
+          queryEndDate={queryEndDate}
+          etabId={etabType.id}
+          queryMotives={queryMotives}
+          queryNature={queryNature}
+          page={page}
+          queryJobs={queryJobs}
+          siret={siret}
+          queryStartDate={queryStartDate}
+        ></ExportContractsModal>
         <hr />
         {isAppError(data) ? (
           <>
