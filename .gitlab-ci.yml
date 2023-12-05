@@ -21,9 +21,11 @@ job:build:app:dev:
       --skip-tls-verify
       --context "dir://app"
       --dockerfile "Dockerfile"
-      --build-arg HTTP_PROXY=${HTTP_PROXY} 
+      --build-arg HTTP_PROXY=${HTTP_PROXY}
       --build-arg VITE_API_BASE_URL=${VITE_API_BASE_URL}
       --build-arg VITE_LOGOUT_URL=${VITE_LOGOUT_URL}
+      --build-arg VITE_MATOMO_SITE_ID=${VITE_MATOMO_SITE_ID}
+      --build-arg VITE_MATOMO_URL=${VITE_MATOMO_URL}
       --destination "${CI_REGISTRY}:5000/champollion-dev/front/app:${APP_IMAGE_TAG}"
   only:
     - dev@champollion/front-it
@@ -42,9 +44,11 @@ job:build:app:preprod:
       --skip-tls-verify
       --context "dir://app"
       --dockerfile "Dockerfile"
-      --build-arg HTTP_PROXY=${HTTP_PROXY} 
+      --build-arg HTTP_PROXY=${HTTP_PROXY}
       --build-arg VITE_API_BASE_URL=${VITE_API_BASE_URL}
       --build-arg VITE_LOGOUT_URL=${VITE_LOGOUT_URL}
+      --build-arg VITE_MATOMO_SITE_ID=${VITE_MATOMO_SITE_ID}
+      --build-arg VITE_MATOMO_URL=${VITE_MATOMO_URL}
       --destination "${CI_REGISTRY}:5000/champollion-preprod/front/app:${APP_IMAGE_TAG}"
   only:
     - preprod@champollion/front-it
@@ -66,7 +70,7 @@ job:build:oauth2-proxy:dev:
       --context "dir://oauth2-proxy"
       --dockerfile "Dockerfile"
       --destination "${CI_REGISTRY}:5000/champollion-dev/front/oauth2-proxy:${OAUTH2_PROXY_IMAGE_TAG}"
-  only:                                                                             
+  only:
     - dev@champollion/front-it
   tags:
     - CHAM
@@ -106,7 +110,7 @@ job:build:reverse-proxy:dev:
       --build-arg HTTP_PROXY=${HTTP_PROXY}
       --build-arg APP_CERTIFICATE_FILE=${APP_CERTIFICATE_FILE}
       --build-arg APP_CERTIFICATE_PASSWORD=${DEV__APP_CERTIFICATE_PASSWORD}
-      --destination "${CI_REGISTRY}:5000/champollion-dev/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG}"  
+      --destination "${CI_REGISTRY}:5000/champollion-dev/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG}"
   only:
     - dev@champollion/front-it
   tags:
@@ -127,10 +131,9 @@ job:build:reverse-proxy:preprod:
       --build-arg HTTP_PROXY=${HTTP_PROXY}
       --build-arg APP_CERTIFICATE_FILE=${APP_CERTIFICATE_FILE}
       --build-arg APP_CERTIFICATE_PASSWORD=${PREPROD__APP_CERTIFICATE_PASSWORD}
-      --destination "${CI_REGISTRY}:5000/champollion-preprod/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG}"  
+      --destination "${CI_REGISTRY}:5000/champollion-preprod/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG}"
   only:
     - preprod@champollion/front-it
   tags:
     - CHAM
-
 # job:build:reverse-proxy:prod:
