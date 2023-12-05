@@ -53,8 +53,14 @@ fileignoreconfig:
   checksum: 0ac5e095aeb96efaa63c70321c4fd0b883e83e70862a3525fdb0bd19b53a88e4
 - filename: app/src/routes/news.tsx
   checksum: f400328b3d0306c1768663d07c491aeb84c492418f9ef1a1753fb359ebdf184a
+- filename: build.sh
+  checksum: 0bde2a1227756d4266804af64de009d21118dd87a4fc051d9154d5b61aa1cbd2
 - filename: documentation/1_deploiement.md
   checksum: 52c8c3153d188dde9b25748216ece4e3d5aa29f9aaf4488d86b29b1d5cb1a50f
+- filename: env/.env.dev
+  checksum: 6f39293aa6492d9ff0bd3ed013fe9c9fcfed4ffb259626b66666bb4b124a3309
+- filename: env/.env.preprod
+  checksum: 8fcd1f791eeb2681700e723cdc391560ae602a6f22ba5ca074707a97caf6f726
 - filename: src/components/AppTable.tsx
   checksum: 1849f36f5279b09b4bb3d34271616b44f5b9c405357b5029fbbd2cdd62dd28c8
 - filename: src/components/EtabFilters.tsx
