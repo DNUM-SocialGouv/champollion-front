@@ -13,8 +13,8 @@ import {
 } from "recharts"
 import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent"
 
-import { jobMergedBadgeSvg } from "../helpers/contrats"
-import { formatNumber, splitSentenceAtMiddle, uncapitalize } from "../helpers/format"
+import { jobMergedBadgeSvg } from "../../helpers/contrats"
+import { formatNumber, splitSentenceAtMiddle, uncapitalize } from "../../helpers/format"
 
 type JobData = {
   label: string | null

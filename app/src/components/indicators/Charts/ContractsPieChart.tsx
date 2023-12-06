@@ -1,7 +1,7 @@
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from "recharts"
 
-import { formatNumber } from "../helpers/format"
-import { jobMergedBadgeSvg } from "../helpers/contrats"
+import { formatNumber } from "../../../helpers/format"
+import { jobMergedBadgeSvg } from "../../../helpers/contrats"
 
 export type PieSlice = {
   name: string | null

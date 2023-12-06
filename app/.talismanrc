@@ -9,7 +9,7 @@ fileignoreconfig:
   checksum: c54d63fe42bd91c16311dd57920d77dc5adba8d9f191ff6b5830c505c717eed9
 - filename: app/src/components/EffectifBarChart.tsx
   checksum: a3c7443b73d65e5de5f88ce3a72cec2f05337b91b91d29b1ce06714ba26ea51a
-- filename: app/src/components/EtabFilters.tsx
+- filename: app/src/components/EstablishmentFilters.tsx
   checksum: 4fb8b57addb47957611797a18a7bdf8679ca3ca3712cd9f3d7ce4b32a2539ba1
 - filename: app/src/components/InfractionRatioIndicator.tsx
   checksum: 2e3800cf3c94b4464424a3f2f0cc673896f90c1578ad191be2b2948e5eeabaa0
@@ -63,7 +63,7 @@ fileignoreconfig:
   checksum: 8fcd1f791eeb2681700e723cdc391560ae602a6f22ba5ca074707a97caf6f726
 - filename: src/components/AppTable.tsx
   checksum: 1849f36f5279b09b4bb3d34271616b44f5b9c405357b5029fbbd2cdd62dd28c8
-- filename: src/components/EtabFilters.tsx
+- filename: src/components/EstablishmentFilters.tsx
   checksum: 9acff0163005dc5ebee50fffc5d46adcba8382c79c18f103bd126fde7a7fbf6b
 - filename: src/helpers/contrats.tsx
   checksum: 8a51c08cb3220485e16fa4623a14ad69fcf661b3d8b57c6a8d063a9d78c60655

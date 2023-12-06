@@ -1,19 +1,19 @@
 import { useEffect, useRef } from "react"
 import { Form, useSearchParams } from "react-router-dom"
 
-import { contractNatures, motiveOptions } from "../helpers/filters"
-import { minDateWithData } from "../helpers/date"
-import { arrayEquals } from "../helpers/format"
-import { MultiValueWithMerge, OptionWithMerge } from "../helpers/postes"
+import { contractNatures, motiveOptions } from "../../helpers/filters"
+import { minDateWithData } from "../../helpers/date"
+import { arrayEquals } from "../../helpers/format"
+import { MultiValueWithMerge, OptionWithMerge } from "../../helpers/postes"
 
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Input } from "@codegouvfr/react-dsfr/Input"
 import { Select } from "@codegouvfr/react-dsfr/Select"
 
-import AppMultiSelect from "./AppMultiSelect"
-import type { MultiSelectInstance, Option } from "./AppMultiSelect"
+import MultiSelect from "../MultiSelect"
+import type { MultiSelectInstance, Option } from "../MultiSelect"
 
-type EtabFiltersProps = {
+type EstablishmentFiltersProps = {
   startDate: string
   endDate: string
   motives?: number[]
@@ -31,7 +31,7 @@ const defaultDisabledFilters = {
   jobs: false,
 }
 
-export default function EtabFilters({
+export default function EstablishmentFilters({
   startDate,
   endDate,
   natures,
@@ -41,7 +41,7 @@ export default function EtabFilters({
   employee,
   employeeOptions,
   disabledFilters = defaultDisabledFilters,
-}: EtabFiltersProps) {
+}: EstablishmentFiltersProps) {
   const startDateRef = useRef<HTMLInputElement>(null)
   const endDateRef = useRef<HTMLInputElement>(null)
   const naturesRef = useRef<MultiSelectInstance<Option> | null>(null)
@@ -55,7 +55,7 @@ export default function EtabFilters({
     if (
       !["debut", "fin", "motif", "nature", "poste", "page", "salarie"].includes(entry[0])
     )
-      // keep filters outside of EtabFilters, such as unit in recours.tsx
+      // keep filters outside of EstablishmentFilters, such as unit in recours.tsx
       otherParamsToKeep.push(entry)
   }
 
@@ -176,7 +176,7 @@ export default function EtabFilters({
             min: minDateWithData,
           }}
         />
-        <AppMultiSelect
+        <MultiSelect
           className="fr-col-12 fr-col-lg-6 fr-mb-1w"
           label="Nature de contrat"
           name="nature"
@@ -185,7 +185,7 @@ export default function EtabFilters({
           defaultValue={natureSelectedOptions}
           disabled={disabledFilters?.natures ?? false}
         />
-        <AppMultiSelect
+        <MultiSelect
           className="fr-col-12 fr-col-lg-6 fr-mb-1w"
           label="Motif de recours (ne s'applique pas au CDI)"
           name="motif"
@@ -195,7 +195,7 @@ export default function EtabFilters({
           disabled={disabledFilters?.motives ?? false}
         />
         {Boolean(jobOptions) && (
-          <AppMultiSelect
+          <MultiSelect
             className="fr-col-12 fr-col-lg-6 fr-mb-1w"
             customComponents={{
               Option: OptionWithMerge,

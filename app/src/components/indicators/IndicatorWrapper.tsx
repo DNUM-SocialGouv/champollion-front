@@ -1,13 +1,13 @@
 import { useState, type PropsWithChildren, type ReactNode } from "react"
 
-import { trackEvent } from "../helpers/analytics"
+import { trackEvent } from "../../helpers/analytics"
 
 import { Table } from "@codegouvfr/react-dsfr/Table"
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
 
-import AppCollapse from "./AppCollapse"
+import Collapse from "../Collapse"
 
-type AppIndicatorProps = {
+type IndicatorWrapperProps = {
   id: string
   readingNote: string
   subReadingNote?: string
@@ -19,7 +19,7 @@ type AppIndicatorProps = {
   tracking: { category: string }
 }
 
-export default function AppIndicator({
+export default function IndicatorWrapper({
   id,
   children,
   readingNote,
@@ -30,7 +30,7 @@ export default function AppIndicator({
   bottomEl,
   table,
   tracking,
-}: PropsWithChildren<AppIndicatorProps>) {
+}: PropsWithChildren<IndicatorWrapperProps>) {
   const [showTable, setShowTable] = useState(false)
 
   const readingNoteWithTitle = (
@@ -74,14 +74,14 @@ export default function AppIndicator({
         />
       )}
       {collapseReadingNote ? (
-        <AppCollapse
+        <Collapse
           className="fr-mb-1w"
           id={`${id}-collapse`}
           label="Voir la note de lecture"
           labelOpen="Fermer la note de lecture"
         >
           {readingNoteWithTitle}
-        </AppCollapse>
+        </Collapse>
       ) : (
         <>{readingNoteWithTitle}</>
       )}

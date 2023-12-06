@@ -14,7 +14,7 @@ import { errorWording, isAppError } from "../../helpers/errors"
 
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs"
 
-import EtabBanner from "../../components/EtabBanner"
+import EstablishmentBanner from "../../components/establishment/EstablishmentBanner"
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
@@ -64,7 +64,7 @@ const tabs = [
 
 type ContextType = { etabId: number }
 
-export default function Etab() {
+export default function Etablissement() {
   const { etabId, raisonSociale, siret, isOpen } = useLoaderData<typeof loader>()
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -92,7 +92,7 @@ export default function Etab() {
   return (
     <>
       <div className="flex w-full flex-col items-center">
-        <EtabBanner
+        <EstablishmentBanner
           etabName={raisonSociale}
           isEtt={false}
           siret={siret}

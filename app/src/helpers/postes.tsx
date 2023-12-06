@@ -6,7 +6,7 @@ import { JobMergedBadge, getSexName } from "./contrats"
 import { components } from "react-select"
 import type { MultiValueProps, OptionProps, SingleValueProps } from "react-select"
 
-import type { Option } from "../components/AppMultiSelect"
+import type { Option } from "../components/MultiSelect"
 
 export type MergeOptionObject = {
   id: number | string

@@ -41,10 +41,10 @@ import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
 
-import AppCollapse from "../../components/AppCollapse"
-import AppRebound from "../../components/AppRebound"
-import AppTable from "../../components/AppTable"
-import EtabFilters from "../../components/EtabFilters"
+import Collapse from "../../components/Collapse"
+import Rebound from "../../components/Rebound"
+import Table from "../../components/Table"
+import EstablishmentFilters from "../../components/establishment/EstablishmentFilters"
 import ExportContractsModal, {
   exportContractsModal,
 } from "../../components/ExportContractsModal"
@@ -127,7 +127,7 @@ const resetDatesModal = createModal({
   isOpenedByDefault: false,
 })
 
-export default function EtabContrats() {
+export default function Contrats() {
   const {
     companyName,
     contratsData,
@@ -176,7 +176,7 @@ export default function EtabContrats() {
     <>
       <h2 className="fr-text--xl fr-mb-1w">Module de filtres</h2>
       <hr />
-      <EtabFilters
+      <EstablishmentFilters
         startDate={queryStartDate}
         endDate={queryEndDate}
         natures={queryNature}
@@ -305,7 +305,7 @@ export default function EtabContrats() {
       <hr />
       <div className="fr-grid-row fr-grid-row--gutters">
         <div className="fr-col-12 fr-col-md-4">
-          <AppRebound
+          <Rebound
             desc="Lancer le diagnostic d'emploi permanent sur les contrats sélectionnés"
             linkProps={{
               to: {
@@ -318,7 +318,7 @@ export default function EtabContrats() {
           />
         </div>
         <div className="fr-col-12 fr-col-md-4">
-          <AppRebound
+          <Rebound
             desc="Lancer le diagnostic d'anomalies des délais de carence sur les contrats sélectionnés"
             linkProps={{
               to: {
@@ -401,7 +401,7 @@ function ContratsTable({
         <>
           <p className="fr-mb-0">{meta.totalCount} résultats</p>
           {queryJobs.length > 0 && (
-            <AppCollapse
+            <Collapse
               id="filters-collapse"
               className="fr-mb-1w"
               label="Afficher les postes sélectionnés"
@@ -409,9 +409,9 @@ function ContratsTable({
               keepBtnOnTop
             >
               {filtersInfo}
-            </AppCollapse>
+            </Collapse>
           )}
-          <AppTable className="fr-mb-1w" headers={headers} items={formattedContrats} />
+          <Table className="fr-mb-1w" headers={headers} items={formattedContrats} />
           {meta.totalPages > 1 && (
             <Pagination
               count={meta.totalPages}

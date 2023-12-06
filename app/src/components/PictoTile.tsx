@@ -1,7 +1,7 @@
 import type { AnchorHTMLAttributes } from "react"
 import { Link, type LinkProps } from "react-router-dom"
 
-type AppPictoTileProps = {
+type PictoTileProps = {
   desc?: string
   pictogramUrl?: string
   title: string
@@ -10,14 +10,14 @@ type AppPictoTileProps = {
   anchorProps?: AnchorHTMLAttributes<HTMLAnchorElement>
 }
 
-export default function AppPictoTile({
+export default function PictoTile({
   anchorProps,
   desc,
   pictogramUrl,
   horizontal,
   linkProps,
   title,
-}: AppPictoTileProps) {
+}: PictoTileProps) {
   return (
     <>
       <div

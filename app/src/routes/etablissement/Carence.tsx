@@ -22,7 +22,6 @@ import {
   getLegislationOptionFromKey,
   legislationDetails,
   legislationOptions,
-  noticeCorrectData,
 } from "../../helpers/carence"
 import { formatDate } from "../../helpers/date"
 import {
@@ -41,27 +40,26 @@ import { errorWording, isAppError } from "../../helpers/errors"
 import { getQueryDates } from "../../helpers/filters"
 import { initJobOptions } from "../../helpers/postes"
 import { trackEvent } from "../../helpers/analytics"
+import { filtersDetail } from "../../helpers/filters"
 
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
-import { Notice } from "@codegouvfr/react-dsfr/Notice"
 import { Select } from "@codegouvfr/react-dsfr/Select"
 
-import AppCollapse from "../../components/AppCollapse"
-import AppIndicator from "../../components/AppIndicator"
-import AppRebound from "../../components/AppRebound"
-import AppTable, { type Header } from "../../components/AppTable"
+import Collapse from "../../components/Collapse"
+import IndicatorWrapper from "../../components/indicators/IndicatorWrapper"
+import Rebound from "../../components/Rebound"
+import Table, { type Header } from "../../components/Table"
 import ContractsPieChart, {
   PieSlice,
   groupSmallData,
-} from "../../components/ContractsPieChart"
+} from "../../components/indicators/Charts/ContractsPieChart"
 import Deferring from "../../components/Deferring"
-import EtabFilters from "../../components/EtabFilters"
-import InfractionRatioIndicator from "../../components/InfractionRatioIndicator"
-
-import { filtersDetail as filtersDetail } from "../../helpers/filters"
+import EstablishmentFilters from "../../components/establishment/EstablishmentFilters"
+import InfractionRatioIndicator from "../../components/indicators/InfractionRatioIndicator"
+import NoticeCorrectData from "../../components/NoticeCorrectData"
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
@@ -156,7 +154,7 @@ const modal = createModal({
   isOpenedByDefault: false,
 })
 
-export default function EtabCarence() {
+export default function Carence() {
   const {
     deferredCalls,
     deferredCallsController,
@@ -255,7 +253,7 @@ export default function EtabCarence() {
       <div className="fr-mb-3w">
         <h2 className="fr-text--xl fr-mb-1w">Module de filtres</h2>
         <hr />
-        <EtabFilters
+        <EstablishmentFilters
           startDate={queryStartDate}
           endDate={queryEndDate}
           natures={carenceNatures}
@@ -265,7 +263,7 @@ export default function EtabCarence() {
           disabledFilters={{ natures: true, motives: true }}
         />
 
-        <Notice title={noticeCorrectData} isClosable className="fr-mb-2w" />
+        <NoticeCorrectData />
 
         <div className="flex justify-between">
           <h2 className="fr-text--xl fr-mb-1w">
@@ -309,14 +307,14 @@ export default function EtabCarence() {
             {selectedLegislationDetail &&
               Object.keys(selectedLegislationDetail).length > 0 && (
                 <>
-                  <AppCollapse
+                  <Collapse
                     id="legislation-collapse"
                     className="fr-mb-2w"
                     label="Plus d'informations sur l'accord de branche"
                     labelOpen="Moins d'informations sur l'accord de branche"
                   >
                     {detailElement()}
-                  </AppCollapse>
+                  </Collapse>
                 </>
               )}
           </>
@@ -330,7 +328,7 @@ export default function EtabCarence() {
         <hr />
         <div className="fr-grid-row fr-grid-row--gutters">
           <div className="fr-col-12 fr-col-md-4">
-            <AppRebound
+            <Rebound
               desc="Fusionner plusieurs libellés du même poste"
               linkProps={{
                 to: {
@@ -343,7 +341,7 @@ export default function EtabCarence() {
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
-            <AppRebound
+            <Rebound
               desc="Consulter les contrats analysés"
               linkProps={{
                 to: {
@@ -356,7 +354,7 @@ export default function EtabCarence() {
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
-            <AppRebound
+            <Rebound
               desc="Lancer le diagnostic d'emploi permanent sur les contrats sélectionnés"
               linkProps={{
                 to: {
@@ -435,7 +433,7 @@ function EtabCarenceInfraction() {
       </p>
 
       {queryJobs.length > 0 && (
-        <AppCollapse
+        <Collapse
           id="filters-collapse"
           className="fr-mb-1w"
           label="Afficher les postes sélectionnés"
@@ -443,7 +441,7 @@ function EtabCarenceInfraction() {
           keepBtnOnTop
         >
           {filtersInfo}
-        </AppCollapse>
+        </Collapse>
       )}
 
       {totalInfractions > 0 && (
@@ -493,7 +491,7 @@ function EtabCarenceInfraction() {
                   d'accroissement temporaire d'activité, ne respecte pas le délai de
                   carence des contrats ci-dessous :`}
                 </p>
-                <AppTable headers={headers} items={posteInfraction.carenceContracts} />
+                <Table headers={headers} items={posteInfraction.carenceContracts} />
               </Fragment>
             ))}
           </Accordion>
@@ -547,7 +545,7 @@ function DelayByJobIndicator({
   })
 
   return (
-    <AppIndicator
+    <IndicatorWrapper
       id="delay"
       title={title}
       subTitle={subTitle}
@@ -558,6 +556,6 @@ function DelayByJobIndicator({
       <div className="fr-mb-2w h-60 w-full">
         <ContractsPieChart data={data} />
       </div>
-    </AppIndicator>
+    </IndicatorWrapper>
   )
 }

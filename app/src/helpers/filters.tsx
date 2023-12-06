@@ -1,5 +1,5 @@
 import { EtablissementDefaultPeriod, EtablissementPoste } from "../api/types"
-import { Option } from "../components/AppMultiSelect"
+import { Option } from "../components/MultiSelect"
 import { AppError, isAppError } from "./errors"
 import { oneYearAgo, today } from "./date"
 import { getQueryAsString } from "./format"

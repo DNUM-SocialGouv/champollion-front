@@ -25,7 +25,7 @@ export type MultiSelectInstance<
   Group extends GroupBase<Option> = GroupBase<Option>
 > = SelectInstance<Option, IsMulti, Group>
 
-type AppMultiSelectProps = Controlled | Uncontrolled
+type MultiSelectProps = Controlled | Uncontrolled
 
 type Common = {
   className?: string
@@ -116,7 +116,7 @@ const ClearIndicator = (props: ClearIndicatorProps<Option>) => {
   )
 }
 
-const AppMultiSelect = forwardRef(function AppMultiSelect(
+const MultiSelect = forwardRef(function MultiSelect(
   {
     className,
     customComponents,
@@ -129,7 +129,7 @@ const AppMultiSelect = forwardRef(function AppMultiSelect(
     onChange,
     options,
     value: valueProp,
-  }: AppMultiSelectProps,
+  }: MultiSelectProps,
   ref: ForwardedRef<SelectInstance<Option> | MultiSelectInstance<Option> | null>
 ) {
   const [value, setValue] = useState(valueProp)
@@ -206,4 +206,4 @@ const AppMultiSelect = forwardRef(function AppMultiSelect(
   )
 })
 
-export default AppMultiSelect
+export default MultiSelect

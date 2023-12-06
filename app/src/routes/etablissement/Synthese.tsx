@@ -43,11 +43,11 @@ import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons"
 
-import AppIndicator from "../../components/AppIndicator"
-import ContractNatureIndicator from "../../components/ContractNatureIndicator"
+import IndicatorWrapper from "../../components/indicators/IndicatorWrapper"
+import ContractNatureIndicator from "../../components/indicators/ContractNatureIndicator"
 import Deferring from "../../components/Deferring"
-import EtabInfo from "../../components/EtabInfo"
-import JobProportionIndicator from "../../components/JobProportionIndicator"
+import EstablishmentInfo from "../../components/establishment/EstablishmentInfo"
+import JobProportionIndicator from "../../components/indicators/JobProportionIndicator"
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
@@ -141,7 +141,7 @@ class DateWithColor extends DateObject {
   }
 }
 
-export default function EtabSynthese() {
+export default function Synthese() {
   const {
     deferredCalls,
     deferredCallsController,
@@ -174,7 +174,7 @@ export default function EtabSynthese() {
           />
         </>
       ) : (
-        <EtabInfo
+        <EstablishmentInfo
           info={info}
           siret={siret}
           lastEffectif={(!isAppError(lastEffectif) && lastEffectif) || null}
@@ -531,7 +531,7 @@ function HeadcountIndicator() {
     </p>
   )
   return (
-    <AppIndicator
+    <IndicatorWrapper
       id="headcount"
       title={title}
       readingNote={readingNote}
@@ -559,6 +559,6 @@ function HeadcountIndicator() {
           )
         })}
       </div>
-    </AppIndicator>
+    </IndicatorWrapper>
   )
 }

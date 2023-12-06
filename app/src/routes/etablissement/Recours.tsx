@@ -25,7 +25,6 @@ import {
   unitMoreInfo,
   unitsOptions,
 } from "../../helpers/effectifs"
-import { noticeCorrectData } from "../../helpers/carence"
 import { formatCorrectedDates } from "../../helpers/contrats"
 import { formatDate, nextMonth, prevMonth } from "../../helpers/date"
 import { errorWording, isAppError } from "../../helpers/errors"
@@ -45,17 +44,19 @@ import { trackEvent } from "../../helpers/analytics"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
-import { Notice } from "@codegouvfr/react-dsfr/Notice"
 import { Select } from "@codegouvfr/react-dsfr/Select"
 import { Table } from "@codegouvfr/react-dsfr/Table"
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
 
-import AppCollapse from "../../components/AppCollapse"
-import AppRebound from "../../components/AppRebound"
-import ContractNatureIndicator from "../../components/ContractNatureIndicator"
+import Collapse from "../../components/Collapse"
+import Rebound from "../../components/Rebound"
+import ContractNatureIndicator from "../../components/indicators/ContractNatureIndicator"
 import Deferring from "../../components/Deferring"
-import EffectifBarChart, { type GrayAreasInput } from "../../components/EffectifBarChart"
-import EtabFilters from "../../components/EtabFilters"
+import EffectifBarChart, {
+  type GrayAreasInput,
+} from "../../components/indicators/Charts/EffectifBarChart"
+import EstablishmentFilters from "../../components/establishment/EstablishmentFilters"
+import NoticeCorrectData from "../../components/NoticeCorrectData"
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
@@ -159,7 +160,7 @@ const modal = createModal({
   isOpenedByDefault: false,
 })
 
-export default function EtabRecours() {
+export default function Recours() {
   const {
     deferredCalls,
     deferredCallsController,
@@ -205,7 +206,7 @@ export default function EtabRecours() {
       <div className="fr-mb-3w">
         <h2 className="fr-text--xl fr-mb-1w">Module de filtres</h2>
         <hr />
-        <EtabFilters
+        <EstablishmentFilters
           startDate={queryStartDate}
           endDate={queryEndDate}
           natures={effectifsNatures}
@@ -214,7 +215,7 @@ export default function EtabRecours() {
           jobOptions={jobOptions}
           disabledFilters={{ natures: true }}
         />
-        <Notice title={noticeCorrectData} isClosable className="fr-mb-2w" />
+        <NoticeCorrectData />
 
         <div className="flex justify-between">
           <h2 className="fr-text--xl fr-mb-1w">Évolution des effectifs</h2>
@@ -265,7 +266,7 @@ export default function EtabRecours() {
         <hr />
         <div className="fr-grid-row fr-grid-row--gutters">
           <div className="fr-col-12 fr-col-md-4">
-            <AppRebound
+            <Rebound
               desc="Consulter les contrats correspondant à l'histogramme"
               linkProps={{
                 to: {
@@ -278,7 +279,7 @@ export default function EtabRecours() {
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
-            <AppRebound
+            <Rebound
               desc="Fusionner plusieurs libellés du même poste"
               linkProps={{
                 to: {
@@ -291,7 +292,7 @@ export default function EtabRecours() {
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
-            <AppRebound
+            <Rebound
               desc="Lancer le diagnostic d'anomalie des délais de carence sur les contrats sélectionnés"
               linkProps={{
                 to: {
@@ -448,7 +449,7 @@ function EtabPostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
         {initialUnitOption &&
           initialUnitOption.value &&
           initialUnitOption.value in unitMoreInfo && (
-            <AppCollapse
+            <Collapse
               id="unit-collapse"
               borderLeft
               key={initialUnitOption.value} // add key to reinit open/closed state when new unit selected
@@ -456,12 +457,12 @@ function EtabPostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
               labelOpen="Moins d'informations sur l'unité"
             >
               {unitMoreInfo[initialUnitOption.value]}
-            </AppCollapse>
+            </Collapse>
           )}
       </div>
 
       {(queryJobs.length > 0 || queryMotives.length > 0) && (
-        <AppCollapse
+        <Collapse
           id="filters-collapse"
           className="fr-mb-1w"
           label="Afficher le détail des filtres sélectionnés"
@@ -469,7 +470,7 @@ function EtabPostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
           keepBtnOnTop
         >
           {filtersInfo}
-        </AppCollapse>
+        </Collapse>
       )}
 
       {showTable ? (

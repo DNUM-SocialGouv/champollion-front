@@ -12,7 +12,7 @@ interface TableProps<ObjectType> {
   className?: string
 }
 
-export default function AppTable<T extends { id: number }>({
+export default function Table<T extends { id: number }>({
   items,
   headers,
   className,

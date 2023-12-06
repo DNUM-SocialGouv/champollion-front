@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom"
 import type { IllegalContract, Infractions, CarenceContract, IDCC } from "../api/types"
 import { getContractNature } from "./contrats"
 import { formatDate } from "./date"
@@ -101,12 +100,3 @@ export const getLegislationOptionFromKey = (
 ) =>
   legislationOptions(data).find((option) => String(option.key) == String(key)) ??
   legislationOptions(data)[0]
-
-export const noticeCorrectData = (
-  <>
-    Les calculs prennent en compte des paramètres que vous pouvez corriger d'après vos
-    constatations : les <Link to="../postes"> postes fusionnés</Link>, les{" "}
-    <Link to="../contrats">dates des contrats</Link> et les{" "}
-    <Link to="../">jours d'ouverture</Link>.
-  </>
-)
