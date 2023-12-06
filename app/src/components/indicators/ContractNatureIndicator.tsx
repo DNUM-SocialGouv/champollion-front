@@ -1,10 +1,10 @@
 import { useAsyncValue } from "react-router-dom"
 
-import type { Indicator2, IndicatorMetaData } from "../api/types"
-import { formatDate } from "../helpers/date"
+import type { Indicator2, IndicatorMetaData } from "../../api/types"
+import { formatDate } from "../../helpers/date"
 
-import AppIndicator from "./AppIndicator"
-import ContractsPieChart, { type PieSlice } from "./ContractsPieChart"
+import IndicatorWrapper from "./IndicatorWrapper"
+import ContractsPieChart, { type PieSlice } from "./Charts/ContractsPieChart"
 
 type ContractNatureIndicatorProps = {
   collapseReadingNote?: boolean
@@ -65,7 +65,7 @@ export default function ContractNatureIndicator({
 
   return (
     <>
-      <AppIndicator
+      <IndicatorWrapper
         id="contract-nature"
         title={title}
         readingNote={readingNote}
@@ -76,7 +76,7 @@ export default function ContractNatureIndicator({
         <div className="h-60 w-full">
           <ContractsPieChart data={data} sortData showLegend />
         </div>
-      </AppIndicator>
+      </IndicatorWrapper>
     </>
   )
 }

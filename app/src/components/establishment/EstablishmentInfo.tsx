@@ -1,13 +1,17 @@
-import type { EtablissementInfo, LastEffectif } from "../api/types"
-import { formatDate } from "../helpers/date"
+import type { EtablissementInfo, LastEffectif } from "../../api/types"
+import { formatDate } from "../../helpers/date"
 
-type EtabInfoProps = {
+type EstablishmentInfoProps = {
   info: EtablissementInfo
   lastEffectif: LastEffectif | null
   siret: string
 }
 
-export default function EtabInfo({ info, lastEffectif, siret }: EtabInfoProps) {
+export default function EstablishmentInfo({
+  info,
+  lastEffectif,
+  siret,
+}: EstablishmentInfoProps) {
   const address = (
     <>
       {info.adresse}

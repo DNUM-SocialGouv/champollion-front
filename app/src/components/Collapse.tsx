@@ -2,7 +2,7 @@ import { type ReactNode, useCallback, useState } from "react"
 
 import { Button } from "@codegouvfr/react-dsfr/Button"
 
-type AppCollapseProps = {
+type CollapseProps = {
   borderLeft?: boolean
   children: ReactNode
   className?: string
@@ -14,7 +14,7 @@ type AppCollapseProps = {
   shortDesc?: ReactNode
 }
 
-export default function AppCollapse({
+export default function Collapse({
   borderLeft,
   className,
   children,
@@ -24,7 +24,7 @@ export default function AppCollapse({
   labelOpen: labelOpenProps,
   shortDesc,
   keepBtnOnTop = false,
-}: AppCollapseProps) {
+}: CollapseProps) {
   const labelOpen = labelOpenProps || "Voir moins"
   const collapseElementId = `${id}-collapse`
   const [expandedState, setExpandedState] = useState(defaultExpanded)

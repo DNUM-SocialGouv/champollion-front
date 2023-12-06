@@ -18,8 +18,8 @@ import artworkMail from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/digital/
 import artworkCommunity from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/leisure/community.svg"
 import artworkPassport from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/document/passport.svg"
 
-import AppCollapse from "../components/AppCollapse"
-import AppPictoTile from "../components/AppPictoTile"
+import Collapse from "../components/Collapse"
+import PictoTile from "../components/PictoTile"
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData()
@@ -130,7 +130,7 @@ export default function Index() {
               {externalLinks.map(({ key, desc, title, href, picto }) => (
                 <Fragment key={key}>
                   <div className="fr-col-12 fr-col-sm-6 fr-col-md-4 fr-col-lg-3">
-                    <AppPictoTile
+                    <PictoTile
                       title={title}
                       desc={desc}
                       anchorProps={{
@@ -213,13 +213,13 @@ function SearchHistory({ searchHistory }: { searchHistory: string[][] }) {
         searchHistory.length > 2 ? (
           <>
             <ul className="fr-m-0">
-              <AppCollapse shortDesc={firstTwo()} id="search-history-collapse">
+              <Collapse shortDesc={firstTwo()} id="search-history-collapse">
                 <ul className="fr-pl-0 fr-my-0">
                   {searchHistory
                     .slice(2)
                     .map(([siret, raisonSociale]) => etablissement(siret, raisonSociale))}
                 </ul>
-              </AppCollapse>
+              </Collapse>
             </ul>
           </>
         ) : (

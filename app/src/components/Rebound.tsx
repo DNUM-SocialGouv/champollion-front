@@ -5,7 +5,7 @@ import { trackEvent } from "../helpers/analytics"
 
 import { RegisteredLinkProps } from "@codegouvfr/react-dsfr/link"
 
-export default function AppRebound({
+export default function Rebound({
   desc,
   linkProps,
   title,
@@ -18,7 +18,7 @@ export default function AppRebound({
 }) {
   return (
     <>
-      <div className="fr-p-2w fr-enlarge-link fr-card flex flex-col  text-center shadow-tile ">
+      <div className="fr-p-2w fr-enlarge-link fr-card flex flex-col text-center shadow-tile ">
         <h3 className="fr-text--md fr-mb-1w">
           <Link
             {...linkProps}

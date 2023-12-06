@@ -20,8 +20,8 @@ import { Alert, type AlertProps } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 
-import AppMultiSelect from "../components/AppMultiSelect"
-import type { Option } from "../components/AppMultiSelect"
+import MultiSelect from "../components/MultiSelect"
+import type { Option } from "../components/MultiSelect"
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData()
@@ -299,7 +299,7 @@ function MergeItem({
   return (
     <div className="fr-pt-2w fr-px-2w fr-mb-2w border border-solid border-bd-default-grey bg-bg-alt-grey">
       <div className="flex flex-initial flex-col items-center md:flex-row">
-        <AppMultiSelect
+        <MultiSelect
           className="fr-mr-2w w-full"
           label="Fusionner les postes suivants :"
           onChange={(newValue) => {

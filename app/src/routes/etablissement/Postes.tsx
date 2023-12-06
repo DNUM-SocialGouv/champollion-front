@@ -41,13 +41,13 @@ import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Tag } from "@codegouvfr/react-dsfr/Tag"
 
-import AppIndicator from "../../components/AppIndicator"
-import AppMultiSelect, { type Option } from "../../components/AppMultiSelect"
-import AppRebound from "../../components/AppRebound"
+import IndicatorWrapper from "../../components/indicators/IndicatorWrapper"
+import MultiSelect, { type Option } from "../../components/MultiSelect"
+import Rebound from "../../components/Rebound"
 import Deferring from "../../components/Deferring"
-import EtabFilters from "../../components/EtabFilters"
-import JobProportionIndicator from "../../components/JobProportionIndicator"
-import PrecariousJobsBarChart from "../../components/PrecariousJobsBarChart"
+import EstablishmentFilters from "../../components/establishment/EstablishmentFilters"
+import JobProportionIndicator from "../../components/indicators/JobProportionIndicator"
+import PrecariousJobsBarChart from "../../components/indicators/PrecariousJobsBarChart"
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
@@ -205,7 +205,7 @@ const modal = createModal({
   isOpenedByDefault: false,
 })
 
-export default function EtabPostes() {
+export default function Postes() {
   const {
     correctedDates,
     deferredCalls,
@@ -359,7 +359,7 @@ export default function EtabPostes() {
         {/******* FILTERS *******/}
         <h2 className="fr-text--xl fr-mb-1w">Module de filtres</h2>
         <hr />
-        <EtabFilters
+        <EstablishmentFilters
           startDate={queryStartDate}
           endDate={queryEndDate}
           natures={queryNatures}
@@ -463,7 +463,7 @@ export default function EtabPostes() {
               >
                 <div className="flex flex-initial flex-col items-center md:flex-row">
                   {/******* Select job labels in the same merge *******/}
-                  <AppMultiSelect
+                  <MultiSelect
                     className="fr-mr-2w w-full"
                     label="Fusionner les postes suivants :"
                     onChange={(newValue) => {
@@ -624,7 +624,7 @@ export default function EtabPostes() {
         <hr />
         <div className="fr-grid-row fr-grid-row--gutters">
           <div className="fr-col-12 fr-col-md-4">
-            <AppRebound
+            <Rebound
               desc="Lancer le diagnostic d'emploi permanent"
               linkProps={{
                 to: {
@@ -637,7 +637,7 @@ export default function EtabPostes() {
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
-            <AppRebound
+            <Rebound
               desc="Lancer le diagnostic d'anomalie des délais de carence"
               linkProps={{
                 to: {
@@ -650,7 +650,7 @@ export default function EtabPostes() {
             />
           </div>
           <div className="fr-col-12 fr-col-md-4">
-            <AppRebound
+            <Rebound
               desc="Consulter les contrats correspondants aux filtres"
               linkProps={{
                 to: {
@@ -743,7 +743,7 @@ function PrecariousJobsIndicator({ hasMotives = false }: PrecariousJobsIndicator
     : ""
 
   return (
-    <AppIndicator
+    <IndicatorWrapper
       id="precarious-jobs"
       title={title}
       readingNote={readingNote}
@@ -754,6 +754,6 @@ function PrecariousJobsIndicator({ hasMotives = false }: PrecariousJobsIndicator
       <div className="h-[28rem] w-full">
         <PrecariousJobsBarChart data={data} />
       </div>
-    </AppIndicator>
+    </IndicatorWrapper>
   )
 }

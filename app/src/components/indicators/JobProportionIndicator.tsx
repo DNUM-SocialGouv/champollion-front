@@ -1,12 +1,12 @@
 import { Link, useAsyncValue } from "react-router-dom"
 
-import type { Indicator3, IndicatorMetaData } from "../api/types"
-import { formatDate } from "../helpers/date"
-import { formatNumber } from "../helpers/format"
-import { JobMergedBadge, getContractNature } from "../helpers/contrats"
+import type { Indicator3, IndicatorMetaData } from "../../api/types"
+import { formatDate } from "../../helpers/date"
+import { formatNumber } from "../../helpers/format"
+import { JobMergedBadge, getContractNature } from "../../helpers/contrats"
 
-import AppIndicator from "./AppIndicator"
-import ContractsPieChart, { groupSmallData } from "./ContractsPieChart"
+import IndicatorWrapper from "./IndicatorWrapper"
+import ContractsPieChart, { groupSmallData } from "./Charts/ContractsPieChart"
 
 type JobProportionIndicatorProps = {
   collapseReadingNote?: boolean
@@ -93,7 +93,7 @@ export default function JobProportionIndicator({
   const passedProps = { collapseReadingNote, title, readingNote, subTitle, tracking }
 
   return (
-    <AppIndicator
+    <IndicatorWrapper
       id="job-proportion"
       bottomEl={learnMoreEl}
       table={{ headers, data: tableData }}
@@ -102,6 +102,6 @@ export default function JobProportionIndicator({
       <div className="fr-mb-2w h-60 w-full">
         <ContractsPieChart data={data} />
       </div>
-    </AppIndicator>
+    </IndicatorWrapper>
   )
 }

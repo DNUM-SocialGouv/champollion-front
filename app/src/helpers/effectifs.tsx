@@ -5,7 +5,10 @@ import type { Effectif, EffectifUnit } from "../api/types"
 import { formatDate } from "./date"
 import { formatNumber } from "./format"
 
-import type { GrayAreasInput, MonthData } from "../components/EffectifBarChart"
+import type {
+  GrayAreasInput,
+  MonthData,
+} from "../components/indicators/Charts/EffectifBarChart"
 
 const xAxisFormat = "MMM YYYY"
 

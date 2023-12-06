@@ -1,19 +1,19 @@
 import Badge from "@codegouvfr/react-dsfr/Badge"
 import { AlertProps } from "@codegouvfr/react-dsfr/Alert"
 
-type EtabBannerProps = {
+type EstablishmentBannerProps = {
   isEtt: boolean
   etabName: string
   siret: string
   isOpen?: boolean
 }
 
-export default function EtabBanner({
+export default function EstablishmentBanner({
   isEtt = false,
   etabName,
   siret,
   isOpen,
-}: EtabBannerProps) {
+}: EstablishmentBannerProps) {
   const etabSeverity: AlertProps.Severity = isOpen ? "success" : "error"
   const etabStatus: string = isOpen ? "Ouvert" : "Fermé"
   const etabType = isEtt ? "Etablissement de Travail Temporaire" : "Établissement"

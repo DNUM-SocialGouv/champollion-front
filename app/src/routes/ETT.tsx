@@ -38,10 +38,10 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 
-import EtabBanner from "../components/EtabBanner"
-import EtabInfo from "../components/EtabInfo"
-import EtabFilters from "../components/EtabFilters"
-import AppTable from "../components/AppTable"
+import EstablishmentBanner from "../components/establishment/EstablishmentBanner"
+import EstablishmentInfo from "../components/establishment/EstablishmentInfo"
+import EstablishmentFilters from "../components/establishment/EstablishmentFilters"
+import Table from "../components/Table"
 import ExportContractsModal, {
   exportContractsModal,
 } from "../components/ExportContractsModal"
@@ -174,7 +174,12 @@ export default function ETT() {
   }
   return (
     <div className="flex w-full flex-col">
-      <EtabBanner etabName={raisonSociale} isEtt={true} siret={siret} isOpen={isOpen} />
+      <EstablishmentBanner
+        etabName={raisonSociale}
+        isEtt={true}
+        siret={siret}
+        isOpen={isOpen}
+      />
       <div className="fr-container fr-mt-3w">
         <h2 className="fr-text--xl fr-mb-1w">Informations sur l'établissement</h2>
         <hr />
@@ -188,7 +193,7 @@ export default function ETT() {
             />
           </>
         ) : (
-          <EtabInfo
+          <EstablishmentInfo
             info={info}
             siret={siret}
             lastEffectif={(!isAppError(lastEffectif) && lastEffectif) || null}
@@ -197,7 +202,7 @@ export default function ETT() {
         <div>
           <h2 className="fr-text--xl fr-mt-3w fr-mb-1w">Module de filtres</h2>
           <hr />
-          <EtabFilters
+          <EstablishmentFilters
             startDate={queryStartDate}
             endDate={queryEndDate}
             natures={queryNature}
@@ -306,7 +311,7 @@ function ETTContrats({
       {meta?.totalCount && formatContrats.length > 0 ? (
         <>
           <p>{meta.totalCount} résultats</p>
-          <AppTable className="fr-mb-1w" headers={headers} items={formattedContrats} />
+          <Table className="fr-mb-1w" headers={headers} items={formattedContrats} />
           {meta.totalPages > 1 && (
             <Pagination
               count={meta.totalPages}

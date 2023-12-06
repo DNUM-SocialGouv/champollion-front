@@ -8,10 +8,10 @@ import {
   YAxis,
 } from "recharts"
 
-import type { MetaCarences } from "../api/types"
-import { formatDate } from "../helpers/date"
+import type { MetaCarences } from "../../api/types"
+import { formatDate } from "../../helpers/date"
 
-import AppIndicator from "./AppIndicator"
+import IndicatorWrapper from "./IndicatorWrapper"
 
 type InfractionsRatioProps = {
   meta: MetaCarences
@@ -52,7 +52,7 @@ export default function InfractionRatioIndicator({
   `
 
   return (
-    <AppIndicator
+    <IndicatorWrapper
       id="infraction-ratio"
       title={title}
       readingNote={readingNote}
@@ -150,6 +150,6 @@ export default function InfractionRatioIndicator({
           </BarChart>
         </ResponsiveContainer>
       </div>
-    </AppIndicator>
+    </IndicatorWrapper>
   )
 }

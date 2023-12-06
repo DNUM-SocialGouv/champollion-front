@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 
-import { computeGrayAreasCoordinates } from "../helpers/effectifs"
-import { capitalize, formatNumber } from "../helpers/format"
+import { computeGrayAreasCoordinates } from "../../../helpers/effectifs"
+import { capitalize, formatNumber } from "../../../helpers/format"
 
 import {
   Bar,
