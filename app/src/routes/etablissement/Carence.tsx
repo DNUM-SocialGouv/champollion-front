@@ -35,7 +35,7 @@ import {
   getQueryAsNumberArray,
   getQueryAsString,
 } from "../../helpers/format"
-import { JobMergedBadge, formatCorrectedDates } from "../../helpers/contrats"
+import { formatCorrectedDates } from "../../helpers/contrats"
 import { errorWording, isAppError } from "../../helpers/errors"
 import { getQueryDates } from "../../helpers/filters"
 import { initJobOptions } from "../../helpers/postes"
@@ -60,6 +60,7 @@ import Deferring from "../../components/Deferring"
 import EstablishmentFilters from "../../components/establishment/EstablishmentFilters"
 import InfractionRatioIndicator from "../../components/indicators/InfractionRatioIndicator"
 import NoticeCorrectData from "../../components/NoticeCorrectData"
+import JobMergedBadge from "../../components/job/JobMergedBadge"
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)

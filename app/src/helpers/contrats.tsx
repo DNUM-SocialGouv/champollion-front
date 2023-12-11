@@ -11,6 +11,7 @@ import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Input } from "@codegouvfr/react-dsfr/Input"
 import { Option } from "../components/MultiSelect"
+import JobMergedBadge from "../components/job/JobMergedBadge"
 
 type FormattedContrat = {
   id: number
@@ -391,48 +392,6 @@ const warningList = (
     </>
   ) as NonNullable<ReactNode>
 }
-
-export function JobMergedBadge({
-  merged,
-  short = false,
-}: {
-  merged: boolean
-  short?: boolean
-}) {
-  return (
-    <>
-      {merged && (
-        <Badge
-          severity="new"
-          className={`fr-ml-1w ${
-            short ? "fr-px-1v before:mx-0 before:content-['*']" : ""
-          }`}
-          small
-        >
-          {short ? "" : "Fusionné"}
-        </Badge>
-      )}
-    </>
-  )
-}
-
-export const jobMergedBadgeSvg = (x: number, y: number) => (
-  <>
-    <rect
-      width="18"
-      height="18"
-      rx="4"
-      fill="var(--background-contrast-yellow-moutarde)"
-      x={x}
-      y={y}
-    />
-    <path
-      transform={`translate(${x + 3}, ${y + 3}) scale(0.5)`}
-      d="M13 10H20L11 23V14H4L13 1V10Z"
-      fill="var(--text-action-high-yellow-moutarde)"
-    />
-  </>
-)
 
 function ContratDate({
   contratDates,
