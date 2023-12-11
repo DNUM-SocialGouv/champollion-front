@@ -13,8 +13,8 @@ import {
 } from "recharts"
 import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent"
 
-import { jobMergedBadgeSvg } from "../../helpers/contrats"
 import { formatNumber, splitSentenceAtMiddle, uncapitalize } from "../../helpers/format"
+import JobMergedBadgeSvg from "../job/JobMergedBadgeSvg"
 
 type JobData = {
   label: string | null
@@ -90,7 +90,7 @@ export default function PrecariousJobsBarChart({ data }: PrecariousJobsBarChartP
             </tspan>
           ))}
         </text>
-        {merged && jobMergedBadgeSvg(badgeX, badgeY)}
+        {merged && <JobMergedBadgeSvg x={badgeX} y={badgeY} />}
       </g>
     )
   }

@@ -1,7 +1,7 @@
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from "recharts"
 
 import { formatNumber } from "../../../helpers/format"
-import { jobMergedBadgeSvg } from "../../../helpers/contrats"
+import JobMergedBadgeSvg from "../../job/JobMergedBadgeSvg"
 
 export type PieSlice = {
   name: string | null
@@ -160,7 +160,7 @@ export default function ContractsPieChart({
         >
           {textContent}
         </text>
-        {merged && jobMergedBadgeSvg(badgeX, badgeY)}
+        {merged && <JobMergedBadgeSvg x={badgeX} y={badgeY} />}
       </g>
     )
   }

@@ -3,10 +3,11 @@ import { Link, useAsyncValue } from "react-router-dom"
 import type { Indicator3, IndicatorMetaData } from "../../api/types"
 import { formatDate } from "../../helpers/date"
 import { formatNumber } from "../../helpers/format"
-import { JobMergedBadge, getContractNature } from "../../helpers/contrats"
+import { getContractNature } from "../../helpers/contrats"
 
 import IndicatorWrapper from "./IndicatorWrapper"
 import ContractsPieChart, { groupSmallData } from "./Charts/ContractsPieChart"
+import JobMergedBadge from "../job/JobMergedBadge"
 
 type JobProportionIndicatorProps = {
   collapseReadingNote?: boolean

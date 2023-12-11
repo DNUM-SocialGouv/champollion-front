@@ -1,12 +1,13 @@
 import type { EtablissementPoste, Salarie } from "../api/types"
 import type { AppError } from "./errors"
 import { isAppError } from "./errors"
-import { JobMergedBadge, getSexName } from "./contrats"
+import { getSexName } from "./contrats"
 
 import { components } from "react-select"
 import type { MultiValueProps, OptionProps, SingleValueProps } from "react-select"
 
 import type { Option } from "../components/MultiSelect"
+import JobMergedBadge from "../components/job/JobMergedBadge"
 
 export type MergeOptionObject = {
   id: number | string

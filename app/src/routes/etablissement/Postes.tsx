@@ -26,7 +26,7 @@ import {
   getQueryAsArray,
   getQueryAsNumberArray,
 } from "../../helpers/format"
-import { JobMergedBadge, formatCorrectedDates } from "../../helpers/contrats"
+import { formatCorrectedDates } from "../../helpers/contrats"
 import {
   parseAndFilterMergeStr,
   type MergeOptionObject,
@@ -48,6 +48,7 @@ import Deferring from "../../components/Deferring"
 import EstablishmentFilters from "../../components/establishment/EstablishmentFilters"
 import JobProportionIndicator from "../../components/indicators/JobProportionIndicator"
 import PrecariousJobsBarChart from "../../components/indicators/PrecariousJobsBarChart"
+import JobMergedBadge from "../../components/job/JobMergedBadge"
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { searchParams } = new URL(request.url)
