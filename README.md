@@ -10,6 +10,9 @@ The VisuDSN website aims at facilitating secure access for labor inspectors to d
 This project is built with [Vite](https://vitejs.dev/), [React](https://fr.reactjs.org/) and TypeScript.
 _See other dependencies [here.](documentation/5_dependances.md)📚_
 
+There's a demonstration website [here](https://champollion-front.osc-fr1.scalingo.io/) (with fake data).
+
+
 ## Documentation
 
 **[See main documentation here.](documentation/)**
