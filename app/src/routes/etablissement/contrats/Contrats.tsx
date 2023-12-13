@@ -1,126 +1,26 @@
-import { useEffect, useState } from "react"
-import { useSearchParams, type LoaderFunctionArgs } from "react-router-dom"
+import { useEffect } from "react"
 import { useLoaderData } from "react-router-typesafe"
 import ls from "localstorage-slim"
-
-import {
-  getEtablissementsType,
-  getSalaries,
-  postPostes,
-  postContratsEtu,
-  getEtablissementsDefaultPeriod,
-} from "../../api"
-import type { EtuContrat, PaginationMetaData } from "../../api/types"
-import type { EditableDate, ContratDatesState } from "../../helpers/contrats"
-import {
-  formatContrats,
-  headers,
-  formatCorrectedDates,
-  getStatusNameFromCode,
-  warningList,
-  infoTable,
-} from "../../helpers/contrats"
-import { motiveOptions, contractNatures, getQueryDates } from "../../helpers/filters"
-import { errorDescription, errorWording, isAppError } from "../../helpers/errors"
-import { formatDate } from "../../helpers/date"
-import {
-  createFiltersQuery,
-  formatLocalMerges,
-  getQueryAsArray,
-  getQueryAsNumber,
-  getQueryAsNumberArray,
-  getQueryPage,
-} from "../../helpers/format"
-import { filtersDetail as filtersDetail } from "../../helpers/filters"
-import { initEmployeeOptions, initJobOptions } from "../../helpers/postes"
-import { DateStatusBadge } from "../../helpers/contrats"
-import { trackEvent } from "../../helpers/analytics"
+import { warningList } from "../../../helpers/contrats"
+import { motiveOptions, contractNatures } from "../../../helpers/filters"
+import { errorDescription, isAppError } from "../../../helpers/errors"
+import { formatDate } from "../../../helpers/date"
+import { createFiltersQuery } from "../../../helpers/format"
+import { DateStatusBadge } from "../../../helpers/contrats"
+import { trackEvent } from "../../../helpers/analytics"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
-import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
 
-import Collapse from "../../components/Collapse"
-import Rebound from "../../components/Rebound"
-import Table from "../../components/Table"
-import EstablishmentFilters from "../../components/establishment/EstablishmentFilters"
+import Rebound from "../../../components/Rebound"
+import EstablishmentFilters from "../../../components/establishment/EstablishmentFilters"
 import ExportContractsModal, {
   exportContractsModal,
-} from "../../components/ExportContractsModal"
-
-export async function loader({ params, request }: LoaderFunctionArgs) {
-  const { searchParams } = new URL(request.url)
-
-  const siret = params.siret ? String(params.siret) : ""
-  const etabType = await getEtablissementsType(siret)
-
-  if (isAppError(etabType)) {
-    throw new Response("", {
-      status: etabType.status ?? undefined,
-      statusText: etabType.messageFr ?? errorWording.etab,
-    })
-  }
-
-  const etabDefaultPeriod = await getEtablissementsDefaultPeriod(etabType.id)
-
-  const { queryStartDate, queryEndDate } = getQueryDates({
-    etabDefaultPeriod,
-    searchParams,
-  })
-  const queryNature = getQueryAsArray(searchParams, "nature")
-  const queryJobs = getQueryAsNumberArray(searchParams, "poste")
-  const queryEmployee = getQueryAsNumber(searchParams, "salarie")
-  const page = getQueryPage(searchParams)
-
-  const localMergesIds = ls.get(`etab.${params.siret}.merges`) as number[][] | null
-  const formattedMergesIds = formatLocalMerges(localMergesIds)
-  const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
-  const correctedDates = formatCorrectedDates(lsContrats)
-
-  const [postes, postesWithoutMerges] = await Promise.all([
-    postPostes(etabType.id, formattedMergesIds),
-    postPostes(etabType.id),
-  ])
-
-  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
-  const jobListWithoutMerges = isAppError(postesWithoutMerges) ? [] : postesWithoutMerges
-
-  const employeesList = await getSalaries(etabType.id)
-  const contratsData = await postContratsEtu({
-    startDate: queryStartDate,
-    endDate: queryEndDate,
-    natures: queryNature,
-    motives: queryMotives,
-    id: etabType.id,
-    postesIds: queryJobs,
-    employeesIds: queryEmployee ? [queryEmployee] : undefined,
-    page,
-    correctedDates,
-    mergedPostesIds: formattedMergesIds,
-  })
-
-  return {
-    companyName: etabType.raisonSociale,
-    contratsData,
-    employeesList,
-    etabId: etabType.id,
-    mergedPostesIds: formattedMergesIds,
-    page,
-    postes,
-    queryEmployee,
-    queryEndDate,
-    queryJobs,
-    queryNature,
-    queryStartDate,
-    raisonSociale: etabType.raisonSociale,
-    siret,
-    jobListWithoutMerges,
-    queryMotives,
-    formattedMergesIds,
-    correctedDates,
-  }
-}
+} from "../../../components/ExportContractsModal"
+import { ContratsLoader } from "./ContratsLoader"
+import ContratsTable from "./ContratsTable"
+import { initEmployeeOptions, initJobOptions } from "../../../helpers/postes"
 
 const resetDatesModal = createModal({
   id: "reset-dates-modal",
@@ -145,7 +45,7 @@ export default function Contrats() {
     raisonSociale,
     siret,
     correctedDates,
-  } = useLoaderData<typeof loader>()
+  } = useLoaderData<typeof ContratsLoader>()
   const filtersQuery = createFiltersQuery({
     startDate: queryStartDate,
     endDate: queryEndDate,
@@ -331,109 +231,6 @@ export default function Contrats() {
           />
         </div>
       </div>
-    </>
-  )
-}
-
-function ContratsTable({
-  contrats,
-  meta,
-}: {
-  contrats: EtuContrat[]
-  meta: PaginationMetaData
-}) {
-  const [searchParams] = useSearchParams()
-  const { siret, jobListWithoutMerges, formattedMergesIds, queryJobs } =
-    useLoaderData<typeof loader>()
-
-  const filtersInfo = filtersDetail({
-    queryJobs,
-    jobListWithoutMerges,
-    localMerges: formattedMergesIds,
-  })
-
-  const initialContratsDatesState = contrats.map((contrat) => {
-    const savedContratsDates = ls.get(`contrats.${siret}`) as Record<string, string>
-    const startKey = `${contrat.contratId}-start`
-    const start: EditableDate = {
-      date: contrat.dateDebut,
-      status: getStatusNameFromCode(contrat.statutDebut),
-      isEdit: false,
-    }
-    const end: EditableDate = {
-      date: contrat.dateFin,
-      status: getStatusNameFromCode(contrat.statutFin),
-      isEdit: false,
-    }
-    const endKey = `${contrat.contratId}-end`
-
-    if (savedContratsDates && startKey in savedContratsDates) {
-      start.date = savedContratsDates[startKey]
-      start.status = "validated"
-    }
-
-    if (savedContratsDates && endKey in savedContratsDates) {
-      end.date = savedContratsDates[endKey]
-      end.status = "validated"
-    }
-
-    if (!end.date && contrat.statutFin !== 3) {
-      end.status = "unknown"
-    }
-
-    return {
-      id: contrat.contratId,
-      start,
-      end,
-    } as ContratDatesState
-  })
-  const [contratsDatesState, setContratsDatesState] = useState(initialContratsDatesState)
-  const formattedContrats = formatContrats(
-    contrats,
-    contratsDatesState,
-    setContratsDatesState,
-    siret
-  )
-
-  return (
-    <>
-      {meta.totalCount > 0 ? (
-        <>
-          <p className="fr-mb-0">{meta.totalCount} résultats</p>
-          {queryJobs.length > 0 && (
-            <Collapse
-              id="filters-collapse"
-              className="fr-mb-1w"
-              label="Afficher les postes sélectionnés"
-              labelOpen="Masquer les postes sélectionnés"
-              keepBtnOnTop
-            >
-              {filtersInfo}
-            </Collapse>
-          )}
-          <Table className="fr-mb-1w" headers={headers} items={formattedContrats} />
-          {meta.totalPages > 1 && (
-            <Pagination
-              count={meta.totalPages}
-              defaultPage={getQueryPage(searchParams)}
-              getPageLinkProps={(page) => {
-                const newQuery = new URLSearchParams(searchParams)
-                newQuery.set("page", String(page))
-                return {
-                  to: { search: newQuery.toString() },
-                }
-              }}
-              showFirstLast
-              classes={{
-                list: "justify-center",
-              }}
-            />
-          )}
-        </>
-      ) : (
-        <p>Aucun résultat.</p>
-      )}
-      {infoTable}
     </>
   )
 }

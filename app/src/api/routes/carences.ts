@@ -1,7 +1,7 @@
 import api from "../config"
 import type { IDCC, Infractions, MetaCarences, ModificationsBody } from "../types"
 import type { CorrectedDates } from "../../helpers/contrats"
-import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
+import { AppError, handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import { PublicHolidaysClosed, addArrayParams } from "../../helpers/format"
 
 type CarenceParams = {
@@ -32,7 +32,9 @@ export const postCarences = async ({
   correctedDates,
   mergedPostesIds,
   signal,
-}: CarenceParams) => {
+}: CarenceParams): Promise<
+  { infractions: Infractions; meta: MetaCarences } | undefined | AppError
+> => {
   try {
     let params = `etablissement_id=${id}`
 

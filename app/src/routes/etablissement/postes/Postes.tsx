@@ -1,38 +1,19 @@
 import { type FormEvent, Fragment, useState, useEffect } from "react"
-import { defer, useLoaderData } from "react-router-typesafe"
-import { useNavigation, type LoaderFunctionArgs, useAsyncValue } from "react-router-dom"
+import { useLoaderData } from "react-router-typesafe"
+import { useNavigation } from "react-router-dom"
 import ls from "localstorage-slim"
 import { v4 as uuid } from "uuid"
 
-import {
-  getEtablissementsDefaultPeriod,
-  getEtablissementsType,
-  getPostesMerges,
-  postIndicateur3,
-  postIndicateur5,
-  postPostes,
-} from "../../api"
-import type { Indicator5, IndicatorMetaData } from "../../api/types"
-import { errorWording, isAppError } from "../../helpers/errors"
-import { formatDate } from "../../helpers/date"
-import { getQueryDates } from "../../helpers/filters"
-import {
-  createFiltersQuery,
-  formatLocalClosedPublicHolidays,
-  formatLocalExceptionalDates,
-  formatLocalMerges,
-  formatLocalOpenDays,
-  formatNumber,
-  getQueryAsArray,
-  getQueryAsNumberArray,
-} from "../../helpers/format"
-import { formatCorrectedDates } from "../../helpers/contrats"
+import { postIndicateur3, postIndicateur5, postPostes } from "../../../api"
+import { errorWording, isAppError } from "../../../helpers/errors"
+import { createFiltersQuery } from "../../../helpers/format"
+
 import {
   parseAndFilterMergeStr,
   type MergeOptionObject,
   filteredOptions,
-} from "../../helpers/postes"
-import { trackEvent } from "../../helpers/analytics"
+} from "../../../helpers/postes"
+import { trackEvent } from "../../../helpers/analytics"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import type { AlertProps } from "@codegouvfr/react-dsfr/Alert"
@@ -41,165 +22,14 @@ import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox"
 import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Tag } from "@codegouvfr/react-dsfr/Tag"
 
-import IndicatorWrapper from "../../components/indicators/IndicatorWrapper"
-import MultiSelect, { type Option } from "../../components/MultiSelect"
-import Rebound from "../../components/Rebound"
-import Deferring from "../../components/Deferring"
-import EstablishmentFilters from "../../components/establishment/EstablishmentFilters"
-import JobProportionIndicator from "../../components/indicators/JobProportionIndicator"
-import PrecariousJobsBarChart from "../../components/indicators/PrecariousJobsBarChart"
-import JobMergedBadge from "../../components/job/JobMergedBadge"
-
-export async function loader({ params, request }: LoaderFunctionArgs) {
-  const { searchParams } = new URL(request.url)
-
-  const siret = params.siret ? String(params.siret) : ""
-  const etabType = await getEtablissementsType(siret)
-
-  if (isAppError(etabType)) {
-    throw new Response("", {
-      status: etabType.status ?? undefined,
-      statusText: etabType.messageFr ?? errorWording.etab,
-    })
-  }
-
-  const [etabDefaultPeriod, etabPostes, suggestedJobMerges] = await Promise.all([
-    getEtablissementsDefaultPeriod(etabType.id),
-    postPostes(etabType.id),
-    getPostesMerges(etabType.id),
-  ])
-  const { queryStartDate, queryEndDate } = getQueryDates({
-    etabDefaultPeriod,
-    searchParams,
-  })
-  const queryMotives = getQueryAsNumberArray(searchParams, "motif")
-  const queryNatures = getQueryAsArray(searchParams, "nature")
-
-  if (isAppError(etabPostes)) {
-    const responseParams: ResponseInit = {
-      statusText: etabPostes.messageFr ?? errorWording.etab,
-    }
-    if (etabPostes.status) responseParams.status = etabPostes.status
-    if (etabPostes.status == 404) responseParams.statusText = "Postes introuvables."
-    throw new Response("", responseParams)
-  }
-
-  const options = etabPostes.map(
-    (poste) => ({ value: poste.posteId, label: poste.libellePoste } as Option)
-  )
-
-  // Get user modifications from localStorage
-  const localOpenDays = ls.get(`etab.${params.siret}.openDays`)
-  const formattedOpenDaysCodes = formatLocalOpenDays(localOpenDays)
-  const localOpenDates = ls.get(`etab.${params.siret}.openDates`)
-  const formattedOpenDates = formatLocalExceptionalDates(localOpenDates)
-  const localClosedDates = ls.get(`etab.${params.siret}.closedDates`)
-  const formattedClosedDates = formatLocalExceptionalDates(localClosedDates)
-  const localClosedPublicHolidays = ls.get(`etab.${params.siret}.closedPublicHolidays`)
-  const formattedClosedPublicHolidays = formatLocalClosedPublicHolidays(
-    localClosedPublicHolidays
-  )
-  const localMergesIds = ls.get(`etab.${params.siret}.merges`)
-  const formattedMergesIds = formatLocalMerges(localMergesIds)
-  const lsContrats = ls.get(`contrats.${siret}`) as Record<string, string> | null
-  const correctedDates = formatCorrectedDates(lsContrats)
-
-  const savedMerges: MergeOptionObject[] = Array.isArray(formattedMergesIds)
-    ? formattedMergesIds.map(
-        (merge): MergeOptionObject => ({
-          id: uuid(),
-          mergedOptions: merge
-            .map(
-              (id) =>
-                options.find((option) => option.value === Number(id)) || ({} as Option)
-            )
-            .filter((option) => Object.keys(option).length > 0),
-        })
-      )
-    : []
-
-  let suggestedMerges: MergeOptionObject[] = []
-
-  if (!isAppError(suggestedJobMerges))
-    suggestedMerges = suggestedJobMerges.postes.map(
-      (merge): MergeOptionObject => ({
-        id: uuid(),
-        mergedOptions: merge
-          .map(
-            (job) =>
-              options.find((option) => option.value === Number(job.posteId)) ||
-              ({} as Option)
-          )
-          .filter((option) => Object.keys(option).length > 0),
-      })
-    )
-
-  const jobListWithMerge = await postPostes(etabType.id, formattedMergesIds)
-
-  // AbortController to abort deferred calls on route change
-  const indicatorController = new AbortController()
-
-  const jobProportionIndicator = postIndicateur3({
-    id: etabType.id,
-    startDate: queryStartDate,
-    endDate: queryEndDate,
-    openDaysCodes: formattedOpenDaysCodes,
-    openDates: formattedOpenDates,
-    closedDates: formattedClosedDates,
-    closedPublicHolidays: formattedClosedPublicHolidays,
-    correctedDates,
-    mergedPostesIds: formattedMergesIds,
-    natures: queryNatures,
-    motives: queryMotives,
-    signal: indicatorController.signal,
-  })
-  const precariousJobIndicator = postIndicateur5({
-    id: etabType.id,
-    startDate: queryStartDate,
-    endDate: queryEndDate,
-    openDaysCodes: formattedOpenDaysCodes,
-    openDates: formattedOpenDates,
-    closedDates: formattedClosedDates,
-    closedPublicHolidays: formattedClosedPublicHolidays,
-    correctedDates,
-    mergedPostesIds: formattedMergesIds,
-    motives: queryMotives,
-    signal: indicatorController.signal,
-  })
-
-  if (isAppError(jobListWithMerge)) {
-    const responseParams: ResponseInit = {
-      statusText: jobListWithMerge.messageFr ?? errorWording.etab,
-    }
-    if (jobListWithMerge.status) responseParams.status = jobListWithMerge.status
-    if (jobListWithMerge.status == 404) responseParams.statusText = "Postes introuvables."
-    throw new Response("", responseParams)
-  }
-
-  return {
-    correctedDates,
-    deferredCalls: defer({
-      jobProportionIndicator,
-      precariousJobIndicator,
-    }),
-    etabId: etabType.id,
-    indicatorController,
-    jobList: jobListWithMerge,
-    openDaysCodes: formattedOpenDaysCodes,
-    openDates: formattedOpenDates,
-    closedDates: formattedClosedDates,
-    closedPublicHolidays: formattedClosedPublicHolidays,
-    options,
-    queryEndDate,
-    queryMotives,
-    queryNatures,
-    queryStartDate,
-    raisonSociale: etabType.raisonSociale,
-    savedMerges,
-    siret,
-    suggestedMerges,
-  }
-}
+import MultiSelect, { type Option } from "../../../components/MultiSelect"
+import Rebound from "../../../components/Rebound"
+import Deferring from "../../../components/Deferring"
+import EstablishmentFilters from "../../../components/establishment/EstablishmentFilters"
+import JobProportionIndicator from "../../../components/indicators/JobProportionIndicator"
+import JobMergedBadge from "../../../components/job/JobMergedBadge"
+import { PostesLoader } from "./PostesLoader"
+import PrecariousJobsIndicator from "./PrecariousJobsIndicator"
 
 const modal = createModal({
   id: "job-list-modal",
@@ -226,7 +56,7 @@ export default function Postes() {
     savedMerges,
     siret,
     suggestedMerges,
-  } = useLoaderData<typeof loader>()
+  } = useLoaderData<typeof PostesLoader>()
   const [merges, setMerges] = useState(savedMerges)
   const [jobList, setJobList] = useState(initialJobList)
   const [jobProportionIndicator, setJobProportionIndicator] = useState(
@@ -666,95 +496,5 @@ export default function Postes() {
         </div>
       </div>
     </>
-  )
-}
-
-type PrecariousJobsIndicatorDeferred = {
-  precariousJobs: Indicator5
-  meta: IndicatorMetaData
-}
-
-type PrecariousJobsIndicatorProps = {
-  hasMotives?: boolean
-}
-
-function PrecariousJobsIndicator({ hasMotives = false }: PrecariousJobsIndicatorProps) {
-  const deferredData = useAsyncValue() as PrecariousJobsIndicatorDeferred
-  if (!deferredData) {
-    console.error(
-      "PrecariousJobsIndicator must be used in a <Await> component but didn't receive async data"
-    )
-    return null
-  }
-
-  const { precariousJobs, meta } = deferredData
-  const start = formatDate(meta.startDate, "MMMM YYYY")
-  const end = formatDate(meta.endDate, "MMMM YYYY")
-
-  const filters = hasMotives ? " et les motifs de recours sélectionnés, " : ", "
-
-  const data = Object.values(precariousJobs)
-    .map((jobData) => {
-      return {
-        label: jobData.libellePoste,
-        merged: jobData.merged,
-        nbCddCtt: jobData.absNbCdd + jobData.absNbCtt,
-        nbCdi: jobData.absNbCdi,
-        ratio: jobData.relNbCdd + jobData.relNbCtt,
-      }
-    })
-    .sort((a, b) => b.nbCddCtt - a.nbCddCtt)
-    .slice(0, 10)
-
-  const headers = [
-    "Libellé de poste",
-    "Jours travaillés en CDD et CTT",
-    "Jours travaillés en CDI",
-    "Part de jours travaillés en CDD et CTT",
-  ]
-  const tableData = data.map((job) => {
-    const jobName = (
-      <>
-        {job.label}
-        <JobMergedBadge merged={job.merged === 1} />
-      </>
-    )
-    const ratio = formatNumber(job.ratio) + " %"
-
-    return [jobName, formatNumber(job.nbCddCtt), formatNumber(job.nbCdi), ratio]
-  })
-
-  const firstJob = data[0]
-  const firstJobLabel = firstJob.label
-
-  const cddCttShare = firstJob.ratio.toLocaleString("fr-FR")
-  const nbCdi = firstJob.nbCdi.toLocaleString("fr-FR")
-  const nbCddCtt = firstJob.nbCddCtt.toLocaleString("fr-FR")
-
-  const title =
-    "Les dix libellés de poste comptant le plus de jours travaillés en CDD et CTT :"
-  const readingNote = `
-    De ${start} à ${end}, pour le libellé de poste "${firstJobLabel}"${filters}
-    les jours travaillés en CDD et CTT représentent ${cddCttShare}% des jours
-    travaillés en CDI, CDD et CTT soit ${nbCdi} jours travaillés en CDI pour
-    ${nbCddCtt} en CDD et CTT.
-  `
-  const subReadingNote = hasMotives
-    ? "Les CDI n'ont pas de motifs de recours : tous les CDI sont comptabilisés."
-    : ""
-
-  return (
-    <IndicatorWrapper
-      id="precarious-jobs"
-      title={title}
-      readingNote={readingNote}
-      subReadingNote={subReadingNote}
-      table={{ headers, data: tableData }}
-      tracking={{ category: "Postes" }}
-    >
-      <div className="h-[28rem] w-full">
-        <PrecariousJobsBarChart data={data} />
-      </div>
-    </IndicatorWrapper>
   )
 }
