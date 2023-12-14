@@ -6,7 +6,7 @@ import { errorDescription } from "../helpers/errors"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 
-type DeferringProps = { deferredPromise: Promise<unknown> }
+type DeferringProps = { deferredPromise: Promise<unknown> | unknown }
 
 export default function Deferring({
   children,

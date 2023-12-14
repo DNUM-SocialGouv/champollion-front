@@ -1,58 +1,12 @@
 import { useState } from "react"
-import {
-  type LoaderFunctionArgs,
-  Outlet,
-  redirect,
-  useLocation,
-  useNavigate,
-  useOutletContext,
-} from "react-router-dom"
-import { useLoaderData } from "react-router-typesafe"
+import { Outlet, useLocation, useNavigate, useOutletContext } from "react-router-dom"
 
-import { getEtablissementsInfo, getEtablissementsType } from "../../api"
-import { errorWording, isAppError } from "../../helpers/errors"
+import { useLoaderData } from "react-router-typesafe"
 
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs"
 
 import EstablishmentBanner from "../../components/establishment/EstablishmentBanner"
-
-export async function loader({ params }: LoaderFunctionArgs) {
-  const siret = params.siret ? String(params.siret) : ""
-  const etabType = await getEtablissementsType(siret)
-  if (isAppError(etabType)) {
-    const responseParams: ResponseInit = {
-      statusText: etabType.messageFr ?? errorWording.etab,
-    }
-    if (etabType.status) responseParams.status = etabType.status
-    if (etabType.status == 404) responseParams.statusText = "SIRET introuvable."
-    throw new Response("", responseParams)
-  }
-
-  const idEtab = etabType.id
-  const etabInformation = await getEtablissementsInfo(idEtab)
-
-  if (isAppError(etabInformation)) {
-    const responseParams: ResponseInit = {
-      statusText: etabInformation.messageFr ?? errorWording.etab,
-    }
-    if (etabInformation.status) responseParams.status = etabInformation.status
-    if (etabInformation.status == 404) responseParams.statusText = "ID introuvable."
-    throw new Response("", responseParams)
-  }
-
-  const isOpen = etabInformation.ouvert
-
-  if (etabType.ett) {
-    return redirect(`/ett/${siret}`)
-  }
-
-  return {
-    etabId: etabType.id,
-    raisonSociale: etabType.raisonSociale,
-    siret,
-    isOpen,
-  }
-}
+import { EtablissementLoader } from "./EtablissementLoader"
 
 const tabs = [
   { tabId: "tab1", label: "Fiche synthèse", to: "" },
@@ -65,7 +19,8 @@ const tabs = [
 type ContextType = { etabId: number }
 
 export default function Etablissement() {
-  const { etabId, raisonSociale, siret, isOpen } = useLoaderData<typeof loader>()
+  const { etabId, raisonSociale, siret, isOpen } =
+    useLoaderData<typeof EtablissementLoader>()
   const navigate = useNavigate()
   const { pathname } = useLocation()
 
