@@ -1,14 +1,32 @@
-## 2. Environnement de développement
+## 1. Environnement de développement
 
 L'environnement de développement de l'application du projet Champollion est prévu pour être setup sur la VM Lab de l'infrasctrure OVH (0V1-APP-LAB-DEV-003). La procédure qui suit est configurée pour cet environnement (Rocky Linux).
 
-## Pré-requis
+---------------
+------  **IMPORTANT**  ------
+
+🚨🚨🚨 Toute la doc commune aux projets Champollion (installation, setup des VM, authentification et workflow gitlab...) est disponible **DANS LE REPO CHAMPOLIB** et *n'est pas répétée ici* 🚨🚨🚨
+
+Si vous avez besoin de récupérer les urls des outils ou de savoir comment créer des comptes, référez vous à la `Fiche réflexe nouvel arrivant` disponible à la racine de l'espace Teams.
+
+---------------
+
+
+## Prérequis
 
 Vous avez peut-être déjà effectué les actions suivantes pour d'autres installations du projet, sinon les pré-requis sont :
 
-1. Connexion SSH à la VM Lab OVH via VSCode installé sur la PMAD
+1. Accès à la PMAD (connexion à distance à la VM dédiée au projet), accès à OVH, et connexion SSH à la VM Lab OVH via VSCode fonctionnels
 
-2. Installez les modules nécessaires
+2. Accès à Gitlab, configuration du Personal Access Token et des proxy des remotes
+
+3. Configuration des proxy http et https
+    ```bash
+    export HTTP_PROXY=http://100.78.56.201:8002
+    export HTTPS_PROXY=http://100.78.56.201:8002
+    ```
+
+4. Installer les modules nécessaires
 
     > ⚠️ Les packages suivants sont déjà installés sur les VM de développement, **vous pouvez ignorez cette étape.**
 
@@ -20,7 +38,7 @@ Vous avez peut-être déjà effectué les actions suivantes pour d'autres instal
     sudo dnf module install nodejs:18 # install node 18
     ```
 
-3. Créer les dossiers suivants
+5. Créer les dossiers suivants
 
     ```bash
     mkdir -p ~/code ~/data ~/env
@@ -30,8 +48,9 @@ Vous avez peut-être déjà effectué les actions suivantes pour d'autres instal
 
 1. Fork le repo
 
-    Allez sur https://gitlab.intranet.social.gouv.fr/champollion/front-it/forks/new pour fork le repository Champolib.
-    Une fois le fork créé, partagez les droits avec le groupe gitlab Champollion. Pour cela, aller dans Settings > Members > Share with group et ajouter `Champollion` en accès  **Developer**, sans expiration.
+    Allez sur https://gitlab.intranet.social.gouv.fr/champollion/front-it/forks/new pour fork le repository Front-it.
+    Une fois le fork créé, **partagez les droits avec le groupe gitlab Champollion**. Pour cela, aller dans Settings > Members > Share with group et ajouter `Champollion` en accès  **Developer**, sans expiration.
+    🚨 C'est primordial pour que tout le monde ait accès à vos branches
 
 2. Configurer git
 
@@ -76,28 +95,21 @@ Vous avez peut-être déjà effectué les actions suivantes pour d'autres instal
 
 5. Installation des dépendances nécessaires
 
-    1. Si ce n'est déjà fait, exportez les variables d'environnement pour passer par le proxy afin d'accéder à des ressources sur internet
-
-        ```bash
-        export HTTP_PROXY=http://100.78.56.201:8002
-        export HTTPS_PROXY=http://100.78.56.201:8002
-        ```
-
-    2. Il faut spécifier un nouveau dossier `npm` pour le user afin d’éviter des [problèmes de permissions](https://stackoverflow.com/questions/48910876/error-eacces-permission-denied-access-usr-local-lib-node-modules/55274930#55274930)
+    1. Il faut spécifier un nouveau dossier `npm` pour le user afin d’éviter des [problèmes de permissions](https://stackoverflow.com/questions/48910876/error-eacces-permission-denied-access-usr-local-lib-node-modules/55274930#55274930)
 
         ```bash
         mkdir ~/.npm-global
         npm config set prefix '~/.npm-global'
         ```
 
-    3. Editer le fichier `.bashrc` avec les commandes suivantes :
+    2. Editer le fichier `.bashrc` avec les commandes suivantes :
 
         ```bash
         echo "export PATH=~/.npm-global/bin:\$PATH" >> ~/.bashrc
         source  ~/.bashrc
         ```
 
-    4. Installer YARN et les dépendances
+    3. Installer YARN et les dépendances
 
         ```bash
         npm i --global yarn
@@ -105,9 +117,9 @@ Vous avez peut-être déjà effectué les actions suivantes pour d'autres instal
         yarn
         ```
 
-        💡 Attention, l'application front React en elle-même est dans le sous-dossier app/, c'est là où se trouve le package.json, donc les commandes yarn doivent toujours être lancées depuis front-it/app/ sinon elles ne fonctionneront pas.
+        🚨 Attention, l'application front React en elle-même est dans le sous-dossier app/, c'est là où se trouve le package.json, donc les commandes yarn doivent toujours être lancées depuis front-it/app/ sinon elles ne fonctionneront pas.
 
-    5. Créez un fichier un .env.local
+    4. Créez un fichier un .env.local
 
         Copier les variables du .env.example et compléter les valeurs. Pour se connecter à l'API, il faut spécifier l'url du serveur back lancé en local auparavant (voir la doc de l'API sur le repo `champolib`).
 
@@ -121,42 +133,4 @@ Dans `front-it/app/`, lancez :
 
 ```bash
 yarn dev
-```
-
-(Facultatif) Pour lancer facilement l'application, vous pouvez également ajouter la fonction suivante à votre fichier `~/.bashrc`. Exécutez `startapp` avec les arguments souhaités.
-
-Vous aurez besoin d'ajouter une variable d'environnement spécifiant le chemin du repo.
-
-```bash
-export FRONT_REPOSITORY_PATH= # mettre le chemin de votre environnement jusqu'à code/front-it/
-```
-
-```bash
-startapp () {
-     local OPTIND
-     local api=$VITE_API_BASE_URL
-
-     Help()
-     {
-     # Display Help
-     echo "Launch a local node server."
-     echo
-     echo "Syntax: bash launch.sh [-h|a]"
-     echo "options:"
-     echo "h             display this help and exit"
-     echo "a             api url (default: ${VITE_API_BASE_URL})"
-     }
-
-     while getopts "ha:" flag
-     do
-          case "${flag}" in
-                h)  # display help
-                     Help
-                     kill -INT $$;;
-                a)  local api=${OPTARG};;
-          esac
-     done
-
-     VITE_API_BASE_URL=$api yarn --cwd ${FRONT_REPOSITORY_PATH}/app/ dev
-}
 ```

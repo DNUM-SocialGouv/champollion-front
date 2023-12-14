@@ -1,12 +1,10 @@
-# 1. Déploiement
+# 2. Déploiement
 
-L'application web VisuDSN est disponible sur le repository [front-it](..).
-
-> ⚠️ Pour lancer l'application en local voir la documentation sur [l'environnement de développement](2_developpement.md)
+> ⚠️ Pour lancer l'application en local voir la documentation sur [l'environnement de développement](1_developpement.md)
 
 1. [Fonctionnement général](#fonctionnement-général)
-3. [Procédure de build](#build)
-4. [Procédure de run](#run)
+2. [Procédure de build](#build)
+3. [Procédure de run](#run)
 
 ## Fonctionnement général
 
@@ -82,7 +80,7 @@ _\*Le nexus n'est accessible que depuis la PMAD. Continuez sur l'url même si el
 
 ## Run
 
-1. Connectez avec le compte de service *svc.champollion* sur les VM suivantes selon l'environnement : 
+1. Connectez avec le compte de service *svc.champollion* sur les VM suivantes selon l'environnement :
 
 |Host|Evironnement|
 |---|---|
@@ -113,7 +111,7 @@ _\*Le nexus n'est accessible que depuis la PMAD. Continuez sur l'url même si el
     ENV_FILE_PATH=/exploit/svc.champollion/docker/.env && \
     docker compose --env-file $ENV_FILE_PATH stop && \
     docker compose --env-file $ENV_FILE_PATH rm -f
-    
+
     # check image ID
     docker images
 
