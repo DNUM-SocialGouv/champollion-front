@@ -12,6 +12,20 @@ _See other dependencies [here.](documentation/5_dependances.md)📚_
 
 There's a demonstration website [here](https://champollion-front.osc-fr1.scalingo.io/) (with fake data).
 
+- [Front-IT](#front-it)
+  - [Documentation](#documentation)
+  - [i18n](#i18n)
+  - [Main pages](#main-pages)
+    - [UI \& Screenshots](#ui--screenshots)
+      - [Accessibility](#accessibility)
+      - [Home page](#home-page)
+      - [Establishment synthesis](#establishment-synthesis)
+      - [Establishment jobs](#establishment-jobs)
+      - [Establishment contracts](#establishment-contracts)
+      - [Abusive use of temporary contracts](#abusive-use-of-temporary-contracts)
+      - [Abusive waiting times between contracts](#abusive-waiting-times-between-contracts)
+  - [License](#license)
+
 
 ## Documentation
 
@@ -55,6 +69,50 @@ The website is organized as such:
   - carence: compute waiting times between precarious contracts.
 - ETT page: list of contracts in temporary work agency.
 - Legal pages (terms of use, legal notice, personal data policy)
+
+### UI & Screenshots
+
+Here are a few screenshots of the app (all data displayed is fake).
+
+The UI is based on the French government Design System ([DSFR](https://www.systeme-de-design.gouv.fr/))
+
+#### Accessibility
+The DSFR takes into account a11y at its core.
+On VisuDSN, all complex dataviz chart can be displayed as tables for accessibility purposes.
+The barchart stripes are intended for colorblind people.
+
+#### Home page
+![](documentation/assets/root_homepage.PNG)
+
+#### Establishment synthesis
+- Company data
+![](documentation/assets/root_synthese.PNG)
+- Open days selection
+![](documentation/assets/root_synthese_open_days.PNG)
+- Data visualization
+![](documentation/assets/root_synthese_dataviz.PNG)
+
+#### Establishment jobs
+- Filters and dataviz
+![](documentation/assets/root_postes.png)
+- Job label merges & automated suggestions
+![](documentation/assets/root_postes_merges.png)
+
+#### Establishment contracts
+- Contracts table and filters
+![](documentation/assets/root_contrats.png)
+- Export modal
+![](documentation/assets/root_contrats_export.png)
+
+#### Abusive use of temporary contracts
+- Bar chart
+![](documentation/assets/root_recours.png)
+- Table
+![](documentation/assets/root_recours_dataviz.png)
+
+#### Abusive waiting times between contracts
+![](documentation/assets/root_carence.png)
+
 
 ## License
 
