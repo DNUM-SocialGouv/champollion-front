@@ -14,6 +14,7 @@ There's a demonstration website [here](https://champollion-front.osc-fr1.scaling
 
 - [Front-IT](#front-it)
   - [Documentation](#documentation)
+    - [Quick start commands](#quick-start-commands)
   - [i18n](#i18n)
   - [Main pages](#main-pages)
     - [UI \& Screenshots](#ui--screenshots)
@@ -30,6 +31,17 @@ There's a demonstration website [here](https://champollion-front.osc-fr1.scaling
 ## Documentation
 
 **[See main documentation here.](documentation/)**
+
+### Quick start commands
+
+```bash
+# clone repo and go to app/ subfolder
+cd app/
+yarn # install dependencies
+yarn dev # launch local development server
+yarn lint # run lint scripts (ESLint, Prettier, TypeScript)
+yarn test # run jest tests
+```
 
 ## i18n
 
