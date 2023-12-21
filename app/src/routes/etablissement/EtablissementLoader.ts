@@ -1,14 +1,11 @@
 import { type LoaderFunctionArgs, redirect } from "react-router-dom"
 
-import ls from "localstorage-slim"
-import { getEtablissementsInfo } from "../../api"
+import { getEtablissementsInfo, getEtablissementsType } from "../../api"
 import { errorWording, isAppError } from "../../helpers/errors"
-
-import { EtablissementType } from "../../api/types"
 
 export async function EtablissementLoader({ params }: LoaderFunctionArgs) {
   const siret = params.siret ? String(params.siret) : ""
-  const etabType = ls.get("establishmentType") as EtablissementType
+  const etabType = await getEtablissementsType(siret)
   if (isAppError(etabType)) {
     const responseParams: ResponseInit = {
       statusText: etabType.messageFr ?? errorWording.etab,
