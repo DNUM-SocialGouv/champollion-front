@@ -27,6 +27,15 @@ export default function Synthese() {
   if (navigation.state === "loading") {
     deferredCallsController.abort()
   }
+  console.log("synthese", {
+    deferredCalls,
+    deferredCallsController,
+    info,
+    lastEffectif,
+    publicHolidays,
+    raisonSociale,
+    siret,
+  })
 
   useEffect(() => {
     document.title = `Synthèse - ${raisonSociale}`

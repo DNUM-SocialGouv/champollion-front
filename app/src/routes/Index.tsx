@@ -53,13 +53,8 @@ export default function Index() {
   const error = useActionData<typeof action>()
   const externalLinks = useLoaderData<typeof loader>()
   const [input, setInput] = useState("")
-
-  const noticeBugs = () => (
-    <>
-      Pour consulter la liste des erreurs connues mais pas encore corrigées,{" "}
-      <Link to="/erreurs">cliquez ici</Link>
-    </>
-  )
+  const noticeText = `Vous consultez le site de démonstration, disposant uniquement de données fictives.
+  Vous pouvez tester avec les SIRET suivants : établissement 12345678912345, ETT 98765432112345.`
 
   const externalLinksPicto: Record<string, string> = {
     dataviz: artworkDataViz,
@@ -114,6 +109,7 @@ export default function Index() {
                   title="Erreur"
                 />
               )}
+              <Notice className="fr-mb-2w" isClosable title={noticeText} />
             </div>
             <div className="fr-px-3w fr-py-2w w-full border border-solid border-bd-default-grey">
               <SearchHistory searchHistory={searchHistory} />
@@ -147,40 +143,28 @@ export default function Index() {
           </div>
         </div>
       )}
-      <div className="fr-container">
-        <div className="fr-my-1w">
-          <Notice
-            classes={{ root: "fr-py-1w", title: "font-normal" }}
-            title={noticeBugs()}
-          />
-        </div>
-      </div>
 
-      <div className="fr-container fr-mt-4w fr-mb-6w">
-        <div className="fr-grid-row--center fr-grid-row">
-          <div className="fr-col">
-            <div className="fr-p-3w fr-card fr-card--shadow fr-card--no-arrow shadow-card">
-              <h2 className="fr-text--lg fr-mb-1w font-bold">
-                Les nouvelles fonctionnalités !
-              </h2>
-              <ul>
-                {releaseNotes[0].news[0].list.map((note, index) => (
-                  <li key={index}>{note.desc}</li>
-                ))}
-                <li>...</li>
-              </ul>
+      <div className="fr-container-fluid fr-my-2w bg-bg-alt-blue-france xxl:!my-8">
+        <div className="fr-container fr-py-2w xxl:!py-6">
+          <h2 className="fr-text--lg fr-mb-1w font-bold">
+            Les nouvelles fonctionnalités !
+          </h2>
+          <ul>
+            {releaseNotes[0].news[0].list.map((note, index) => (
+              <li key={index}>{note.desc}</li>
+            ))}
+            <li>...</li>
+          </ul>
 
-              <Button
-                iconId="fr-icon-arrow-right-line"
-                iconPosition="right"
-                priority="secondary"
-                linkProps={{ to: "/nouveautes" }}
-                size="small"
-              >
-                Voir toutes les dernières nouveautés
-              </Button>
-            </div>
-          </div>
+          <Button
+            iconId="fr-icon-arrow-right-line"
+            iconPosition="right"
+            priority="secondary"
+            linkProps={{ to: "/nouveautes" }}
+            size="small"
+          >
+            Voir toutes les dernières nouveautés
+          </Button>
         </div>
       </div>
     </>

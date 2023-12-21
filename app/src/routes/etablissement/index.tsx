@@ -19,6 +19,8 @@ const tabs = [
 type ContextType = { etabId: number }
 
 export default function Etablissement() {
+  console.log("Etablissement")
+
   const { etabId, raisonSociale, siret, isOpen } =
     useLoaderData<typeof EtablissementLoader>()
   const navigate = useNavigate()
@@ -33,6 +35,7 @@ export default function Etablissement() {
   const [prevPath, setPrevPath] = useState(pathname)
   if (pathname !== prevPath) {
     setPrevPath(pathname)
+
     const newTab = tabs.find((tab) => tab.to === tabPath)?.tabId ?? "tab1"
 
     setSelectedTabId(newTab)
