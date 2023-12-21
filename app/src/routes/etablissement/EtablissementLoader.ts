@@ -4,8 +4,6 @@ import { getEtablissementsInfo, getEtablissementsType } from "../../api"
 import { errorWording, isAppError } from "../../helpers/errors"
 
 export async function EtablissementLoader({ params }: LoaderFunctionArgs) {
-  console.log("EtablissementLoader0")
-
   const siret = params.siret ? String(params.siret) : ""
   const etabType = await getEtablissementsType(siret)
   if (isAppError(etabType)) {
@@ -19,7 +17,6 @@ export async function EtablissementLoader({ params }: LoaderFunctionArgs) {
 
   const idEtab = etabType.id
   const etabInformation = await getEtablissementsInfo(idEtab)
-  console.log("etabInformation", etabInformation)
 
   if (isAppError(etabInformation)) {
     const responseParams: ResponseInit = {
@@ -31,7 +28,6 @@ export async function EtablissementLoader({ params }: LoaderFunctionArgs) {
   }
 
   const isOpen = etabInformation.ouvert
-  console.log("EtablissementLoader1")
 
   if (etabType.ett) {
     return redirect(`/ett/${siret}`)

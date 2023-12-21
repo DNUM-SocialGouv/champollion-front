@@ -10,7 +10,7 @@ const isResponseInit = (x: unknown): x is ResponseInit => {
 
 export default function Error() {
   const error = useRouteError()
-  console.error("Error component here", error)
+  console.error("Error component", error)
 
   let title = "Erreur inattendue"
   const text = "Oups, une erreur s'est produite. Excusez-nous pour la gêne occasionnée."
