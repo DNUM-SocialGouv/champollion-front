@@ -35,7 +35,6 @@ export default function Etablissement() {
   const [prevPath, setPrevPath] = useState(pathname)
   if (pathname !== prevPath) {
     setPrevPath(pathname)
-    console.log("tabs", tabs)
 
     const newTab = tabs.find((tab) => tab.to === tabPath)?.tabId ?? "tab1"
 
