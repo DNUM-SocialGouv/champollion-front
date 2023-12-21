@@ -19,6 +19,8 @@ const tabs = [
 type ContextType = { etabId: number }
 
 export default function Etablissement() {
+  console.log("Etablissement")
+
   const { etabId, raisonSociale, siret, isOpen } =
     useLoaderData<typeof EtablissementLoader>()
   const navigate = useNavigate()
