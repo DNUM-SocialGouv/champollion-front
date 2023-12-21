@@ -49,11 +49,11 @@ export default [
         element: <Etablissement />,
         loader: EtablissementLoader,
         children: [
-          // {
-          //   index: true,
-          //   element: <Synthese />,
-          //   loader: SyntheseLoader,
-          // },
+          {
+            index: true,
+            element: <Synthese />,
+            loader: SyntheseLoader,
+          },
           {
             path: "postes",
             element: <Postes />,
