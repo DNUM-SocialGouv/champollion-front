@@ -35,7 +35,13 @@ export async function EtablissementLoader({ params }: LoaderFunctionArgs) {
   if (etabType.ett) {
     return redirect(`/ett/${siret}`)
   }
-
+  console.log("EtablissementLoader")
+  console.log({
+    etabId: etabType.id,
+    raisonSociale: etabType.raisonSociale,
+    siret,
+    isOpen,
+  })
   return {
     etabId: etabType.id,
     raisonSociale: etabType.raisonSociale,
