@@ -2,6 +2,7 @@ import { useEffect } from "react"
 
 import { formatDate } from "../helpers/date"
 import { newsTypeEmoji, releaseNotes } from "../helpers/news"
+type NewsType = "feat" | "fix" | "chore" | "ezwin" | "delete"
 
 export default function News() {
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function News() {
                   <ul>
                     {page.list.map((note, noteIdx) => (
                       <li key={`${release.date}-${pageIdx}-${noteIdx}`}>
-                        <span>{newsTypeEmoji[note.type]}</span> {note.desc}
+                        <span>{newsTypeEmoji[note.type as NewsType]}</span> {note.desc}
                       </li>
                     ))}
                   </ul>

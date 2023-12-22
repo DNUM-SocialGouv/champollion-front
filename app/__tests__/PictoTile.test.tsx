@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react"
-import { BrowserRouter as Router } from "react-router-dom"
-import PictoTile from "../PictoTile"
+import { MemoryRouter } from "react-router-dom"
+import PictoTile from "../src/components/PictoTile"
 
 describe("PictoTile", () => {
   const sampleProps = {
@@ -20,9 +20,9 @@ describe("PictoTile", () => {
   test("renders PictoTile with link", () => {
     // Add router to ensure the title is rendered as a link
     render(
-      <Router>
+      <MemoryRouter>
         <PictoTile {...sampleProps} />
-      </Router>
+      </MemoryRouter>
     )
 
     const linkElement = screen.getByRole("link", { name: /Sample Title/i })

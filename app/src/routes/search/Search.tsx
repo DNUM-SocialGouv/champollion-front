@@ -4,9 +4,9 @@ import type { ActionFunctionArgs } from "react-router-dom"
 import { useActionData, useLoaderData } from "react-router-typesafe"
 import ls from "localstorage-slim"
 
-import { getEtablissementsType, getExternalLinks } from "../api"
-import { isAppError } from "../helpers/errors"
-import { releaseNotes } from "../helpers/news"
+import { getEtablissementsType, getExternalLinks } from "../../api"
+import { isAppError } from "../../helpers/errors"
+import { releaseNotes } from "../../helpers/news"
 
 import { Alert } from "@codegouvfr/react-dsfr/Alert"
 import { Button } from "@codegouvfr/react-dsfr/Button"
@@ -18,8 +18,8 @@ import artworkMail from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/digital/
 import artworkCommunity from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/leisure/community.svg"
 import artworkPassport from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/document/passport.svg"
 
-import Collapse from "../components/Collapse"
-import PictoTile from "../components/PictoTile"
+import PictoTile from "../../components/PictoTile"
+import SearchHistory from "./SearchHistory"
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData()
@@ -49,7 +49,7 @@ export async function loader() {
   }
 }
 
-export default function Index() {
+export default function Search() {
   const error = useActionData<typeof action>()
   const externalLinks = useLoaderData<typeof loader>()
   const [input, setInput] = useState("")
@@ -122,7 +122,7 @@ export default function Index() {
         </div>
       </div>
 
-      {externalLinks.length > 0 && (
+      {externalLinks?.length > 0 && (
         <div className="fr-container-fluid fr-my-2w bg-bg-alt-blue-france xxl:!my-8">
           <div className="fr-container fr-py-2w xxl:!py-6">
             <h2 className="fr-text--xl fr-mb-2w font-bold">Liens utiles</h2>
@@ -163,12 +163,19 @@ export default function Index() {
               <h2 className="fr-text--lg fr-mb-1w font-bold">
                 Les nouvelles fonctionnalités !
               </h2>
-              <ul>
-                {releaseNotes[0].news[0].list.map((note, index) => (
-                  <li key={index}>{note.desc}</li>
-                ))}
-                <li>...</li>
-              </ul>
+              {releaseNotes[0] && releaseNotes[0].news.length > 0 ? (
+                <ul>
+                  {releaseNotes[0] &&
+                    releaseNotes[0].news[0] &&
+                    releaseNotes[0].news[0].list.map((note, index) => (
+                      <li key={index}>{note.desc}</li>
+                    ))}
+
+                  <li>...</li>
+                </ul>
+              ) : (
+                <p>Aucune nouvelle fonctionnalité pour le moment.</p>
+              )}
 
               <Button
                 iconId="fr-icon-arrow-right-line"
@@ -183,55 +190,6 @@ export default function Index() {
           </div>
         </div>
       </div>
-    </>
-  )
-}
-
-function SearchHistory({ searchHistory }: { searchHistory: string[][] }) {
-  const etablissement = (siret: string, name: string) => (
-    <li key={siret} className="list-inside">
-      SIRET <b>{siret}</b> –{" "}
-      <Link to={`/etablissement/${siret}`}>
-        {name.replace(/\w+/g, function (w) {
-          return w[0].toUpperCase() + w.slice(1).toLowerCase()
-        })}
-      </Link>
-    </li>
-  )
-
-  const firstTwo = () =>
-    searchHistory
-      .slice(0, 2)
-      .map(([siret, raisonSociale]) => etablissement(siret, raisonSociale))
-
-  return (
-    <>
-      <h2 className="fr-text--lg fr-mb-1w font-bold">
-        Vos dernières recherches d'établissement
-      </h2>
-      {searchHistory.length > 0 ? (
-        searchHistory.length > 2 ? (
-          <>
-            <ul className="fr-m-0">
-              <Collapse shortDesc={firstTwo()} id="search-history-collapse">
-                <ul className="fr-pl-0 fr-my-0">
-                  {searchHistory
-                    .slice(2)
-                    .map(([siret, raisonSociale]) => etablissement(siret, raisonSociale))}
-                </ul>
-              </Collapse>
-            </ul>
-          </>
-        ) : (
-          <ul>
-            {searchHistory.map(([siret, raisonSociale]) =>
-              etablissement(siret, raisonSociale)
-            )}
-          </ul>
-        )
-      ) : (
-        <p className="italic text-tx-disabled-grey">Aucun SIRET dans votre historique.</p>
-      )}
     </>
   )
 }

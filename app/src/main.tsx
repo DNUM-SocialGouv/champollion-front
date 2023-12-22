@@ -6,7 +6,7 @@ import "./index.css"
 import { Link } from "react-router-dom"
 import ls from "localstorage-slim"
 
-import routes from "./routes/routes"
+import routes from "./routes/Routes"
 // encrypt localStorage
 ls.config.encrypt = true
 

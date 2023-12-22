@@ -1,5 +1,5 @@
 import Root from "./Root"
-import Index, { action as homeAction, loader as homeLoader } from "./Index"
+import { action as homeAction, loader as homeLoader } from "./search/Search"
 import Error from "../components/Error"
 import Etablissement from "./etablissement"
 import Synthese from "./etablissement/synthese/Synthese"
@@ -25,6 +25,7 @@ import { RecoursLoader } from "./etablissement/recours/RecoursLoader"
 import { SyntheseLoader } from "./etablissement/synthese/SyntheseLoader"
 import { EtablissementLoader } from "./etablissement/EtablissementLoader"
 import { ETTLoader } from "./ett/ETTLoader"
+import Search from "./search/Search"
 
 export default [
   {
@@ -37,7 +38,7 @@ export default [
         children: [
           {
             index: true,
-            element: <Index />,
+            element: <Search />,
             action: homeAction,
             loader: homeLoader,
           },

@@ -1,6 +1,4 @@
-type NewsType = "feat" | "fix" | "chore" | "ezwin" | "delete"
-
-export const newsTypeEmoji: Record<NewsType, string> = {
+export const newsTypeEmoji = {
   chore: "🛠️",
   delete: "🚫",
   ezwin: "✨",
@@ -8,17 +6,7 @@ export const newsTypeEmoji: Record<NewsType, string> = {
   fix: "🚧",
 }
 
-type NewsPage = {
-  category: string
-  list: { type: NewsType; desc: string }[]
-}
-
-type ReleaseNote = {
-  date: string
-  news: NewsPage[]
-}
-
-export const releaseNotes: ReleaseNote[] = [
+export const releaseNotes = [
   {
     date: "2023-11-28",
     news: [
