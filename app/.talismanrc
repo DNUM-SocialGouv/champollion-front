@@ -1,6 +1,8 @@
 fileignoreconfig:
 - filename: .env.example
   checksum: 9b654de24ee7dd49e78da15816ec32f690c363f31151c6adda197dc675be9bfb
+- filename: app/__mocks__/@codegouvfr/react-dsfr/Button.tsx
+  checksum: 4e8fb441bc8bea7ffebab5fef9bcbc05523a925d4b533eeb140dec4c30502187
 - filename: app/src/api/types.ts
   checksum: 8446ffa06211b4b813694f84fb130e4fcfd2fe3936d4a544c7359a805365d5a1
 - filename: app/src/components/ContractNatureIndicator.tsx
@@ -33,6 +35,10 @@ fileignoreconfig:
   checksum: c6ca62bb1dea8c213755031650138e2ace4164a92cdda39cb6fb555db5854e2e
 - filename: app/src/helpers/postes.tsx
   checksum: cd3d619b89c960a20bade6c5619bfdd9ba25283f157f90dbefbcc34f696eed6d
+- filename: app/src/main.tsx
+  checksum: ec6468770cbd58a9eaae310d422f197c6619a8202fa2d8a2ed24049d702a6a82
+- filename: app/src/routes/News.tsx
+  checksum: a99d1ee6bf8ad5047fbbe39311b0afb47e44eb7a99db8380b31d55e0728ca3af
 - filename: app/src/routes/bugs.tsx
   checksum: e91d482a9b3da26bc38bd95c9f0d280f21dd00f1ed94567923bacdf3a159d61f
 - filename: app/src/routes/etablissement/carence.tsx
@@ -67,6 +73,8 @@ fileignoreconfig:
   checksum: 0ac5e095aeb96efaa63c70321c4fd0b883e83e70862a3525fdb0bd19b53a88e4
 - filename: app/src/routes/news.tsx
   checksum: f400328b3d0306c1768663d07c491aeb84c492418f9ef1a1753fb359ebdf184a
+- filename: app/src/routes/search/SearchHistory.tsx
+  checksum: aa638857fa73b2156a0ecbb446977c7aaa5753bff1b1db0e6d3a2f824f529740
 - filename: build.sh
   checksum: 0bde2a1227756d4266804af64de009d21118dd87a4fc051d9154d5b61aa1cbd2
 - filename: documentation/1_deploiement.md

@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "allowJs": false,
+    "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
@@ -20,10 +20,12 @@
     },
     "types": ["node", "jest", "@testing-library/jest-dom"]
   },
-  "include": ["src"],
+  "include": ["src", "__mocks__", "__tests__"],
   "references": [
     {
       "path": "./tsconfig.node.json"
     }
-  ]
+  ],
+
+  "typeRoots": ["./node_modules/@types"]
 }

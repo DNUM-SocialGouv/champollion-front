@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react"
-import IndicatorWrapper from "../IndicatorWrapper"
+import IndicatorWrapper from "../src/components/indicators/IndicatorWrapper"
 
-jest.mock("../../../helpers/analytics", () => ({
+jest.mock("../src/helpers/analytics", () => ({
   trackEvent: jest.fn(),
 }))
 
@@ -14,7 +14,7 @@ jest.mock("@codegouvfr/react-dsfr/ToggleSwitch", () => ({
     <div data-testid="mocked-toggle-switch">Mocked ToggleSwitch Component</div>
   ),
 }))
-jest.mock("../../Collapse", () => "MockCollapse")
+jest.mock("../src/components/Collapse", () => "MockCollapse")
 
 describe("IndicatorWrapper", () => {
   test("render component", () => {

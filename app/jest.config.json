@@ -1,7 +1,27 @@
 {
   "testEnvironment": "jsdom",
   "transform": {
-    "^.+\\.tsx?$": "ts-jest"
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        "tsconfig": "./tsconfig.json"
+      }
+    ]
   },
-  "setupFilesAfterEnv": ["@testing-library/jest-dom"]
+  "coverageDirectory": "coverage",
+  "collectCoverageFrom": [
+    "src/**/*.{js,jsx,ts,tsx}",
+    "!src/**/*.d.ts",
+    "!src/api/config.ts",
+    "!src/helpers/analytics.ts",
+    "!src/helpers/errors.ts",
+    "!src/routes/News.tsx",
+    "!src/routes/Root.tsx"
+  ],
+  "moduleNameMapper": {
+    "^.+\\.svg$": "<rootDir>/__mocks__/svgMock.js"
+  },
+  "setupFilesAfterEnv": ["@testing-library/jest-dom"],
+  "testPathIgnorePatterns": ["/node_modules/", "/__mocks__/"],
+  "collectCoverage": true
 }
