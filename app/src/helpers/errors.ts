@@ -40,6 +40,8 @@ const backendErrorFr: Record<string, (arg: ErrorParams) => string> = {
   "forbidden.too_many_contracts_requested": () =>
     "Votre demande concerne un trop grand nombre de contrats, ce qui entraîne un temps de calcul excessif. Veuillez ajouter des filtres pour réduire le nombre de contrats à analyser.",
   "not_found.empty_contracts": () => "La liste de contrats est vide pour ces paramètres.",
+  "not_found.empty_waiting_periods": () =>
+    "La liste des délais de carence est vide pour ces paramètres.",
   "not_found.no_worked_days": () => "Il n'y a aucun jour travaillé pour ces paramètres.",
   "type_error.integer": ({ field }: ErrorParams) =>
     `Le champ ${field} doit être un nombre.`,
@@ -130,6 +132,19 @@ export const errorDescription = (appErrorData: AppError) => {
         const start = formatDate(context.start_date, "MMMM YYYY")
         const end = formatDate(context.end_date, "MMMM YYYY")
         return `Aucun contrat dans cet établissement entre ${start} et ${end}.`
+      }
+      break
+    case "not_found.empty_waiting_periods":
+      if (
+        context &&
+        context?.start_date &&
+        context?.end_date &&
+        typeof context.start_date === "string" &&
+        typeof context.end_date === "string"
+      ) {
+        const start = formatDate(context.start_date, "MMMM YYYY")
+        const end = formatDate(context.end_date, "MMMM YYYY")
+        return `Aucun délai de carence à respecter dans cet établissement entre ${start} et ${end}.`
       }
       break
 
