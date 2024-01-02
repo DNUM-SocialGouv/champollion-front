@@ -1,4 +1,4 @@
-import Badge from "@codegouvfr/react-dsfr/Badge"
+import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { AlertProps } from "@codegouvfr/react-dsfr/Alert"
 
 type EstablishmentBannerProps = {

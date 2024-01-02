@@ -18,10 +18,11 @@ const Button = ({
   iconPosition,
   nativeButtonProps,
   linkProps,
+  children,
   ...rest
 }: ButtonProps) => (
   <button data-testid="mocked-Button" {...rest}>
-    Mocked Button
+    {children}
   </button>
 )
 
