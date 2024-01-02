@@ -127,7 +127,7 @@ describe("Contracts Info component", () => {
       expect(screen.getByText(contrat1.dateNaissance, { exact: false })).toBeVisible()
       expect(screen.getByText(contrat1.etuRaisonSociale, { exact: false })).toBeVisible()
       expect(screen.getByText(contrat1.libellePoste, { exact: false })).toBeVisible()
-      // verifier que le formatDate marche
+      // verifier que le formatDate fonctionne correctement
       expect(screen.getByText("01/07/2022", { exact: false })).toBeVisible()
       expect(screen.getByText("01/09/2022", { exact: false })).toBeVisible()
 
@@ -136,9 +136,18 @@ describe("Contracts Info component", () => {
       expect(screen.getByText(contrat2.dateNaissance, { exact: false })).toBeVisible()
       expect(screen.getByText(contrat2.etuRaisonSociale, { exact: false })).toBeVisible()
       expect(screen.getByText(contrat2.libellePoste, { exact: false })).toBeVisible()
-      // verifier que le formatDate marche
+      // verifier que le formatDate fonctionne correctement
       expect(screen.getByText("01/07/2023", { exact: false })).toBeVisible()
       expect(screen.getByText("01/09/2023", { exact: false })).toBeVisible()
+
+      // verifier que le lien vers l'etablissement utilisateur fonctionne correctement
+      const href = `/etablissement/${contrat1.etuSiret}`
+
+      const linkElement = screen.getByText(
+        `${contrat1.etuRaisonSociale} (${contrat1.etuCodePostal})`
+      )
+      expect(linkElement).toBeInTheDocument()
+      expect(linkElement).toHaveAttribute("href", href)
     })
 
     test("ETTContrats renders correctly when pagination is present", () => {
@@ -161,7 +170,7 @@ describe("Contracts Info component", () => {
       expect(screen.getByText(contrat1.dateNaissance, { exact: false })).toBeVisible()
       expect(screen.getByText(contrat1.etuRaisonSociale, { exact: false })).toBeVisible()
       expect(screen.getByText(contrat1.libellePoste, { exact: false })).toBeVisible()
-      // verifier que le formatDate marche
+      // verifier que le formatDate fonctionne correctement
       expect(screen.getByText("01/07/2022", { exact: false })).toBeVisible()
       expect(screen.getByText("01/09/2022", { exact: false })).toBeVisible()
 
@@ -170,7 +179,7 @@ describe("Contracts Info component", () => {
       expect(screen.getByText(contrat2.dateNaissance, { exact: false })).toBeVisible()
       expect(screen.getByText(contrat2.etuRaisonSociale, { exact: false })).toBeVisible()
       expect(screen.getByText(contrat2.libellePoste, { exact: false })).toBeVisible()
-      // verifier que le formatDate marche
+      // verifier que le formatDate fonctionne correctement
       expect(screen.getByText("01/07/2023", { exact: false })).toBeVisible()
       expect(screen.getByText("01/09/2023", { exact: false })).toBeVisible()
 
