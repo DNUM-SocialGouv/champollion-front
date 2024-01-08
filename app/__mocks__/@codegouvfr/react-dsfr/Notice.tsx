@@ -1,11 +1,16 @@
+import React from "react"
+
 type NoticeProps = {
   className?: string
   id?: string
   description?: string
+  title: NonNullable<React.ReactNode>
 }
 
-const Notice = ({ className, description, ...rest }: NoticeProps) => (
-  <div {...rest}>{"Mocked component"}</div>
+const Notice = ({ className, title, description, ...rest }: NoticeProps) => (
+  <div {...rest} data-testid="custom-notice-element">
+    {title}
+  </div>
 )
 
 export { Notice }

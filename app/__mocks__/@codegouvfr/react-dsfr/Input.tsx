@@ -12,7 +12,11 @@ type InputProps = {
 }
 
 const Input = ({ className, label, nativeInputProps, ...rest }: InputProps) => (
-  <div {...rest}>{"Mocked component"}</div>
+  <input
+    data-testid="custom-input-element"
+    {...nativeInputProps.nativeInputProps}
+    {...rest}
+  />
 )
 
 export { Input }
