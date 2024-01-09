@@ -20,6 +20,7 @@ import artworkPassport from "@codegouvfr/react-dsfr/dsfr/artwork/pictograms/docu
 
 import PictoTile from "../../components/PictoTile"
 import SearchHistory from "./SearchHistory"
+import MessageComponent from "../../components/Message"
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData()
@@ -60,6 +61,14 @@ export default function Search() {
       <Link to="/erreurs">cliquez ici</Link>
     </>
   )
+  const InfoText = () => (
+    <>
+      Vous consultez le site de développement de l’application VISUDSN. Ici, vous ne
+      trouverez que des informations de tests, sans valeur pour vos travaux d’analyse.
+      Pour consulter les données des entreprises issues de la base DSN merci de vous{" "}
+      <a href="visudsn.pp.intranet.travail.gouv.fr">connecter ici</a>
+    </>
+  )
 
   const externalLinksPicto: Record<string, string> = {
     dataviz: artworkDataViz,
@@ -80,6 +89,7 @@ export default function Search() {
 
   return (
     <>
+      <MessageComponent title={InfoText} />
       <div className="fr-container">
         <div className="fr-mt-4w fr-grid-row--center fr-grid-row fr-mb-2w xxl:!mt-12">
           <div className="fr-col fr-col-lg-7 flex flex-col items-center">
