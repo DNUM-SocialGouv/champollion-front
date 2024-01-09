@@ -17,6 +17,6 @@ server {
   }
 
   location /admin {
-    return 301 https://$host/auth/admin/visudsn/console/#/;
+    return 301 https://$host/auth/admin/${KEYCLOAK_REALM}/console/#/;
   }
 }
