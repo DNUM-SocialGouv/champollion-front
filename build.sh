@@ -59,6 +59,7 @@ if [[ -z $ignore_app ]]; then
         --build-arg VITE_LOGOUT_URL=${VITE_LOGOUT_URL} \
         --build-arg VITE_MATOMO_SITE_ID=${VITE_MATOMO_SITE_ID} \
         --build-arg VITE_MATOMO_URL=${VITE_MATOMO_URL} \
+        --build-arg VITE_APP_URL=${APP_URL} \
         --tag ${CI_REGISTRY}:5000/champollion-${CI_REGISTRY_ENV}/front/app:${APP_IMAGE_TAG} \
         ./app
 
