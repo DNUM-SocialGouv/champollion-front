@@ -1,8 +1,8 @@
-import { screen, render, fireEvent, waitFor } from "@testing-library/react"
-import Search, { action, loader } from "../src/routes/search/Search"
+import { screen, render, fireEvent } from "@testing-library/react"
+import Search, { action, loader } from "../../src/routes/search/Search"
 import { MemoryRouter, redirect } from "react-router-dom"
-import { isAppError } from "../src/helpers/errors"
-import { getExternalLinks } from "../src/api"
+import { isAppError } from "../../src/helpers/errors"
+import { getExternalLinks } from "../../src/api"
 const mockedExtenalData = [
   {
     key: "1",
@@ -11,6 +11,7 @@ const mockedExtenalData = [
     href: "https://example.com/link1",
     picto: "data-viz",
   },
+
   {
     key: "2",
     desc: "Description 2",
@@ -20,7 +21,7 @@ const mockedExtenalData = [
   },
 ]
 
-jest.mock("../src/api", () => ({
+jest.mock("../../src/api", () => ({
   getExternalLinks: jest.fn().mockResolvedValue([
     {
       key: "1",
@@ -44,9 +45,9 @@ jest.mock("../src/api", () => ({
   }),
 }))
 
-jest.mock("../src/routes/search/SearchHistory", () => jest.fn(() => <div> </div>))
-jest.mock("../src/api/config", () => ({ baseURL: "" }))
-jest.mock("../src/helpers/errors", () => ({
+jest.mock("../../src/routes/search/SearchHistory", () => jest.fn(() => <div> </div>))
+jest.mock("../../src/api/config", () => ({ baseURL: "" }))
+jest.mock("../../src/helpers/errors", () => ({
   isDevMode: true,
   isAppError: jest.fn(),
 }))
@@ -81,6 +82,10 @@ jest.mock("react-router-dom", () => ({
   Form: ({ children }) => <form data-testid="custom-form-element">{children}</form>,
 }))
 
+// jest.mock("../../src/components/Message.tsx", () => (
+//   <div title="Mock MessageComponent"></div>
+// ))
+
 jest.mock("@codegouvfr/react-dsfr/Alert")
 
 describe("Search component", () => {
@@ -98,8 +103,8 @@ describe("Search component", () => {
   })
 
   test("submits the form with the SIRET number", async () => {
-    jest.mock("../src/routes/search/Search", () => ({
-      ...jest.requireActual("../src/routes/search/Search"),
+    jest.mock("../../src/routes/search/Search", () => ({
+      ...jest.requireActual("../../src/routes/search/Search"),
       action: jest.fn(),
     }))
 
