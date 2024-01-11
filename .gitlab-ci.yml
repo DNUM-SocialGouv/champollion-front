@@ -33,7 +33,7 @@ job:build:app:dev:
       --build-arg VITE_LOGOUT_URL=${VITE_LOGOUT_URL}
       --build-arg VITE_MATOMO_SITE_ID=${VITE_MATOMO_SITE_ID}
       --build-arg VITE_MATOMO_URL=${VITE_MATOMO_URL}
-      --build-arg VITE_APP_URL=${APP_URL} \
+      --build-arg VITE_APP_URL=${APP_URL}
       --destination "${NEXUS_URL}:5000/${NEXUS_REPOSITORY}/front/app:${APP_IMAGE_TAG}"
   only:
     - dev@champollion/front-it
