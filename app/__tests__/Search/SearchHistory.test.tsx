@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react"
-import SearchHistory from "../src/routes/search/SearchHistory"
+import SearchHistory from "../../src/routes/search/SearchHistory"
 import { BrowserRouter as Router } from "react-router-dom"
 
 describe("Search history component", () => {

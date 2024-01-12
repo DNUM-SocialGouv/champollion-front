@@ -42,7 +42,7 @@ export default function Collapse({
           borderLeft
             ? "fr-pl-2w border-0 border-l border-solid border-bd-default-grey"
             : ""
-        }`}
+        } ${expandedState ? "fr-collapse--expanded" : ""}`}
         id={collapseElementId}
       >
         {children}

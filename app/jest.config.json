@@ -4,7 +4,24 @@
     "^.+\\.tsx?$": [
       "ts-jest",
       {
-        "tsconfig": "./tsconfig.json"
+        "tsconfig": "./tsconfig.json",
+        "diagnostics": {
+          "ignoreCodes": [1343]
+        },
+        "astTransformers": {
+          "before": [
+            {
+              "path": "ts-jest-mock-import-meta",
+              "options": {
+                "metaObjectReplacement": {
+                  "env": {
+                    "APP_URL": "visudsn.dev.intranet.travail.gouv.fr"
+                  }
+                }
+              }
+            }
+          ]
+        }
       }
     ]
   },
@@ -21,7 +38,7 @@
   "moduleNameMapper": {
     "^.+\\.svg$": "<rootDir>/__mocks__/svgMock.js"
   },
-  "setupFilesAfterEnv": ["@testing-library/jest-dom"],
+  "setupFilesAfterEnv": ["@testing-library/jest-dom", "<rootDir>/jest.setup.ts"],
   "testPathIgnorePatterns": ["/node_modules/", "/__mocks__/"],
   "collectCoverage": true
 }
