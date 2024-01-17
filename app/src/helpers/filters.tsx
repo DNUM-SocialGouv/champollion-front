@@ -79,7 +79,7 @@ type filtersDetailArgs = {
   queryMotives?: number[]
 }
 
-const getFullJobTitle = (
+export const getFullJobTitle = (
   jobId: number,
   jobListWithoutMerges: EtablissementPoste[],
   localMerges?: number[][]

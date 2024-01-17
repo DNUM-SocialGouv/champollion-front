@@ -29,7 +29,11 @@ import { RecoursLoader } from "./RecoursLoader"
 
 type PostesEffectifsDeferred = { effectifs: Effectif[]; meta: IndicatorMetaData }
 
-export default function PostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
+export default function PostesEffectifs({
+  defaultUnit,
+}: {
+  defaultUnit: EffectifUnit
+}) {
   const deferredData = useAsyncValue() as PostesEffectifsDeferred
 
   if (!deferredData) {
@@ -215,7 +219,7 @@ export default function PostesEffectifs({ defaultUnit }: { defaultUnit: Effectif
         </>
       ) : (
         <>
-          <div className="fr-mt-2w h-[550px]">
+          <div className="fr-mt-2w h-[550px]" id="PostesEffectifs">
             <h3 className="fr-text--xl text-center">{initialUnitOption?.label}</h3>
             <EffectifBarChart
               isStacked={areTempContractsStacked}
