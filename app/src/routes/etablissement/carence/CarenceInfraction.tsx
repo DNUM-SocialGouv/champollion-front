@@ -1,3 +1,4 @@
+import React, { Fragment, useState } from "react"
 import { useAsyncValue } from "react-router-dom"
 import { EtablissementPoste, Infractions, MetaCarences } from "../../../api/types"
 import {
@@ -10,10 +11,13 @@ import Collapse from "../../../components/Collapse"
 import InfractionRatioIndicator from "../../../components/indicators/InfractionRatioIndicator"
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
+import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
+
 import { DelayByJobIndicator } from "./DelayByJobIndicator"
 import { filtersDetail } from "../../../helpers/filters"
-import { Fragment } from "react"
 import Table, { Header } from "../../../components/Table"
+
+import CarenceCalendar from "./CarenceCalendar"
 
 interface CarenceInfractionType {
   queryJobs: number[]
@@ -22,7 +26,8 @@ interface CarenceInfractionType {
   jobListWithoutMerges: EtablissementPoste[]
   formattedMergesIds: number[][] | undefined
 }
-const headers = [
+
+const headers: Header<FormattedCarenceContract>[] = [
   { key: "employee", label: "Salarié", width: "15%" },
   { key: "startDate", label: "Date de début", width: "10%" },
   { key: "endDate", label: "Date de fin", width: "10%" },
@@ -30,15 +35,27 @@ const headers = [
   { key: "nextPossibleDate", label: "Date de prochain contrat possible", width: "15%" },
   { key: "motive", label: "Motif de recours", width: "20%" },
   { key: "nature", label: "Nature de contrat", width: "10%" },
-] as Header<FormattedCarenceContract>[]
+]
 
-export default function CarenceInfraction({
+const accordionLabel = (job: FormattedInfraction) => (
+  <>
+    {job.jobTitle}
+    {Boolean(job.merged) && (
+      <Badge severity="new" className={"fr-ml-1w"} small>
+        Fusionné
+      </Badge>
+    )}{" "}
+    – {job.count} infraction(s) potentielle(s)
+  </>
+)
+
+const CarenceInfraction: React.FC<CarenceInfractionType> = ({
   queryJobs,
   queryStartDate,
   queryEndDate,
   jobListWithoutMerges,
   formattedMergesIds,
-}: CarenceInfractionType) {
+}) => {
   const defaultData = useAsyncValue() as { infractions: Infractions; meta: MetaCarences }
 
   if (!defaultData) {
@@ -69,20 +86,6 @@ export default function CarenceInfraction({
       percent: job.ratio,
     }))
   )
-
-  const accordionLabel = (job: FormattedInfraction) => {
-    return (
-      <>
-        {job.jobTitle}
-        {Boolean(job.merged) && (
-          <Badge severity="new" className={"fr-ml-1w"} small>
-            Fusionné
-          </Badge>
-        )}{" "}
-        – {job.count} infraction(s) potentielle(s)
-      </>
-    )
-  }
 
   return (
     <>
@@ -135,12 +138,14 @@ export default function CarenceInfraction({
             label={accordionLabel(infractionByJobTitle)}
             key={infractionByJobTitle.jobTitle}
           >
-            {infractionByJobTitle.list.map((posteInfraction, index) => (
-              <Fragment key={posteInfraction.illegalContract.id}>
-                <p className="fr-mb-0">
-                  {`${index + 1}) Le contrat temporaire de ${
-                    posteInfraction.illegalContract.employee
-                  }, employé(e)
+            {infractionByJobTitle.list.map((posteInfraction, index) => {
+              const [showCalendar, setShowCalendar] = useState(false)
+              return (
+                <Fragment key={posteInfraction.illegalContract.id}>
+                  <p className="fr-mb-0">
+                    {`${index + 1}) Le contrat temporaire de ${
+                      posteInfraction.illegalContract.employee
+                    }, employé(e)
                     en tant que ${posteInfraction.illegalContract.jobTitle}
                     du ${posteInfraction.illegalContract.startDate} au
                     ${
@@ -148,13 +153,32 @@ export default function CarenceInfraction({
                     } (renouvellement inclus) au motif
                     d'accroissement temporaire d'activité, ne respecte pas le délai de
                     carence des contrats ci-dessous :`}
-                </p>
-                <Table headers={headers} items={posteInfraction.carenceContracts} />
-              </Fragment>
-            ))}
+                  </p>
+
+                  <Table
+                    headers={headers}
+                    items={posteInfraction.carenceContracts}
+                    className="mb-1"
+                  />
+                  <ToggleSwitch
+                    label="Afficher Calendrier"
+                    checked={showCalendar}
+                    onChange={(checked) => {
+                      setShowCalendar(checked)
+                    }}
+                    classes={{ label: "w-full", input: "flex justify-end" }}
+                  />
+                  {posteInfraction && showCalendar && (
+                    <CarenceCalendar infractions={posteInfraction} />
+                  )}
+                </Fragment>
+              )
+            })}
           </Accordion>
         ))}
       </div>
     </>
   )
 }
+
+export default CarenceInfraction

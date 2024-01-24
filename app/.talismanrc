@@ -46,7 +46,7 @@ fileignoreconfig:
 - filename: app/src/routes/etablissement/carence/Carence.tsx
   checksum: 053ae9eb97c1065ac3c0001343abbad1fde2c155be0ebc139fa75b618a7e4f2b
 - filename: app/src/routes/etablissement/carence/CarenceInfraction.tsx
-  checksum: da372ded759bde9aa91e7b3d4dcea9c276c4d2764776055ab58cc2bbef56e939
+  checksum: 789ce8f01d10205f3e688576a36f8303b42c2bae542b72a05f0b709d29040220
 - filename: app/src/routes/etablissement/contrats.tsx
   checksum: 99a2cb8a922ca711985b651931b0ebdc7632bfba403601797cc3358a0a023f04
 - filename: app/src/routes/etablissement/contrats/ContratsTable.tsx

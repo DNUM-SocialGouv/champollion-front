@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+.rbc-toolbar {
+  display: flex;
+  flex-direction: column;
+}
 /* Reduce header logo height */
 .fr-header__logo {
   padding: 0.75rem 1rem;

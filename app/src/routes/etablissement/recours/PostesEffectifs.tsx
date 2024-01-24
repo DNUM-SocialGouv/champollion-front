@@ -29,11 +29,7 @@ import { RecoursLoader } from "./RecoursLoader"
 
 type PostesEffectifsDeferred = { effectifs: Effectif[]; meta: IndicatorMetaData }
 
-export default function PostesEffectifs({
-  defaultUnit,
-}: {
-  defaultUnit: EffectifUnit
-}) {
+export default function PostesEffectifs({ defaultUnit }: { defaultUnit: EffectifUnit }) {
   const deferredData = useAsyncValue() as PostesEffectifsDeferred
 
   if (!deferredData) {
