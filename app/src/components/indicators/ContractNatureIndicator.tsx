@@ -6,6 +6,7 @@ import { formatDate } from "../../helpers/date"
 import IndicatorWrapper from "./IndicatorWrapper"
 import ContractsPieChart, { type PieSlice } from "./Charts/ContractsPieChart"
 
+
 type ContractNatureIndicatorProps = {
   collapseReadingNote?: boolean
   hasJobs?: boolean
@@ -73,7 +74,7 @@ export default function ContractNatureIndicator({
         collapseReadingNote={collapseReadingNote}
         tracking={tracking}
       >
-        <div className="h-60 w-full">
+        <div className="h-60 w-full" id="ContractsPieChart">
           <ContractsPieChart data={data} sortData showLegend />
         </div>
       </IndicatorWrapper>

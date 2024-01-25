@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { FormEvent, useEffect, useState } from "react"
 import { useNavigation } from "react-router-dom"
 import { useLoaderData } from "react-router-typesafe"
 
@@ -17,6 +17,9 @@ import NoticeCorrectData from "../../../components/NoticeCorrectData"
 import { RecoursLoader } from "./RecoursLoader"
 import PostesEffectifs from "./PostesEffectifs"
 
+import captureChart from "../../../components/indicators/ChartCapture"
+import RadioButtons from "@codegouvfr/react-dsfr/RadioButtons"
+
 const modal = createModal({
   id: "export-modal",
   isOpenedByDefault: false,
@@ -33,6 +36,8 @@ export default function Recours() {
     queryStartDate,
     raisonSociale,
     unit,
+    jobListWithoutMerges,
+    formattedMergesIds,
   } = useLoaderData<typeof RecoursLoader>()
   const navigation = useNavigation()
   if (navigation.state === "loading") {
@@ -63,6 +68,59 @@ export default function Recours() {
     document.title = `Recours abusif - ${raisonSociale}`
   }, [])
 
+  const initialExportOptions = [
+    {
+      label: "Évolution des effectifs",
+      nativeInputProps: {
+        defaultChecked: false,
+        value: "PostesEffectifs",
+      },
+    },
+    {
+      label: "Natures de contrat les plus utilisées",
+      nativeInputProps: {
+        defaultChecked: true,
+        value: "ContractsPieChart",
+      },
+    },
+  ]
+
+  const [exportOptions, setExportOptions] = useState(initialExportOptions)
+
+  const exportButton = () => {
+    document.querySelector("#PostesEffectifs") == null
+      ? setExportOptions([initialExportOptions[1]])
+      : setExportOptions(initialExportOptions)
+
+    modal.open()
+  }
+
+  const onDownloadExportChart = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    const formData = new FormData(event.currentTarget)
+
+    const selectedChart = formData.get("SelectChart")
+
+    if (selectedChart) {
+      const choiceChart = selectedChart.toString()
+
+      captureChart(
+        raisonSociale,
+        queryJobs,
+        queryStartDate,
+        queryEndDate,
+        choiceChart,
+        postes,
+        jobListWithoutMerges,
+        queryMotives,
+        formattedMergesIds
+      )
+    }
+
+    modal.close()
+  }
+
   return (
     <>
       <div className="fr-mb-3w">
@@ -82,7 +140,7 @@ export default function Recours() {
         <div className="flex justify-between">
           <h2 className="fr-text--xl fr-mb-1w">Évolution des effectifs</h2>
           <Button
-            onClick={() => modal.open()}
+            onClick={exportButton}
             iconId="fr-icon-download-line"
             priority="tertiary no outline"
             type="button"
@@ -90,20 +148,17 @@ export default function Recours() {
             Exporter
           </Button>
         </div>
-        <modal.Component title="Fonctionnalité d'export à venir">
-          <p>
-            La fonctionnalité d'export est en cours de développement. Elle permettra de
-            copier l'histogramme en tant qu'image.
-          </p>
-          <p>
-            En attendant, vous pouvez réaliser une capture d'écran de l'histogramme
-            (raccourci clavier : Touche Windows + Maj + S).
-          </p>
-          <p>
-            Vous pouvez également copier le tableau des effectifs dans votre presse-papier
-            via le bouton <i>Copier le tableau</i>, et le coller dans un logiciel de
-            traitement de texte ou un tableur.
-          </p>
+        <modal.Component title="Export Graphique">
+          <p>Vous pouvez exporter les graphiques sous format image PNG.</p>
+          <p>Tous les filtres sauvegardés seront pris en compte.</p>
+          <form onSubmit={onDownloadExportChart}>
+            <RadioButtons
+              legend="Sélectionnez le graphique a télécharger"
+              name="SelectChart"
+              options={exportOptions}
+            />
+            <Button type="submit">Télécharger</Button>
+          </form>
         </modal.Component>
         <hr />
 
