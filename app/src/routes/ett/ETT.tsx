@@ -13,9 +13,7 @@ import EstablishmentBanner from "../../components/establishment/EstablishmentBan
 import EstablishmentInfo from "../../components/establishment/EstablishmentInfo"
 import EstablishmentFilters from "../../components/establishment/EstablishmentFilters"
 
-import ExportContractsModal, {
-  exportContractsModal,
-} from "../../components/ExportContractsModal"
+import ExportModal, { exportModal } from "../../components/ExportModal"
 import { ETTLoader } from "./ETTLoader"
 import ETTContrats from "./ETTContrats"
 
@@ -94,7 +92,7 @@ export default function ETT() {
         <div className="flex justify-between">
           <h2 className="fr-text--xl fr-mb-1w">Liste des contrats</h2>
           <Button
-            onClick={() => exportContractsModal.open()}
+            onClick={() => exportModal.open()}
             iconId="fr-icon-download-line"
             priority="tertiary no outline"
             type="button"
@@ -102,7 +100,8 @@ export default function ETT() {
             Exporter
           </Button>
         </div>
-        <ExportContractsModal
+        <ExportModal
+          isCarence={false}
           companyName={etabType.raisonSociale}
           correctedDates={correctedDates}
           queryEmployee={queryEmployee}
@@ -114,7 +113,7 @@ export default function ETT() {
           queryJobs={queryJobs}
           siret={siret}
           queryStartDate={queryStartDate}
-        ></ExportContractsModal>
+        ></ExportModal>
         <hr />
         {isAppError(data) ? (
           <>

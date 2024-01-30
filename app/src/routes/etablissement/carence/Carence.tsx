@@ -15,7 +15,6 @@ import { initJobOptions } from "../../../helpers/postes"
 import { trackEvent } from "../../../helpers/analytics"
 
 import { Button } from "@codegouvfr/react-dsfr/Button"
-import { createModal } from "@codegouvfr/react-dsfr/Modal"
 import { Select } from "@codegouvfr/react-dsfr/Select"
 
 import Collapse from "../../../components/Collapse"
@@ -27,10 +26,10 @@ import { CarenceLoader } from "./CarenceLoader"
 import { isAppError } from "../../../helpers/errors"
 import CarenceInfraction from "./CarenceInfraction"
 
-const modal = createModal({
-  id: "export-modal",
-  isOpenedByDefault: false,
-})
+import ExportModal, {
+  exportModal,
+} from "../../../components/ExportModal"
+
 
 export default function Carence() {
   const {
@@ -45,6 +44,9 @@ export default function Carence() {
     raisonSociale,
     jobListWithoutMerges,
     formattedMergesIds,
+    siret,
+    etabId,
+    correctedDates,
   } = useLoaderData<typeof CarenceLoader>()
   const navigation = useNavigation()
   if (navigation.state === "loading") {
@@ -152,7 +154,7 @@ export default function Carence() {
           </h2>
 
           <Button
-            onClick={() => modal.open()}
+            onClick={() => exportModal.open()}
             iconId="fr-icon-download-line"
             priority="tertiary no outline"
             type="button"
@@ -160,10 +162,17 @@ export default function Carence() {
             Exporter
           </Button>
         </div>
-        <modal.Component title="Fonctionnalité d'export à venir">
-          <p>La fonctionnalité d'export est en cours de développement.</p>
-          <p>Elle permettra de télécharger les tableaux d'infractions potentielles.</p>
-        </modal.Component>
+        <ExportModal
+          isCarence={true}
+          companyName={raisonSociale}
+          correctedDates={correctedDates}
+          queryEndDate={queryEndDate}
+          etabId={etabId}
+          queryJobs={queryJobs}
+          siret={siret}
+          queryStartDate={queryStartDate}
+          mergedPostesIds={formattedMergesIds}
+        ></ExportModal>
 
         <hr />
 
