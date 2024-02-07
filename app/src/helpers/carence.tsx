@@ -21,7 +21,7 @@ type FormattedIllegalContract = {
   endDate: string
 }
 
-type FormattedInfractionContracts = {
+export type FormattedInfractionContracts = {
   illegalContract: FormattedIllegalContract
   carenceContracts: FormattedCarenceContract[]
 }

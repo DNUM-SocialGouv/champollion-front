@@ -6,7 +6,6 @@ import { formatDate } from "../../helpers/date"
 import IndicatorWrapper from "./IndicatorWrapper"
 import ContractsPieChart, { type PieSlice } from "./Charts/ContractsPieChart"
 
-
 type ContractNatureIndicatorProps = {
   collapseReadingNote?: boolean
   hasJobs?: boolean

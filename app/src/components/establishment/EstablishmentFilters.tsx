@@ -149,7 +149,7 @@ export default function EstablishmentFilters({
 
   return (
     <Form
-      reloadDocument // Todo remove reload document & fix filter reactivity (when nature or date change, contractDates are empty)
+      // reloadDocument // Todo remove reload document & fix filter reactivity (when nature or date change, contractDates are empty)
       method="get"
       className="fr-px-3w fr-py-2w fr-mb-2w border border-solid border-bd-default-grey bg-bg-alt-grey"
     >
@@ -237,7 +237,7 @@ export default function EstablishmentFilters({
         ))}
       <div className="fr-mt-1w flex flex-col justify-end gap-3 lg:flex-row">
         <Button
-          linkProps={{ to: "", reloadDocument: true }}
+          linkProps={{ to: "", reloadDocument: false }}
           priority="secondary"
           className="w-full justify-center lg:w-auto"
         >
