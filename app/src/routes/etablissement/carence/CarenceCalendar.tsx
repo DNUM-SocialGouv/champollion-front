@@ -8,6 +8,7 @@ import dayjs from "dayjs"
 import timezone from "dayjs/plugin/timezone"
 
 import Select, { ActionMeta, MultiValue } from "react-select"
+import ToggleSwitch from "@codegouvfr/react-dsfr/ToggleSwitch"
 dayjs.extend(timezone)
 const localizer = dayjsLocalizer(dayjs)
 
@@ -45,6 +46,7 @@ type Event = {
 }
 
 const CarenceCalendar: React.FC<InfractionContractsProps> = ({ infractions }) => {
+  const [showCalendar, setShowCalendar] = useState(false)
   moment.locale("fr")
   const { carenceContracts, illegalContract } = infractions
   const formatDateString = (dateString: string) =>
@@ -151,43 +153,55 @@ const CarenceCalendar: React.FC<InfractionContractsProps> = ({ infractions }) =>
   }
   return (
     <div className="myCustomHeight m-1">
-      {selectedOptions.length >= 2 && (
-        <>
-          <h3 className="fr-text--md fr-mt-2w fr-mb-1v font-bold">Note de lecture</h3>
-          <p className="fr-text--xs text-tx-mention-grey">
-            Veuillez noter : Pour des raisons d'affichage optimisé sur le calendrier, il
-            est possible de sélectionner au maximum 3 contrats à la fois.
-          </p>
-        </>
+      <ToggleSwitch
+        label="Afficher Calendrier"
+        checked={showCalendar}
+        onChange={(checked) => {
+          setShowCalendar(checked)
+        }}
+        classes={{ label: "w-full", input: "flex justify-end" }}
+      />
+      {showCalendar && (
+        <div>
+          {selectedOptions.length >= 2 && (
+            <>
+              <h3 className="fr-text--md fr-mt-2w fr-mb-1v font-bold">Note de lecture</h3>
+              <p className="fr-text--xs text-tx-mention-grey">
+                Veuillez noter : Pour des raisons d'affichage optimisé sur le calendrier,
+                il est possible de sélectionner au maximum 3 contrats à la fois.
+              </p>
+            </>
+          )}
+          <div>
+            <div className="my-2">
+              <Select
+                isMulti
+                name="colors"
+                onChange={handleSelectChange}
+                options={options}
+                value={selectedOptions}
+                className="basic-multi-select"
+                isOptionDisabled={() => selectedOptions.length >= 2}
+                classNamePrefix="select"
+              />
+            </div>
+            <div className="py-4">
+              <Calendar
+                localizer={localizer}
+                events={allEvents}
+                defaultDate={new Date(formatDateString(carenceContracts[0].startDate))}
+                style={{ height: "600px" }}
+                startAccessor={"start"}
+                endAccessor={"end"}
+                views={["month"]}
+                eventPropGetter={eventStyleGetter}
+                messages={messages}
+                culture={culture}
+              />
+            </div>
+          </div>
+        </div>
       )}
-      <div>
-        <div className="my-2">
-          <Select
-            isMulti
-            name="colors"
-            onChange={handleSelectChange}
-            options={options}
-            value={selectedOptions}
-            className="basic-multi-select"
-            isOptionDisabled={() => selectedOptions.length >= 2}
-            classNamePrefix="select"
-          />
-        </div>
-        <div className="py-4">
-          <Calendar
-            localizer={localizer}
-            events={allEvents}
-            defaultDate={new Date(formatDateString(carenceContracts[0].startDate))}
-            style={{ height: "600px" }}
-            startAccessor={"start"}
-            endAccessor={"end"}
-            views={["month"]}
-            eventPropGetter={eventStyleGetter}
-            messages={messages}
-            culture={culture}
-          />
-        </div>
-      </div>
     </div>
   )
 }
