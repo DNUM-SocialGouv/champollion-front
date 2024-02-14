@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react"
+import React, { Fragment } from "react"
 import { useAsyncValue } from "react-router-dom"
 import { EtablissementPoste, Infractions, MetaCarences } from "../../../api/types"
 import {
@@ -11,7 +11,6 @@ import Collapse from "../../../components/Collapse"
 import InfractionRatioIndicator from "../../../components/indicators/InfractionRatioIndicator"
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion"
 import { Badge } from "@codegouvfr/react-dsfr/Badge"
-import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch"
 
 import { DelayByJobIndicator } from "./DelayByJobIndicator"
 import { filtersDetail } from "../../../helpers/filters"
@@ -139,7 +138,6 @@ const CarenceInfraction: React.FC<CarenceInfractionType> = ({
             key={infractionByJobTitle.jobTitle}
           >
             {infractionByJobTitle.list.map((posteInfraction, index) => {
-
               return (
                 <Fragment key={posteInfraction.illegalContract.id}>
                   <p className="fr-mb-0">
@@ -160,9 +158,7 @@ const CarenceInfraction: React.FC<CarenceInfractionType> = ({
                     items={posteInfraction.carenceContracts}
                     className="mb-1"
                   />
-                  {posteInfraction && (
-                    <CarenceCalendar infractions={posteInfraction} />
-                  )}
+                  {posteInfraction && <CarenceCalendar infractions={posteInfraction} />}
                 </Fragment>
               )
             })}

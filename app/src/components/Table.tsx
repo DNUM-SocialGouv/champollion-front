@@ -2,7 +2,7 @@
 
 export type Header<ObjectType> = {
   key: keyof ObjectType
-  label: string
+  label: string | JSX.Element
   width: string
 }
 

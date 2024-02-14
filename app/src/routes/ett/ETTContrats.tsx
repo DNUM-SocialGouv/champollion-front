@@ -15,7 +15,16 @@ import { getQueryPage } from "../../helpers/format"
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination"
 
 import Table from "../../components/Table"
-type Column = "poste" | "etu" | "employee" | "startDate" | "endDate" | "nature" | "motive"
+import Tooltip from "../../components/Tooltip"
+type Column =
+  | "poste"
+  | "etu"
+  | "employee"
+  | "startDate"
+  | "endDate"
+  | "nature"
+  | "motive"
+  | "dateDerniereDeclaration"
 
 const headers = [
   { key: "poste", label: "Poste", width: "10%" },
@@ -24,7 +33,17 @@ const headers = [
   { key: "startDate", label: "Date de début", width: "10%" },
   { key: "endDate", label: "Date de fin", width: "10%" },
   { key: "nature", label: "Nature contrat", width: "5%" },
-  { key: "motive", label: "Motif de recours", width: "20%" },
+  { key: "motive", label: "Motif de recours", width: "10%" },
+  {
+    key: "dateDerniereDeclaration",
+    label: (
+      <Tooltip
+        text="Dern. Décl."
+        description="la date de la dernière déclaration DSN faisant état de ce contrat."
+      />
+    ),
+    width: "13%",
+  },
 ] as ContratsHeader<Column>[]
 
 type FormattedContrat = {
@@ -36,6 +55,7 @@ type FormattedContrat = {
   endDate: string | null
   motive: string | null
   nature: string
+  dateDerniereDeclaration: string
 }
 export default function ETTContrats({
   contrats,
@@ -54,6 +74,8 @@ export default function ETTContrats({
       ) : (
         <p>n/a</p>
       )
+      const dateDerniereDeclaration = formatDate(contrat?.dateDerniereDeclaration)
+
       return {
         id: contrat.contratId,
         poste: contrat.libellePoste,
@@ -65,6 +87,7 @@ export default function ETTContrats({
         endDate: formatDate(contrat.dateFin),
         motive: getMotivesRecours(contrat.codeMotifRecours),
         nature: getContractNature(contrat.codeNatureContrat),
+        dateDerniereDeclaration,
       } as FormattedContrat
     })
   const formattedContrats = contrats.length > 0 ? formatContrats(contrats) : []

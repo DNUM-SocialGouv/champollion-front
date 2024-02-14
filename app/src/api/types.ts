@@ -91,6 +91,7 @@ type Contrat = {
   codeMotifRecours: string | null
   libelleMotifRecours: string | null
   sexe: number
+  dateDerniereDeclaration: string
 }
 
 export type EtuContrat = Contrat & {

@@ -12,6 +12,7 @@ import { Button } from "@codegouvfr/react-dsfr/Button"
 import { Input } from "@codegouvfr/react-dsfr/Input"
 import { Option } from "../components/MultiSelect"
 import JobMergedBadge from "../components/job/JobMergedBadge"
+import Tooltip from "../components/Tooltip"
 
 type FormattedContrat = {
   id: number
@@ -23,6 +24,7 @@ type FormattedContrat = {
   motive: string | null
   ett: ReactNode
   conventionCode: string | null
+  dateDerniereDeclaration: string
 }
 
 type DateType = "start" | "end"
@@ -39,19 +41,29 @@ type Column =
 
 export type ContratsHeader<Column> = {
   key: Column
-  label: string
+  label: string | JSX.Element
   width: string
 }
 
 const headers = [
-  { key: "jobTitle", label: "Poste", width: "15%" },
-  { key: "employee", label: "Salarié", width: "15%" },
-  { key: "startDate", label: "Date de début", width: "15%" },
-  { key: "endDate", label: "Date de fin", width: "15%" },
-  { key: "nature", label: "Nature contrat", width: "5%" },
-  { key: "motive", label: "Motif de recours", width: "15%" },
-  { key: "ett", label: "ETT", width: "15%" },
-  { key: "conventionCode", label: "Conv. collective", width: "5%" },
+  { key: "jobTitle", label: "Poste", width: "10%" },
+  { key: "employee", label: "Salarié", width: "10%" },
+  { key: "startDate", label: "Date de début", width: "10%" },
+  { key: "endDate", label: "Date de fin", width: "10%" },
+  { key: "nature", label: "Nature contrat", width: "3%" },
+  { key: "motive", label: "Motif de recours", width: "10%" },
+  { key: "ett", label: "ETT", width: "10%" },
+  { key: "conventionCode", label: "Conv. collective", width: "3%" },
+  {
+    key: "dateDerniereDeclaration",
+    label: (
+      <Tooltip
+        text="Dern. Décl."
+        description="la date de la dernière déclaration DSN faisant état de ce contrat."
+      />
+    ),
+    width: "12%",
+  },
 ] as ContratsHeader<Column>[]
 
 const motivesRecoursShort = [
@@ -288,6 +300,7 @@ const formatContrats = (
           onReset={handleReset}
         />
       )
+      const dateDerniereDeclaration = formatDate(contrat?.dateDerniereDeclaration)
 
       let employee = `${contrat.prenoms} ${contrat.nomFamille}`
 
@@ -300,6 +313,7 @@ const formatContrats = (
         employee,
         startDate,
         endDate,
+        dateDerniereDeclaration,
         nature: getContractNature(contrat.codeNatureContrat),
         motive: getMotivesRecours(contrat.codeMotifRecours),
         conventionCode: contrat.codeConventionCollective,

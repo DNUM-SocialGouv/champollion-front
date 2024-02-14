@@ -94,7 +94,11 @@ export default function ContratsTable({
               {filtersInfo}
             </Collapse>
           )}
-          <Table className="fr-mb-1w" headers={headers} items={formattedContrats} />
+          <Table
+            className="fr-mb-1w padding-0"
+            headers={headers}
+            items={formattedContrats}
+          />
           {meta.totalPages > 1 && (
             <Pagination
               count={meta.totalPages}

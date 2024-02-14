@@ -68,6 +68,7 @@ describe("Contracts Info component", () => {
     sexe: 2,
     statutDebut: 2,
     statutFin: 2,
+    dateDerniereDeclaration: "2023-11-01",
   }
 
   const contrat2 = {
@@ -93,6 +94,7 @@ describe("Contracts Info component", () => {
     sexe: 2,
     statutDebut: 2,
     statutFin: 2,
+    dateDerniereDeclaration: "2023-11-01",
   }
 
   const contrat: EttContrat[] = [contrat1, contrat2]
