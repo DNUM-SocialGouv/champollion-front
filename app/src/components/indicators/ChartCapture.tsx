@@ -85,16 +85,16 @@ const captureChart = (
 
         if (Postes.length > 0) {
           ctx.fillText("Postes:", 10, 190)
-          const chunkSize = 6
+          const chunkSize = 5
           const result = []
-          const lineNumber = Math.floor(Postes.length / chunkSize)
+          const lineNumber = Math.ceil(Postes.length / chunkSize)
 
           for (let i = 0; i < PostesFiltres.length; i += chunkSize) {
             const chunk = PostesFiltres.slice(i, i + chunkSize)
             result.push(chunk)
           }
 
-          for (let i = 0; i <= lineNumber; i += 1) {
+          for (let i = 0; i < lineNumber; i += 1) {
             ctx.fillText(`${result[i]}`, 10, 230 + i * 40)
           }
         } else {

@@ -139,7 +139,7 @@ const CarenceInfraction: React.FC<CarenceInfractionType> = ({
             key={infractionByJobTitle.jobTitle}
           >
             {infractionByJobTitle.list.map((posteInfraction, index) => {
-              const [showCalendar, setShowCalendar] = useState(false)
+
               return (
                 <Fragment key={posteInfraction.illegalContract.id}>
                   <p className="fr-mb-0">
@@ -160,15 +160,7 @@ const CarenceInfraction: React.FC<CarenceInfractionType> = ({
                     items={posteInfraction.carenceContracts}
                     className="mb-1"
                   />
-                  <ToggleSwitch
-                    label="Afficher Calendrier"
-                    checked={showCalendar}
-                    onChange={(checked) => {
-                      setShowCalendar(checked)
-                    }}
-                    classes={{ label: "w-full", input: "flex justify-end" }}
-                  />
-                  {posteInfraction && showCalendar && (
+                  {posteInfraction && (
                     <CarenceCalendar infractions={posteInfraction} />
                   )}
                 </Fragment>
