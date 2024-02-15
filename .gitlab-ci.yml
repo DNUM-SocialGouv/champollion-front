@@ -8,12 +8,11 @@ before_script:
   - export HTTPS_PROXY=${HTTP_PROXY}
   - export NO_PROXY="${NO_PROXY}"
   - echo "{\"auths\":{\"${NEXUS_URL}:5000\":{\"auth\":\"$(echo -n $NEXUS_USER:$NEXUS_PASSWORD | base64)\"}}}" > /kaniko/.docker/config.json
+  - export $(grep -v "^#" ./env/.env.build | xargs)
   - > 
     if [[ ${CI_COMMIT_REF_NAME} = "preprod" ]]; then
-      export $(grep -v "^#" ./env/.env.preprod | xargs)
       export APP_CERTIFICATE_PASSWORD=${PREPROD__APP_CERTIFICATE_PASSWORD}
     else
-      export $(grep -v "^#" ./env/.env.dev | xargs)
       export APP_CERTIFICATE_PASSWORD=${DEV__APP_CERTIFICATE_PASSWORD}
     fi
 
@@ -35,6 +34,7 @@ job:build:app:dev:
       --build-arg VITE_MATOMO_URL=${VITE_MATOMO_URL}
       --build-arg VITE_APP_URL=${APP_URL}
       --destination "${NEXUS_URL}:5000/${NEXUS_REPOSITORY}/front/app:${APP_IMAGE_TAG}"
+  when: manual
   only:
     - dev@champollion/front-it
     - preprod@champollion/front-it
@@ -53,6 +53,7 @@ job:build:oauth2-proxy:dev:
       --context "dir://oauth2-proxy"
       --dockerfile "Dockerfile"
       --destination "${NEXUS_URL}:5000/${NEXUS_REPOSITORY}/front/oauth2-proxy:${OAUTH2_PROXY_IMAGE_TAG}"
+  when: manual
   only:
     - dev@champollion/front-it
     - preprod@champollion/front-it
@@ -74,6 +75,7 @@ job:build:reverse-proxy:dev:
       --build-arg APP_CERTIFICATE_FILE=${APP_CERTIFICATE_FILE}
       --build-arg APP_CERTIFICATE_PASSWORD=${APP_CERTIFICATE_PASSWORD}
       --destination "${NEXUS_URL}:5000/${NEXUS_REPOSITORY}/front/reverse-proxy:${REVERSE_PROXY_IMAGE_TAG}"
+  when: manual
   only:
     - dev@champollion/front-it
     - preprod@champollion/front-it
