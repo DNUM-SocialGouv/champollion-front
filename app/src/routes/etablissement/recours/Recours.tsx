@@ -72,14 +72,14 @@ export default function Recours() {
     {
       label: "Évolution des effectifs",
       nativeInputProps: {
-        defaultChecked: false,
+        defaultChecked: true,
         value: "PostesEffectifs",
       },
     },
     {
       label: "Natures de contrat les plus utilisées",
       nativeInputProps: {
-        defaultChecked: true,
+        defaultChecked: false,
         value: "ContractsPieChart",
       },
     },

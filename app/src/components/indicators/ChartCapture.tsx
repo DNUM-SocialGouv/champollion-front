@@ -2,130 +2,188 @@ import html2canvas from "html2canvas"
 import FileSaver from "file-saver"
 import { AppError } from "../../helpers/errors"
 import { EtablissementPoste } from "../../api/types"
+import { getLibellePosteById } from "../../helpers/postes"
 import { getFullJobTitle } from "../../helpers/filters"
+import { formatDate } from "../../helpers/date"
 
-const captureChart = (
+enum MotivesCode {
+  Replacement = 1,
+  TemporaryIncrease,
+  SeasonalUse,
+  Other,
+}
+
+const motivesLabels: Record<MotivesCode, string> = {
+  [MotivesCode.Replacement]: "Remplacement d'un salarié",
+  [MotivesCode.TemporaryIncrease]: "Accroissement temporaire d'activité",
+  [MotivesCode.SeasonalUse]: "Usage / saisonnier",
+  [MotivesCode.Other]: "Autre",
+}
+
+function drawText(
+  context: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number
+) {
+  const splitText = text.split(" ")
+  let line = ""
+  splitText.forEach((word) => {
+    const testLine = line + word + " "
+    const metrics = context.measureText(testLine)
+    if (metrics.width > maxWidth && line !== "") {
+      context.fillText(line, x, y)
+      line = word + " "
+      y += 20
+    } else {
+      line = testLine
+    }
+  })
+  context.fillText(line, x, y)
+  return y + 20 // Return the Y position for the next line
+}
+
+async function captureChart(
   raisonSociale: string,
-  Postes: number[],
+  postes: number[],
   startDate: string,
   endDate: string,
   elementId: string,
   listPostes: AppError | EtablissementPoste[],
   jobListWithoutMerges: EtablissementPoste[],
   queryMotives: number[],
-  formattedMergesIds: number[][] | undefined
-) => {
-  const element: HTMLElement | null = document.querySelector(`#${elementId}`)
+  formattedMergesIds?: number[][]
+) {
+  const element = document.querySelector(`#${elementId}`) as HTMLElement
+  if (!element) return
 
-  const motivesCodes = [1, 2, 3, 4] as const // make array immutable
-  type MotivesCode = (typeof motivesCodes)[number]
+  try {
+    const originalCanvas = await html2canvas(element, { logging: true })
+    const newCanvas = document.createElement("canvas")
+    const context = newCanvas.getContext("2d")
+    if (!context) throw new Error("Failed to get canvas context")
 
-  const motivesLabels: Record<MotivesCode, string> = {
-    1: "Remplacement d'un salarié",
-    2: "Accroissement temporaire d'activité",
-    3: "Usage / saisonnier",
-    4: "Autre",
+    newCanvas.width = originalCanvas.width + 400
+    newCanvas.height = originalCanvas.height + 600
+
+    const postesLabels = preparePostesLabels(
+      postes,
+      listPostes,
+      jobListWithoutMerges,
+      formattedMergesIds
+    )
+    const motivesLabels = prepareMotivesLabels(queryMotives)
+
+    drawCanvasContent(
+      context,
+      originalCanvas,
+      raisonSociale,
+      startDate,
+      endDate,
+      postesLabels,
+      motivesLabels
+    )
+
+    const graphType =
+      elementId === "ContractsPieChart"
+        ? "Natures_de_contrat_les_plus_utilisées"
+        : "Evolution_des_effectifs"
+    saveCanvasAsImage(newCanvas, graphType, raisonSociale, startDate, endDate)
+  } catch (error) {
+    console.error(error)
   }
+}
 
-  if (element !== null) {
-    html2canvas(element, { logging: true }).then((originalCanvas: HTMLCanvasElement) => {
-      const newCanvas = document.createElement("canvas")
-      newCanvas.width = originalCanvas.width + 50
-      newCanvas.height = originalCanvas.height + 400
-      const ctx = newCanvas.getContext("2d")
+const preparePostesLabels = (
+  postes: number[],
+  listPostes: AppError | EtablissementPoste[],
+  jobListWithoutMerges: EtablissementPoste[],
+  formattedMergesIds?: number[][]
+): string[] => {
+  return postes
+    .map((post) =>
+      formattedMergesIds?.flat()?.includes(post)
+        ? getFullJobTitle(post, jobListWithoutMerges, formattedMergesIds)
+        : getLibellePosteById(post, listPostes)
+    )
+    .filter((label): label is string => label !== undefined)
+}
 
-      if (ctx !== null) {
-        ctx.drawImage(originalCanvas, 5, 340)
-        ctx.fillStyle = "black"
-        ctx.font = "30px Arial"
-        ctx.fillText("Recours abusif:", 10, 30)
-        ctx.font = "20px Arial"
+const prepareMotivesLabels = (queryMotives: number[]): string[] => {
+  return queryMotives
+    .filter((motive) => Object.values(MotivesCode).includes(motive as MotivesCode))
+    .map((motive) => `${motivesLabels[motive as MotivesCode]}`)
+}
 
-        const PostesFiltres: string[] = []
+const drawCanvasContent = (
+  ctx: CanvasRenderingContext2D,
+  originalCanvas: HTMLCanvasElement,
+  raisonSociale: string,
+  startDate: string,
+  endDate: string,
+  postesLabels: string[],
+  motivesLabels: string[]
+) => {
+  const maxWidth = originalCanvas.width + 400 - 10
+  ctx.drawImage(originalCanvas, 5, 340)
+  ctx.fillStyle = "black"
+  ctx.font = "20px Arial"
 
-        if (listPostes && Array.isArray(listPostes)) {
-          listPostes.forEach((obj) => {
-            Postes.forEach((poste) => {
-              if (obj.posteId === poste) {
-                if (obj.merged === 1) {
-                  PostesFiltres.push(
-                    `"${getFullJobTitle(
-                      poste,
-                      jobListWithoutMerges,
-                      formattedMergesIds
-                    )}" `
-                  )
-                } else {
-                  PostesFiltres.push(`"${obj.libellePoste}" `)
-                }
-              }
-            })
-          })
-        }
+  let yPos = drawText(
+    ctx,
+    `Recours abusif - ${raisonSociale} entre le ${formatDate(
+      startDate
+    )} et le ${formatDate(endDate)}`,
+    10,
+    30,
+    maxWidth
+  )
 
-        const MotivesFilters: string[] = []
+  ctx.font = "15px Arial"
 
-        {
-          queryMotives.map((motive) => {
-            const typedMotive = motive as MotivesCode
-            if (motivesCodes.includes(typedMotive)) {
-              MotivesFilters.push(`"${motivesLabels[typedMotive]}" `)
-            }
-          })
-        }
+  yPos += 10
 
-        ctx.fillText(`Entreprise : ${raisonSociale}`, 10, 70)
-        elementId === "ContractsPieChart"
-          ? ctx?.fillText(
-              `Répartition des jours travaillés par nature de contrat entre ${startDate} et ${endDate}`,
-              10,
-              110
-            )
-          : ctx.fillText(`Periode : ${startDate} au ${endDate}`, 10, 110)
+  yPos = drawSection(ctx, "Postes:", postesLabels, yPos, maxWidth)
 
-        if (Postes.length > 0) {
-          ctx.fillText("Postes:", 10, 190)
-          const chunkSize = 5
-          const result = []
-          const lineNumber = Math.ceil(Postes.length / chunkSize)
+  drawSection(ctx, "Motifs de recours:", motivesLabels, yPos, maxWidth)
+}
+const drawSection = (
+  ctx: CanvasRenderingContext2D,
+  header: string,
+  items: string[],
+  startY: number,
+  maxWidth: number
+): number => {
+  let yPos = startY + 20 // Commence un peu plus bas que la position de départ
+  ctx.fillText(header, 10, startY) // Dessine l'en-tête
 
-          for (let i = 0; i < PostesFiltres.length; i += chunkSize) {
-            const chunk = PostesFiltres.slice(i, i + chunkSize)
-            result.push(chunk)
-          }
-
-          for (let i = 0; i < lineNumber; i += 1) {
-            ctx.fillText(`${result[i]}`, 10, 230 + i * 40)
-          }
-        } else {
-          ctx.fillText("Tous les postes", 10, 190)
-        }
-
-        queryMotives.length > 0
-          ? ctx.fillText(`Motifs de recours : ${MotivesFilters}`, 10, 150)
-          : ctx.fillText("Tous les motifs", 10, 150)
-      } else {
-        console.error("Unable to get 2D context from canvas.")
-      }
-
-      let graphType: string
-
-      if (elementId == "ContractsPieChart") {
-        graphType = "Natures_de_contrat_les_plus_utilisées"
-      } else {
-        graphType = "Evolution_des_effectifs"
-      }
-
-      newCanvas.toBlob(function (blob) {
-        if (blob !== null) {
-          FileSaver.saveAs(
-            blob,
-            `${graphType}_${raisonSociale}_${startDate}_au_${endDate}.png`
-          )
-        }
-      })
+  if (items.length === 0) {
+    yPos = drawText(ctx, "Tous", 10, yPos, maxWidth) + 10
+  } else {
+    items.forEach((item) => {
+      yPos = drawText(ctx, "- " + item, 10, yPos, maxWidth) + 10 // Espace supplémentaire entre les éléments
     })
   }
+
+  return yPos // Retourne la position Y mise à jour pour une utilisation ultérieure
+}
+
+const saveCanvasAsImage = (
+  canvas: HTMLCanvasElement,
+  graphType: string,
+  raisonSociale: string,
+  startDate: string,
+  endDate: string
+) => {
+  canvas.toBlob((blob) => {
+    if (blob) {
+      FileSaver.saveAs(
+        blob,
+        `${graphType}_${raisonSociale}_${startDate}_au_${endDate}.png`
+      )
+    }
+  })
 }
 
 export default captureChart
