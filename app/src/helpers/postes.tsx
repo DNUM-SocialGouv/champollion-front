@@ -29,6 +29,18 @@ export const initJobOptions = (postes: EtablissementPoste[] | AppError) => {
   return options
 }
 
+export const getLibellePosteById = (
+  id: number,
+  data: EtablissementPoste[] | AppError
+): string | undefined => {
+  if (Array.isArray(data)) {
+    const poste = data.find((poste) => poste.posteId == id)
+    return poste ? poste.libellePoste : undefined
+  }
+  console.error("Error occurred:", data.message)
+  return undefined
+}
+
 export const initEmployeeOptions = (employees: Salarie[] | AppError) => {
   let options: Option[] = []
   if (!isAppError(employees)) {

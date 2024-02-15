@@ -26,15 +26,15 @@ const brandTop = (
     <br />
     du travail,
     <br />
-    du plein emploi
+    de la santé
     <br />
-    et de l'insertion
+    et des solidarités
   </>
 )
 
 const homeLinkProps = {
   to: "/",
-  title: "Accueil VisuDSN - Ministère du travail, du plein emploi et de l'insertion",
+  title: "Accueil VisuDSN - Ministère du travail, de la santé et des solidarités",
 }
 
 const contentDescription = (
