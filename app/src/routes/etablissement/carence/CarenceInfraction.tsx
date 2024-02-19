@@ -15,7 +15,6 @@ import { Badge } from "@codegouvfr/react-dsfr/Badge"
 import { DelayByJobIndicator } from "./DelayByJobIndicator"
 import { filtersDetail } from "../../../helpers/filters"
 import Table, { Header } from "../../../components/Table"
-
 import CarenceCalendar from "./CarenceCalendar"
 
 interface CarenceInfractionType {
@@ -122,12 +121,14 @@ const CarenceInfraction: React.FC<CarenceInfractionType> = ({
             Répartition par poste
           </h3>
 
-          <DelayByJobIndicator
-            data={pieData}
-            startDate={queryStartDate}
-            endDate={queryEndDate}
-            hasJobs={queryJobs.length > 0}
-          />
+          {formattedInfractions.length > 1 ? (
+            <DelayByJobIndicator
+              data={pieData}
+              startDate={queryStartDate}
+              endDate={queryEndDate}
+              hasJobs={queryJobs.length > 0}
+            />
+          ) : null}
         </>
       )}
 
