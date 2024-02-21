@@ -128,7 +128,8 @@ const drawCanvasContent = (
   const maxWidth = originalCanvas.width + 400 - 10
   ctx.drawImage(originalCanvas, 5, 340)
   ctx.fillStyle = "black"
-  ctx.font = "20px Arial"
+  ctx.font = "32px Arial"
+  ctx.textBaseline = "bottom"
 
   let yPos = drawText(
     ctx,
@@ -140,7 +141,7 @@ const drawCanvasContent = (
     maxWidth
   )
 
-  ctx.font = "15px Arial"
+  ctx.font = "28px Arial"
 
   yPos += 10
 
@@ -157,7 +158,7 @@ const drawSection = (
 ): number => {
   let yPos = startY + 20 // Commence un peu plus bas que la position de départ
   ctx.fillText(header, 10, startY) // Dessine l'en-tête
-
+  yPos += 10
   if (items.length === 0) {
     yPos = drawText(ctx, "Tous", 10, yPos, maxWidth) + 10
   } else {
