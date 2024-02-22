@@ -1,7 +1,7 @@
 import api from "../config"
-import type { IDCC, Infractions, MetaCarences, ModificationsBody } from "../types"
+import type { FileExtension, IDCC, Infractions, MetaCarences, ModificationsBody } from "../types"
 import type { CorrectedDates } from "../../helpers/contrats"
-import { AppError, handleEndpointError, handleUndefinedData } from "../../helpers/errors"
+import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import { PublicHolidaysClosed, addArrayParams } from "../../helpers/format"
 
 type CarenceParams = {
@@ -18,6 +18,12 @@ type CarenceParams = {
   mergedPostesIds?: number[][]
   signal?: AbortSignal
 }
+type ExportParams = CarenceParams & {
+  isEtu?: boolean
+  format: FileExtension
+  companyName: string
+  siret: string
+}
 
 export const postCarences = async ({
   id,
@@ -32,9 +38,7 @@ export const postCarences = async ({
   correctedDates,
   mergedPostesIds,
   signal,
-}: CarenceParams): Promise<
-  { infractions: Infractions; meta: MetaCarences } | undefined | AppError
-> => {
+}: CarenceParams) => {
   try {
     let params = `etablissement_id=${id}`
 
@@ -78,3 +82,64 @@ export const getCarencesIdcc = async () => {
     return handleEndpointError(err)
   }
 }
+
+export const postCarencesExport = async ({
+  id, 
+  startDate, 
+  endDate, 
+  postesIds, 
+  format = "ods", 
+  isEtu = true, 
+  correctedDates, 
+  mergedPostesIds, 
+  siret, 
+  companyName, 
+  openDaysCodes,
+  closedDates,
+  closedPublicHolidays,
+  legislation,
+  openDates,
+}: ExportParams) => {
+  try {
+    let params = `etu=${isEtu}&format=${format}&etablissement_id=${id}`
+
+    
+    const fileName = `Carence_${companyName.replace(" ", "_")}_${siret}.${format}`
+    
+    
+    params = addArrayParams(params, postesIds, "poste_ids")
+    if (startDate) params += `&start_date=${startDate}`
+    if (endDate) params += `&end_date=${endDate}`
+    params = addArrayParams(params, openDaysCodes, "jour_ouverture_ids")
+    params = addArrayParams(params, openDates, "jour_ouverture_dates")
+    params = addArrayParams(params, closedDates, "jour_fermeture_dates")
+    if (closedPublicHolidays === "no") params += `&jour_ferie_bool=${false}`
+    if (legislation) params += `&legislation_carence=${legislation}`
+
+    const body: ModificationsBody = {}
+
+    if (mergedPostesIds && mergedPostesIds?.length > 0)
+      body.merged_poste_ids = mergedPostesIds
+    if (correctedDates) body.corrected_dates = correctedDates
+
+    const response = await api.post(`/carences/export?${params}`, body, {
+      responseType: "blob",
+    })
+
+    const odsBlob = new Blob([response.data], {
+      type: response.headers["content-type"],
+    })
+
+    const tempUrl = URL.createObjectURL(odsBlob)
+
+    const downloadLink = document.createElement("a")
+    downloadLink.href = tempUrl
+    downloadLink.download = fileName
+    downloadLink.click()
+
+    URL.revokeObjectURL(tempUrl)
+  } catch (err) {
+    return handleEndpointError(err)
+  }
+}
+

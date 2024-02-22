@@ -98,5 +98,8 @@ export async function CarenceLoader({ params, request }: LoaderFunctionArgs) {
     raisonSociale: etabType.raisonSociale,
     jobListWithoutMerges,
     formattedMergesIds,
+    siret,
+    etabId: etabType.id,
+    correctedDates,
   }
 }

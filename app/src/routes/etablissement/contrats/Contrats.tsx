@@ -15,9 +15,7 @@ import { createModal } from "@codegouvfr/react-dsfr/Modal"
 
 import Rebound from "../../../components/Rebound"
 import EstablishmentFilters from "../../../components/establishment/EstablishmentFilters"
-import ExportContractsModal, {
-  exportContractsModal,
-} from "../../../components/ExportContractsModal"
+import ExportModal, { exportModal } from "../../../components/ExportModal"
 import { ContratsLoader } from "./ContratsLoader"
 import ContratsTable from "./ContratsTable"
 import { initEmployeeOptions, initJobOptions } from "../../../helpers/postes"
@@ -89,7 +87,7 @@ export default function Contrats() {
       <div className="flex justify-between">
         <h2 className="fr-text--xl fr-mb-1w">Liste des contrats</h2>
         <Button
-          onClick={() => exportContractsModal.open()}
+          onClick={() => exportModal.open()}
           iconId="fr-icon-download-line"
           priority="tertiary no outline"
           type="button"
@@ -97,7 +95,8 @@ export default function Contrats() {
           Exporter
         </Button>
       </div>
-      <ExportContractsModal
+      <ExportModal
+        isCarence={false}
         companyName={companyName}
         correctedDates={correctedDates}
         queryEmployee={queryEmployee}
@@ -110,7 +109,7 @@ export default function Contrats() {
         siret={siret}
         queryStartDate={queryStartDate}
         mergedPostesIds={mergedPostesIds}
-      ></ExportContractsModal>
+      ></ExportModal>
       <hr />
       <div className="flex items-start justify-between">
         <p>Vous pouvez corriger les dates d'après vos observations.</p>
