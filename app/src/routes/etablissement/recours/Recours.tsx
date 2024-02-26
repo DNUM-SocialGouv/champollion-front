@@ -160,7 +160,8 @@ export default function Recours() {
             <Button type="submit">Télécharger</Button>
           </form>
           <p className="fr-mt-2w italic">
-            ⚠️ Veuillez ne pas depasser la limite de 6 postes dans les filtres afin de ne pas encombrer le graphique.
+            ⚠️ Veuillez ne pas depasser la limite de 6 postes dans les filtres afin de ne
+            pas encombrer le graphique.
           </p>
         </modal.Component>
         <hr />

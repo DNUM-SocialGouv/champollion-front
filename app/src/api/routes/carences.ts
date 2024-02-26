@@ -1,5 +1,11 @@
 import api from "../config"
-import type { FileExtension, IDCC, Infractions, MetaCarences, ModificationsBody } from "../types"
+import type {
+  FileExtension,
+  IDCC,
+  Infractions,
+  MetaCarences,
+  ModificationsBody,
+} from "../types"
 import type { CorrectedDates } from "../../helpers/contrats"
 import { handleEndpointError, handleUndefinedData } from "../../helpers/errors"
 import { PublicHolidaysClosed, addArrayParams } from "../../helpers/format"
@@ -84,16 +90,16 @@ export const getCarencesIdcc = async () => {
 }
 
 export const postCarencesExport = async ({
-  id, 
-  startDate, 
-  endDate, 
-  postesIds, 
-  format = "ods", 
-  isEtu = true, 
-  correctedDates, 
-  mergedPostesIds, 
-  siret, 
-  companyName, 
+  id,
+  startDate,
+  endDate,
+  postesIds,
+  format = "ods",
+  isEtu = true,
+  correctedDates,
+  mergedPostesIds,
+  siret,
+  companyName,
   openDaysCodes,
   closedDates,
   closedPublicHolidays,
@@ -103,10 +109,8 @@ export const postCarencesExport = async ({
   try {
     let params = `etu=${isEtu}&format=${format}&etablissement_id=${id}`
 
-    
     const fileName = `Carence_${companyName.replace(" ", "_")}_${siret}.${format}`
-    
-    
+
     params = addArrayParams(params, postesIds, "poste_ids")
     if (startDate) params += `&start_date=${startDate}`
     if (endDate) params += `&end_date=${endDate}`
@@ -142,4 +146,3 @@ export const postCarencesExport = async ({
     return handleEndpointError(err)
   }
 }
-

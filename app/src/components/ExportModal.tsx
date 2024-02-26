@@ -9,6 +9,7 @@ import { postCarencesExport } from "../api"
 import { postContratsExport } from "../api"
 import { FileExtension } from "../api/types"
 import { trackEvent } from "../helpers/analytics"
+import { AppSpinner } from "./Deferring"
 
 export const exportModal = createModal({
   id: "export-modal",
@@ -46,7 +47,8 @@ export default function ExportModal({
   queryStartDate,
   mergedPostesIds,
 }: ExportModalProps) {
-  const [exportedContracts, setExportedContracts] = useState<undefined | AppError>()
+  const [exportedData, setExportedData] = useState<undefined | AppError>()
+  const [loading, setLoading] = useState(false)
 
   let typeExport: "Carences" | "Contrats"
   let modalTitle: string
@@ -62,40 +64,55 @@ export default function ExportModal({
         : "ods"
 
     if (isCarence) {
-      const newExportedCarences = await postCarencesExport({
-        companyName,
-        correctedDates,
-        endDate: queryEndDate,
-        format,
-        id: etabId,
-        mergedPostesIds,
-        postesIds: queryJobs,
-        siret,
-        startDate: queryStartDate,
-      })
-      setExportedContracts(newExportedCarences)
+      setLoading(true)
+      try {
+        const newExportedCarences = await postCarencesExport({
+          companyName,
+          correctedDates,
+          endDate: queryEndDate,
+          format,
+          id: etabId,
+          mergedPostesIds,
+          postesIds: queryJobs,
+          siret,
+          startDate: queryStartDate,
+        })
+        setExportedData(newExportedCarences)
+      } catch (error) {
+        console.error("Failed to export carences:", error)
+      } finally {
+        setLoading(false)
+      }
       trackEvent({
         category: "Carences",
         action: "Export téléchargé",
         properties: { format: fileExtension },
       })
     } else {
-      const newExportedContracts = await postContratsExport({
-        companyName,
-        correctedDates,
-        employeesIds: queryEmployee ? [queryEmployee] : undefined,
-        endDate: queryEndDate,
-        format,
-        id: etabId,
-        mergedPostesIds,
-        motives: queryMotives,
-        natures: queryNature,
-        page,
-        postesIds: queryJobs,
-        siret,
-        startDate: queryStartDate,
-      })
-      setExportedContracts(newExportedContracts)
+      setLoading(true)
+
+      try {
+        const newExportedContracts = await postContratsExport({
+          companyName,
+          correctedDates,
+          employeesIds: queryEmployee ? [queryEmployee] : undefined,
+          endDate: queryEndDate,
+          format,
+          id: etabId,
+          mergedPostesIds,
+          motives: queryMotives,
+          natures: queryNature,
+          page,
+          postesIds: queryJobs,
+          siret,
+          startDate: queryStartDate,
+        })
+        setExportedData(newExportedContracts)
+      } catch (error) {
+        console.error("Failed to export contracts:", error)
+      } finally {
+        setLoading(false)
+      }
       trackEvent({
         category: "Contrats",
         action: "Export téléchargé",
@@ -130,18 +147,20 @@ export default function ExportModal({
           name="file-extension"
           options={radioBtnOptions}
         />
-        <Button type="submit">Télécharger</Button>
+        <Button type="submit" disabled={loading}>
+          {loading ? <AppSpinner /> : "Télécharger"}
+        </Button>
       </form>
       <p className="fr-mt-2w italic">
         ⚠️ Si vous exportez un gros volume de {typeExport}, le téléchargement peut durer
         plusieurs secondes.
       </p>
-      {isAppError(exportedContracts) && (
+      {isAppError(exportedData) && (
         <Alert
           className="fr-mb-2w"
           severity="error"
-          title={exportedContracts.messageFr}
-          description={errorDescription(exportedContracts)}
+          title={exportedData.messageFr}
+          description={errorDescription(exportedData)}
         />
       )}
     </exportModal.Component>

@@ -26,10 +26,7 @@ import { CarenceLoader } from "./CarenceLoader"
 import { isAppError } from "../../../helpers/errors"
 import CarenceInfraction from "./CarenceInfraction"
 
-import ExportModal, {
-  exportModal,
-} from "../../../components/ExportModal"
-
+import ExportModal, { exportModal } from "../../../components/ExportModal"
 
 export default function Carence() {
   const {
